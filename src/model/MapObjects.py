@@ -59,7 +59,7 @@ class Cherry(MapObject):
         pass
 
 
-class Wallet(MapObject):
+class Wall(MapObject):
     def __init__(self, coord, hitbox="", texture=""):
         super().__init__(coord, hitbox, texture)
 

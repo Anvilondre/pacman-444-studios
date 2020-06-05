@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from threading import Timer
+from src.data.Constants import pacman_boost, pacman_velocity, ghost_velocity, ghost_slowdown
 
 
 class Ability(ABC):
@@ -13,13 +15,13 @@ class Ability(ABC):
         pass
 
     @property
-    @abstractmethod
     def duration_timer(self):
-        pass
+        return Timer(self.duration, self.deactivate)
 
     @abstractmethod
     def run(self):
-        pass
+        self.activate()
+        self.duration_timer.start()
 
     @abstractmethod
     def deactivate(self):
@@ -31,35 +33,58 @@ class Ability(ABC):
 
 
 class SpeedAbility(Ability):
-    duration = 10  # TODO
-    duration_timer = ...  # TODO
+
+    """ Speeds pacman up while ability is active """
+
+    duration = 5  # TODO
 
     def __init__(self, pacman):
         super().__init__(pacman)
 
     def run(self):
-        raise NotImplementedError
+        super().run()
 
     def activate(self):
-        raise NotImplementedError
+        self.pacman.velocity += pacman_boost
 
     def deactivate(self):
-        raise NotImplementedError
+        self.pacman.velocity = pacman_velocity
 
 
 class TransformAbility(Ability):
-    duration = 10  # TODO
-    duration_timer = ...  # TODO
+
+    """ Lets player freely cycle through forms while ability is active """
+
+    duration = 5  # TODO
 
     def __init__(self, pacman, ghosts):
         self.ghosts = ghosts
+        self.is_active = False
         super().__init__(pacman)
 
     def run(self):
-        raise NotImplementedError
+        super().run()
 
     def activate(self):
-        raise NotImplementedError
+        self.is_active = True
+        for ghost in self.ghosts:
+            ghost.velocity -= ghost_slowdown
 
     def deactivate(self):
-        raise NotImplementedError
+        self.is_active = False
+        for ghost in self.ghosts:
+            ghost.velocity = ghost_velocity
+
+    def changeForm(self):
+
+        # Hardcoded
+
+        if self.is_active:
+            if self.pacman.form == 'red':
+                self.pacman.form = 'green'
+
+            elif self.pacman.form == 'green':
+                self.pacman.form = 'blue'
+
+            else:
+                self.pacman.form = 'red'

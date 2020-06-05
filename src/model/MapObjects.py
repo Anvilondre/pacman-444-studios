@@ -19,10 +19,11 @@ class MapObject(ABC):
     def texture(self):
         pass
 
+
 class Pellet(MapObject):
     value = 10
 
-    def __init__(self, coord, hitbox, texture):
+    def __init__(self, coord, hitbox="", texture=""):
         super().__init__(coord, hitbox, texture)
 
     def hitbox(self):
@@ -35,7 +36,7 @@ class Pellet(MapObject):
 class MegaPellet(MapObject):
     value = 50
 
-    def __init__(self, coord, hitbox, texture):
+    def __init__(self, coord, hitbox="", texture=""):
         super().__init__(coord, hitbox, texture)
 
     def hitbox(self):
@@ -48,7 +49,7 @@ class MegaPellet(MapObject):
 class Cherry(MapObject):
     value = 100
 
-    def __init__(self, coord, hitbox, texture):
+    def __init__(self, coord, hitbox="", texture=""):
         super().__init__(coord, hitbox, texture)
 
     def hitbox(self):
@@ -58,8 +59,8 @@ class Cherry(MapObject):
         pass
 
 
-class Wall(MapObject):
-    def __init__(self, coord, hitbox, texture):
+class Wallet(MapObject):
+    def __init__(self, coord, hitbox="", texture=""):
         super().__init__(coord, hitbox, texture)
 
     def hitbox(self):

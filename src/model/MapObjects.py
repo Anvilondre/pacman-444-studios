@@ -20,7 +20,6 @@ class MapObject(ABC):
         pass
 
 
-
 class Pellet(MapObject):
     value = 10
 
@@ -33,8 +32,6 @@ class Pellet(MapObject):
     def texture(self):
         pass
 
-    def __str__(self):
-        return "coord: " + str(self.coord) + "; type: Pellet "
 
 class MegaPellet(MapObject):
     value = 50
@@ -47,9 +44,6 @@ class MegaPellet(MapObject):
 
     def texture(self):
         pass
-
-    def __str__(self):
-        return "coord: " + str(self.coord) + "; type: MegaPellet "
 
 
 class Cherry(MapObject):
@@ -64,11 +58,8 @@ class Cherry(MapObject):
     def texture(self):
         pass
 
-    def __str__(self):
-        return "coord: " + str(self.coord) + "; type: Cherry "
 
-
-class Wall(MapObject):
+class Wallet(MapObject):
     def __init__(self, coord, hitbox="", texture=""):
         super().__init__(coord, hitbox, texture)
 
@@ -77,6 +68,3 @@ class Wall(MapObject):
 
     def texture(self):
         pass
-
-    def __str__(self):
-        return "coord: " + str(self.coord) + "; type: Wall "

@@ -51,6 +51,9 @@ class PathFinder:
             raise Exception('Illegal move')
 
     def get_path(self, start, end):
+
+        """" A* search """
+
         open_nodes = []
         closed_nodes = []
 

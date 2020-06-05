@@ -30,7 +30,7 @@ class Node:
 class PathFinder:
 
     def __init__(self, hash_map):
-        self.map = hash_map
+        self.hash_map = hash_map
 
     def get_direction(self, start, end):
         """" Returns direction of the first move """
@@ -88,7 +88,7 @@ class PathFinder:
 
                 neighbor = Node(item, current_node)
 
-                # Skip closed_nodes neighbors
+                # Skip closed neighbors
                 if neighbor in closed_nodes:
                     continue
 

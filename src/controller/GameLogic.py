@@ -25,7 +25,7 @@ def move_ghost(ghost):
 
 
 def get_sector_coord(x, y):
-    return (x+35) // SECTOR_SIZE, (y+35) // SECTOR_SIZE
+    return (x) // SECTOR_SIZE, (y) // SECTOR_SIZE
 
 
 def revive_ghost(ghost):
@@ -62,6 +62,7 @@ class Controller:
         self.parse_level()
         self.init_pacman()
         self.init_ghosts()
+        self.init_abilities()
 
     def init_render(self):
         pygame.init()
@@ -106,13 +107,13 @@ class Controller:
                 sys.exit()
 
             elif event.type == pygame.KEYDOWN:
-                if event.key == K_LEFT and self.pacman.direction != 'left':
+                if event.key == K_LEFT:
                     self.pacman.direction = 'left'
-                elif event.key == K_UP and self.pacman.direction != 'up':
+                elif event.key == K_UP:
                     self.pacman.direction = 'up'
-                elif event.key == K_RIGHT and self.pacman.direction != 'right':
+                elif event.key == K_RIGHT:
                     self.pacman.direction = 'right'
-                elif event.key == K_DOWN and self.pacman.direction != 'down':
+                elif event.key == K_DOWN:
                     self.pacman.direction = 'down'
 
                 elif event.key == K_1 and self.pacman.mana > 0 and self.ability_is_ready:
@@ -158,7 +159,7 @@ class Controller:
         else:
             raise Exception('Illegal direction')
 
-        if isinstance(creature, PacMan) and self.collides_wall(creature):
+        if self.collides_wall(creature):
             (creature.x, creature.y) = creature_coords
 
     def update_pacman(self):
@@ -168,9 +169,8 @@ class Controller:
         self.check_mega_pellet_collision()
 
     def resolve_ghost_direction(self, ghost, pacman_coord):
-        ghost_coord = get_sector_coord(ghost.x, ghost.y)
+        ghost_coord = get_sector_coord(ghost.x + ghost.width / 2, ghost.y + ghost.height / 2)
 
-        # print(ghost_coord, pacman_coord)
 
         if not ghost.is_alive:
             revive_ghost(ghost)
@@ -181,7 +181,7 @@ class Controller:
             ghost.direction = self.path_finder.get_direction(ghost_coord, ghost.initial_location)
 
     def update_ghosts(self):
-        pacman_coord = get_sector_coord(self.pacman.x, self.pacman.y)  # (self.pacman.x, self.pacman.y)
+        pacman_coord = get_sector_coord(self.pacman.x + self.pacman.width / 2, self.pacman.y + self.pacman.height)
         for ghost in self.ghosts:
             self.resolve_ghost_direction(ghost, pacman_coord)
             self.move_creature(ghost)
@@ -217,7 +217,7 @@ class Controller:
     def run(self):
         clock = pygame.time.Clock()
         while True:
-            miliseconds = clock.tick(3)
+            miliseconds = clock.tick(15)
             elapsed_time = miliseconds / 1000.0  # seconds
 
             self.handle_events()
@@ -225,4 +225,4 @@ class Controller:
             self.update_ghosts()
             # TODO: Implement renderer
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts],
-                                 elapsed_time, showgrid=True)
+                                 elapsed_time, showgrid=False, show_hitboxes=False)

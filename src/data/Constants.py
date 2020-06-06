@@ -72,6 +72,9 @@ GAMESCREEN_CELL_SIZE_RATIO = 36*2 / 1920
 # Animation
 ANIMATION_PERIOD = 0.1  # seconds
 
+# Debug
+HITBOX_OPACITY = 150
+
 ''' All file paths '''
 
 # Game

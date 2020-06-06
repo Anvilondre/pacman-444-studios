@@ -13,7 +13,7 @@ class MapObject():
         self.coord = coord
         self.width = width
         self.height = height
-        self.hitbox = self.create_hitbox_of(hitbox_path)
+        self.hitbox = self.create_hitbox_of(hitbox_path, coord[0], coord[1])
         self.texture = texture
 
     @property

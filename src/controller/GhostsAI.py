@@ -35,7 +35,7 @@ class PathFinder:
     def get_direction(self, start, end):
         """" Returns direction of the first move """
         path = self.get_path(start, end)
-        if path is not None:
+        if path:
 
             move = path[0]
 

@@ -5,14 +5,13 @@ from src.data.Constants import SECTOR_SIZE
 class Map:
     def __init__(self, string_map):
         self.string_map = string_map
-        self.width = len(string_map[0])
-        self.height = len(string_map)
-        self.pellets, \
-        self.mega_pellets, \
-        self.walls, \
-        self.hash_map, \
-        self.pacman_initial_coord, \
-        self.ghosts_initial_coords = self.pre_process()
+        self.dims = (len(string_map[0]), len(string_map))
+        self.pellets = \
+        self.mega_pellets = \
+        self.walls = \
+        self.hash_map = \
+        self.pacman_initial_coord = \
+        self.ghosts_initial_coords = None
 
     def pre_process(self):
         pellets = []
@@ -55,7 +54,12 @@ class Map:
 
                 hash_map[str_coord] = obj
 
-        return pellets, mega_pellets, walls, hash_map, pacman_initial_coord, ghosts_initial_coords
+        self.hash_map = hash_map
+        self.pellets = pellets
+        self.walls = walls
+        self.hash_map = hash_map
+        self.pacman_initial_coord = pacman_initial_coord
+        self.ghosts_initial_coords = ghosts_initial_coords
 
     def get_object_from_coord(self, x, y):
         return self.hash_map[(x, y)]

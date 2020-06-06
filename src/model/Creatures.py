@@ -84,7 +84,7 @@ class Creature(object):
         return self._initial_location
 
     @initial_location.setter
-    def initial_location(self, value:tuple):
+    def initial_location(self, value: tuple):
         if value[0] >= 0 and value[1] >= 0:
             value = (int(value[0]), int(value[1]))
             self._initial_location = value

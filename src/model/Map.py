@@ -25,7 +25,7 @@ class Map:
             for y in range(self.height):
                 ch = self.string_map[y][x]
                 coord = (x * SECTOR_SIZE, y * SECTOR_SIZE)
-
+                str_coord = (x, y)
                 if ch == '#':
                     obj = Wall(coord)
                     walls.append(obj)
@@ -53,7 +53,7 @@ class Map:
                 else:
                     obj = None
 
-                hash_map[coord] = obj
+                hash_map[str_coord] = obj
 
         return pellets, mega_pellets, walls, hash_map, pacman_initial_coord, ghosts_initial_coords
 

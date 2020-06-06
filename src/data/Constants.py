@@ -21,6 +21,10 @@ Structure:
 
 directions = ('left', 'up', 'right', 'down')
 forms = ('red', 'green', 'blue')
+PELLET_VALUE = 10
+MEGAPELLET_VALUE = 50
+CHERRY_VALUE = 100
+GHOST_VALUE = 200
 
 # PacMan
 

@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 from src.data.Constants import CHERRY_VALUE, MEGAPELLET_VALUE, PELLET_VALUE
 
+
 class MapObject(ABC):
 
     @abstractmethod
-    def __init__(self, coord, hitbox, texture, value):
+    def __init__(self, coord, hitbox, texture):
         self.coord = coord
         self.hitbox = hitbox
         self.texture = texture
-        self.value= value
 
     @property
     @abstractmethod
@@ -24,7 +24,8 @@ class MapObject(ABC):
 class Pellet(MapObject):
 
     def __init__(self, coord, hitbox="", texture="", value = PELLET_VALUE):
-        super().__init__(coord, hitbox, texture, value)
+        self.value = value
+        super().__init__(coord, hitbox, texture)
 
     def hitbox(self):
         pass
@@ -39,7 +40,8 @@ class Pellet(MapObject):
 class MegaPellet(MapObject):
 
     def __init__(self, coord, hitbox="", texture="", value=MEGAPELLET_VALUE):
-        super().__init__(coord, hitbox, texture, value)
+        self.value = value
+        super().__init__(coord, hitbox, texture)
 
     def hitbox(self):
         pass
@@ -54,7 +56,8 @@ class MegaPellet(MapObject):
 class Cherry(MapObject):
 
     def __init__(self, coord, hitbox="", texture="", value=CHERRY_VALUE):
-        super().__init__(coord, hitbox, texture, value)
+        self.value = value
+        super().__init__(coord, hitbox, texture)
 
     def hitbox(self):
         pass

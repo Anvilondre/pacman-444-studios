@@ -1,11 +1,13 @@
 import os
 import pygame
+import random
 from src.data import Constants
+
 
 class Creature(object):
 
-    def __init__(self, x, y, width, height, velocity, direction, form, hitbox_path, animations):
-
+    def __init__(self, x, y, initial_location, width, height, velocity, direction, form, hitbox_path, animations):
+        self.initial_location = initial_location
         self.width = width
         self.height = height
         self.velocity = velocity
@@ -30,8 +32,8 @@ class Creature(object):
                 value = round(value)
 
             # Update hitbox x coordinate
-            self.hitbox.rect.move_ip(value-self.x, 0)
-            #Update creature's x coordinate
+            self.hitbox.rect.move_ip(value - self.x, 0)
+            # Update creature's x coordinate
             self._x = value
             return
 
@@ -52,8 +54,8 @@ class Creature(object):
                 value = round(value)
 
             # Update hitbox y coordinate
-            self.hitbox.rect.move_ip(0, value-self.y)
-            #Update creature's y coordinate
+            self.hitbox.rect.move_ip(0, value - self.y)
+            # Update creature's y coordinate
             self._y = value
             return
 
@@ -61,6 +63,32 @@ class Creature(object):
             raise ValueError("Y cannot be assigned to negative value")
         if not isinstance(value, int) and not isinstance(value, float):
             raise TypeError("Y cannot be assigned to non-numeric object.")
+
+    @property
+    def initial_location(self):
+        return self._initial_location
+
+    @initial_location.setter
+    def initial_location(self, value:tuple):
+        if value[0] >= 0 and value[1] >= 0 and\
+                (isinstance(value[0], int) or isinstance(value[0], float)) and\
+                (isinstance(value[1], int) or isinstance(value[1], float)):
+
+            if isinstance(value[0], float):
+                value = (round(value[0]), value[1])
+            if isinstance(value[1], float):
+                value = (value[0], round(value[1]))
+
+            # Update creature's x coordinate
+            self._initial_location = value
+            return
+
+        if value[0] < 0 or value[1] < 0:
+            raise ValueError("initial_value cannot be assigned to tuple with negative coordinate(s):", value)
+        if (not isinstance(value[0], int) and not isinstance(value[0], float)) or\
+           (not isinstance(value[1], int) and not isinstance(value[1], float)):
+            raise TypeError("initial_value cannot be assigned to non-numeric tuple:", value)
+
 
     @property
     def width(self):
@@ -217,15 +245,18 @@ class Creature(object):
 
 
 class PacMan(Creature):
-    def __init__(self, x, y, width, height, velocity, direction, form,
+    def __init__(self, x, y, initial_location, width, height, velocity, direction="left", form="random",
                  hitbox=Constants.pacman_hitbox_path, animations=Constants.pacman_animations_paths,
                  cooldown=5, mana=Constants.pacman_mana,
-                 score=Constants.pacman_score, lives=Constants.pacman_lives):
-        super().__init__(x, y, width, height, velocity, direction, form, hitbox, animations)
+                 score=Constants.pacman_score, lives=Constants.pacman_lives, ghosts_eaten=0):
+        super().__init__(x, y, initial_location, width, height, velocity, direction,
+                         Constants.forms[random.randint(0, 2)] if form == "random" else form,
+                         hitbox, animations)
         self.cooldown = cooldown
         self.mana = mana
         self.score = score
         self.lives = lives
+        self.ghosts_eaten = ghosts_eaten
 
     @property
     def cooldown(self):
@@ -283,6 +314,20 @@ class PacMan(Creature):
         if not isinstance(value, int):
             raise TypeError("Lives cannot be assigned to non-int object")
 
+    @property
+    def ghosts_eaten(self):
+        return self._ghosts_eaten
+
+    @ghosts_eaten.setter
+    def ghosts_eaten(self, value: int):
+        if value >= 0:
+            self._ghosts_eaten = value
+            return
+        if value < 0:
+            raise ValueError("Lives cannot be assigned to negative value:", value)
+        if not isinstance(value, int):
+            raise TypeError("Lives cannot be assigned to non-int object:", value)
+
     def __str__(self):
         return super().__str__() + \
                "; cooldown: " + str(self.cooldown) + "; mana: " + str(self.mana) + \
@@ -291,10 +336,12 @@ class PacMan(Creature):
 
 class Ghost(Creature):
 
-    def __init__(self, x, y, width, height, velocity, direction, form,
+    def __init__(self, x, y, initial_location, width, height, velocity, direction="up", form="random",
                  hitbox=Constants.ghost_hitbox_path, animations=Constants.pinky_animations_paths,
                  is_chasing=Constants.ghost_is_chasing):
-        super().__init__(x, y, width, height, velocity, direction, form, hitbox, animations)
+        super().__init__(x, y, initial_location, width, height, velocity, direction,
+                         Constants.forms[random.randint(0, 2)] if form == "random" else form,
+                         hitbox, animations)
         self.is_chasing = is_chasing
 
     @property
@@ -310,4 +357,3 @@ class Ghost(Creature):
 
     def __str__(self):
         return super().__str__() + "; is_chasing: " + str(self.is_chasing)
-

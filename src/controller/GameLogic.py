@@ -25,7 +25,7 @@ def move_ghost(ghost):
 
 
 def get_sector_coord(x, y):
-    return x // SECTOR_SIZE, y // SECTOR_SIZE
+    return (x+35) // SECTOR_SIZE, (y+35) // SECTOR_SIZE
 
 
 def revive_ghost(ghost):
@@ -65,7 +65,7 @@ class Controller:
 
     def init_render(self):
         pygame.init()
-        self.renderer = Renderer((0, 0))
+        self.renderer = Renderer((0, 0), is_fullscreen=False)
         # self.window = pygame.display.set_mode((800, 600))
 
     def init_level(self):
@@ -217,7 +217,7 @@ class Controller:
     def run(self):
         clock = pygame.time.Clock()
         while True:
-            miliseconds = clock.tick(30)
+            miliseconds = clock.tick(3)
             elapsed_time = miliseconds / 1000.0  # seconds
 
             self.handle_events()
@@ -225,4 +225,4 @@ class Controller:
             self.update_ghosts()
             # TODO: Implement renderer
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts],
-                                 elapsed_time)
+                                 elapsed_time, showgrid=True)

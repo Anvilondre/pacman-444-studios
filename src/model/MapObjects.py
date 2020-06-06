@@ -101,7 +101,7 @@ class MapObject():
 class Pellet(MapObject):
 
     def __init__(self, coord, width=Constants.SECTOR_SIZE, height=Constants.SECTOR_SIZE,
-                 hitbox_path=Constants.WALL_HITBOX_PATH, texture=Constants.WALL_TEXTURE_PATH,
+                 hitbox_path=Constants.PELLET_HITBOX_PATH, texture=Constants.PELLET_HITBOX_PATH,
                  value = PELLET_VALUE):
         self.value = value
         super().__init__(coord, width, height, hitbox_path, texture)
@@ -113,11 +113,10 @@ class Pellet(MapObject):
 class MegaPellet(MapObject):
 
     def __init__(self, coord, width=Constants.SECTOR_SIZE, height=Constants.SECTOR_SIZE,
-                 hitbox_path=Constants.WALL_HITBOX_PATH, texture=Constants.WALL_TEXTURE_PATH,
+                 hitbox_path=Constants.MEGAPELLET_HITBOX_PATH, texture=Constants.MEGAPELLET_HITBOX_PATH,
                  value = PELLET_VALUE):
         self.value = value
         super().__init__(coord, width, height, hitbox_path, texture)
-
 
     def __str__(self):
         return "coord: " + str(self.coord) + "; type: MegaPellet"

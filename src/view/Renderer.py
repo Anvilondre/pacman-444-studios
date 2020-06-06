@@ -144,7 +144,7 @@ class Renderer(object):
     def render(self, entities_list, elapsed_time, showgrid=False):
         """entities_list: (pellets, mega_pellets, walls, cherry, pacman, ghosts)"""
         # Init surfaces
-
+        print(self.map_dimensions, self.gamescreen_cell_size)
         # Unpack entities_list
         pellets, mega_pellets, walls, cherry, pacman, ghosts = entities_list
         # Unpack map_dimensions (unit: cells)
@@ -273,3 +273,5 @@ class Renderer(object):
 
         if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
             self.time_elapsed_from_prev_animation_frame = 0
+
+        pygame.display.update()

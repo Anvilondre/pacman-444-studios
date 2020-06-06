@@ -42,7 +42,7 @@ ghost_is_chasing = True
 
 IS_FULLSCREEN = False
 WINDOWED_SCREEN_WIDTH = 960
-WINDOWED_SCREEN_HEIGHT = 540
+WINDOWED_SCREEN_HEIGHT = 684
 TOP_BAR_HEIGHT_RATIO = 1 / 22
 TOP_BAR_WIDTH_RATIO = 1000 / 1920
 BOTTOM_BAR_HEIGHT_RATIO = 1 / 22
@@ -67,7 +67,7 @@ FRUITS_BAR_WIDTH = 200 / 1000
 
 GAMESCREEN_BOUNDBOX_SURF_WIDTH_RATIO = 1920 / 1920  # TODO: Add explanation
 GAMESCREEN_BOUNDBOX_SURF_HEIGHT_RATIO = 980 / 1080
-GAMESCREEN_CELL_SIZE_RATIO = 100 / 1920
+GAMESCREEN_CELL_SIZE_RATIO = 36*2 / 1920
 
 # Animation
 ANIMATION_PERIOD = 0.1  # seconds
@@ -133,4 +133,12 @@ pinky_animations_paths = {"move_left": ["../res/animations/pinky/move_left/0.png
 
 # Wall
 WALL_HITBOX_PATH = "../res/textures/wall.png"
-WALL_TEXTURE_PATH = "../res/textures/wall.png"
+WALL_TEXTURE_PATH = "../res/hitbox/wall.png"
+
+# Pellet
+PELLET_HITBOX_PATH = "../res/textures/pellet.png"
+PELLET_TEXTURE_PATH = "../res/hitbox/pellet.png"
+
+# Mega pellet
+MEGAPELLET_HITBOX_PATH = "../res/textures/mega_pellet.png"
+MEGAPELLET_TEXTURE_PATH = "../res/hitbox/mega_pellet.png"

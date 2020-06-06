@@ -26,12 +26,22 @@ def get_sector_coord(x, y):
     return x // SECTOR_SIZE, y // SECTOR_SIZE
 
 
+def revive_ghost(ghost):
+    if (ghost.x, ghost.y) == ghost.initial_location:
+        ghost.is_alive = True
+
+
+def ghost_died(ghost):  # TODO: Animations
+    ghost._is_alive = False
+
+
 class Controller:
     def __init__(self, levels):
         self.levels = cycle(levels)
         self.game_over = \
         self.window = \
         self.current_level = \
+        self.walls = \
         self.pellets = \
         self.mega_pellets = \
         self.pacman = \
@@ -43,6 +53,7 @@ class Controller:
         self.initial_setup()
 
     def initial_setup(self):
+        self.game_over = False
         self.init_render()
         self.init_level()
         self.init_pacman()
@@ -54,35 +65,37 @@ class Controller:
 
     def init_level(self):
         self.current_level = next(self.levels)
+        self.walls = self.current_level.level_map.walls
         self.pellets = self.current_level.level_map.pellets
         self.mega_pellets = self.current_level.level_map.mega_pellets
 
     def init_pacman(self):
         self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord,
-                             SECTOR_SIZE, SECTOR_SIZE, self.current_level.pacman_velocity, 'up', 'blue')
+                             SECTOR_SIZE, SECTOR_SIZE, self.current_level.pacman_velocity)
 
     def init_ghosts(self):
         self.path_finder = PathFinder(self.current_level.level_map.hash_map)
         self.ghosts = []
         for ghost_coord in self.current_level.level_map.ghosts_initial_coords:
             self.ghosts.append(
-                Ghost(*ghost_coord, SECTOR_SIZE, SECTOR_SIZE, self.current_level.ghosts_velocity, 'up', 'red'))
+                Ghost(*ghost_coord, SECTOR_SIZE, SECTOR_SIZE, self.current_level.ghosts_velocity))
 
     def init_abilities(self):
         self.speed_ability = SpeedAbility(self.pacman, self.current_level.speed_ability_duration,
-                                          self.pacman.velocity, self.current_level.pacman_boost)
+                                          self.current_level.pacman_velocity, self.current_level.pacman_boost)
 
         self.transform_ability = TransformAbility(self.pacman, self.current_level.speed_ability_duration, self.ghosts,
                                                   self.current_level.ghosts_velocity,
                                                   self.current_level.ghosts_slowdown)
 
-    def key_input(self):
+    def handle_events(self):
         """Get key input from player"""
 
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
+
             elif event.type == pygame.KEYDOWN:
                 if event.key == K_LEFT and self.pacman.direction != 'left':
                     self.pacman.direction = 'left'
@@ -103,84 +116,95 @@ class Controller:
 
     def set_cooldown_timer(self):
         self.ability_is_ready = False
-        return Timer(self.current_level.pacman_cooldown, self.set_ability_ready)  # run timer for cooldown
+        timer = Timer(self.current_level.pacman_cooldown, self.set_ability_ready)  # run timer for cooldown
+        timer.start()
 
     def set_ability_ready(self):
         self.ability_is_ready = True
 
-    def move_pacman(self, pacman):
+    def collides_wall(self, creature):
+        for wall in self.walls:
+            if pygame.sprite.collide_mask(creature.hitbox, wall.hitbox()):
+                return True
+        else:
+            return False
+
+    def move_creature(self, creature):
         """ Move pac-man and check collision with wall-list """
+        direction = creature.direction
+        creature_coords = (creature.x, creature.y)
 
-        if pacman.direction == 'left':
-            pacman.x -= pacman.velocity
-            for wall in self.current_level.level_map.walls:
-                if pygame.sprite.collide_mask(pacman.hitbox, wall.hitbox):
-                    pacman.x += pacman.velocity
+        if direction == 'up':
+            creature.y -= creature.velocity
 
-        elif pacman.direction == 'up':
-            pacman.y -= pacman.velocity
-            for wall in self.current_level.level_map.walls:
-                if pygame.sprite.collide_mask(pacman.hitbox, wall.hitbox):
-                    pacman.y += pacman.velocity
+        elif direction == 'down':
+            creature.y += creature.velocity
 
-        elif pacman.direction == 'right':
-            pacman.x += pacman.velocity
-            for wall in self.current_level.level_map.walls:
-                if pygame.sprite.collide_mask(pacman.hitbox, wall.hitbox):
-                    pacman.x -= pacman.velocity
+        elif direction == 'left':
+            creature.x -= creature.velocity
 
-        elif pacman.direction == 'down':
-            pacman.y += pacman.velocity
-            for wall in self.current_level.level_map.walls:
-                if pygame.sprite.collide_mask(pacman.hitbox, wall.hitbox):
-                    pacman.y += pacman.velocity
+        elif direction == 'right':
+            creature.x += creature.velocity
 
-    def pacman_update(self):
-        self.move_pacman(self.pacman)
-        self.check_ghost_collision()
+        else:
+            raise Exception('Illegal direction')
+
+        if isinstance(creature, PacMan) and self.collides_wall(creature):
+            (creature.x, creature.y) = creature_coords
+
+    def update_pacman(self):
+        self.move_creature(self.pacman)
+        self.check_pacman_ghost_collision()
         self.check_pellet_collision()
         self.check_mega_pellet_collision()
 
-    def ghost_update(self):
-        for ghost in self.ghosts:
-            if ghost.is_chasing:
-                ghost.direction = self.path_finder.get_direction(get_sector_coord(ghost.x, ghost.y), (1, 1))
+    def resolve_ghost_direction(self, ghost, pacman_coord):
+        ghost_coord = get_sector_coord(ghost.x, ghost.y)
 
-    def check_ghost_collision(self):
+        if not ghost.is_alive:
+            revive_ghost(ghost)
+
+        if ghost.is_chasing and ghost.is_alive:
+            ghost.direction = self.path_finder.get_direction(ghost_coord, pacman_coord)
+        else:
+            ghost.direction = self.path_finder.get_direction(ghost_coord, ghost.initial_location)
+
+    def update_ghosts(self):
+        pacman_coord = (self.pacman.x, self.pacman.y)
+        for ghost in self.ghosts:
+            self.resolve_ghost_direction(ghost, pacman_coord)
+            self.move_creature(ghost)
+
+    def check_pacman_ghost_collision(self):  # TODO: Change hitbox
         for ghost in self.ghosts:
             if pygame.sprite.collide_mask(self.pacman.hitbox, ghost.hitbox):
                 if self.pacman.form == ghost.form:
-                    self.ghost_die()
+                    ghost_died(ghost)
                 else:
                     self.pacman_die()
 
-    def check_pellet_collision(self):
+    def check_pellet_collision(self):  # TODO: Change hitbox
         for pellet in self.pellets:
             if pygame.sprite.collide_mask(self.pacman.hitbox, pellet.hitbox):
                 self.pacman.score += pellet.value
                 self.pellets.remove(pellet)
 
-    def check_mega_pellet_collision(self):
+    def check_mega_pellet_collision(self):  # TODO: Change hitbox
         for mega_pellet in self.mega_pellets:
             if pygame.sprite.collide_mask(self.pacman.hitbox, mega_pellet.hitbox):
                 self.pacman.score += mega_pellet.value
                 self.pacman.mana += 1
                 self.mega_pellets.remove(mega_pellet)
 
-    def ghost_die(self):
-        pass
-
-    def pacman_die(self):
+    def pacman_die(self):  # TODO: Animations
         if self.pacman.lives > 0:
             self.pacman.lives -= 1
-            self.pacman.x = self.current_level.level_map.pacman_initial_coord(0)
-            self.pacman.y = self.current_level.level_map.pacman_initial_coord(1)
+            (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
         else:
             self.game_over = True
 
     def run(self):
-        pygame.init()
-        self.game_over = False
         while True:
-            self.key_input()
-            self.pacman_update()
+            self.update_pacman()
+            self.update_ghosts()
+            # TODO: Implement renderer

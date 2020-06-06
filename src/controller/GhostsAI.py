@@ -54,7 +54,7 @@ class PathFinder:
             else:
                 raise Exception('Illegal move')
         else:
-            raise Exception('No path was found')
+            return None
 
     def get_path(self, start, end):
 

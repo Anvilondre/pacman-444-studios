@@ -1,5 +1,6 @@
 from src.model.MapObjects import Wall, Pellet, MegaPellet, Cherry
-from src.data.Constants import *
+from src.data.Constants import SECTOR_SIZE
+
 
 class Map:
     def __init__(self, string_map):
@@ -23,7 +24,7 @@ class Map:
         for x in range(self.width):
             for y in range(self.height):
                 ch = self.string_map[y][x]
-                coord = (x*SECTOR_SIZE, y*SECTOR_SIZE)
+                coord = (x * SECTOR_SIZE, y * SECTOR_SIZE)
 
                 if ch == '#':
                     obj = Wall(coord)

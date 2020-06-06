@@ -9,8 +9,52 @@ class Level(ABC):
     def level_map(self):
         pass
 
+    @property
+    @abstractmethod
+    def pacman_velocity(self):
+        pass
+
+    @property
+    @abstractmethod
+    def pacman_boost(self):
+        pass
+
+    @property
+    @abstractmethod
+    def pacman_cooldown(self):
+        pass
+
+    @property
+    @abstractmethod
+    def ghosts_velocity(self):
+        pass
+
+    @property
+    @abstractmethod
+    def ghosts_slowdown(self):
+        pass
+
+    @property
+    @abstractmethod
+    def speed_ability_duration(self):
+        pass
+
+    @property
+    @abstractmethod
+    def transform_ability_duration(self):
+        pass
+
 
 class Level1(Level):
+
+    pacman_velocity = 5
+    pacman_boost = 3
+    pacman_cooldown = 10
+    speed_ability_duration = 5
+    transform_ability_duration = 5
+    ghosts_velocity = 4
+    ghosts_slowdown = 2
+
     level_map = Map(["###################",
                      "#........#........#",
                      "#.##.###.#.###.##.#",
@@ -35,6 +79,15 @@ class Level1(Level):
 
 
 class Level2(Level):
+
+    pacman_velocity = 6
+    pacman_boost = 3
+    pacman_cooldown = 12
+    speed_ability_duration = 5
+    transform_ability_duration = 5
+    ghosts_velocity = 5
+    ghosts_slowdown = 2
+
     level_map = Map(["###################",
                      "#........#........#",
                      "#.##.###.#.###.##.#",
@@ -59,6 +112,15 @@ class Level2(Level):
 
 
 class Level3(Level):
+
+    pacman_velocity = 8
+    pacman_boost = 3
+    pacman_cooldown = 15
+    speed_ability_duration = 5
+    transform_ability_duration = 5
+    ghosts_velocity = 7
+    ghosts_slowdown = 3
+
     level_map = Map(["###################",
                      "#........#........#",
                      "#.##.###.#.###.##.#",

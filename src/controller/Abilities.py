@@ -1,18 +1,13 @@
 from abc import ABC, abstractmethod
 from threading import Timer
-from src.data.Constants import pacman_boost, pacman_velocity, ghost_velocity, ghost_slowdown
 
 
 class Ability(ABC):
 
     @abstractmethod
-    def __init__(self, pacman):
+    def __init__(self, pacman, duration):
         self.pacman = pacman
-
-    @property
-    @abstractmethod
-    def duration(self):
-        pass
+        self.duration = duration
 
     @property
     def duration_timer(self):
@@ -33,34 +28,36 @@ class Ability(ABC):
 
 
 class SpeedAbility(Ability):
-
     """ Speeds pacman up while ability is active """
 
-    duration = 5  # TODO
-
-    def __init__(self, pacman):
-        super().__init__(pacman)
+    def __init__(self, pacman, duration, pacman_vel, pacman_boost):
+        self.pacman_velocity = pacman_vel
+        self.pacman_boost = pacman_boost
+        super().__init__(pacman, duration)
 
     def run(self):
         super().run()
 
     def activate(self):
-        self.pacman.velocity += pacman_boost
+        self.pacman.velocity += self.pacman_boost
 
     def deactivate(self):
-        self.pacman.velocity = pacman_velocity
+        self.pacman.velocity = self.pacman_velocity
 
 
 class TransformAbility(Ability):
-
     """ Lets player freely cycle through forms while ability is active """
 
-    duration = 5  # TODO
+    @property
+    def duration(self):
+        return self.duration
 
-    def __init__(self, pacman, ghosts):
+    def __init__(self, pacman, duration, ghosts, ghost_velocity, ghost_slowdown):
         self.ghosts = ghosts
+        self.ghost_velocity = ghost_velocity
+        self.ghost_slowdown = ghost_slowdown
         self.is_active = False
-        super().__init__(pacman)
+        super().__init__(pacman, duration)
 
     def run(self):
         super().run()
@@ -68,12 +65,12 @@ class TransformAbility(Ability):
     def activate(self):
         self.is_active = True
         for ghost in self.ghosts:
-            ghost.velocity -= ghost_slowdown
+            ghost.velocity -= self.ghost_slowdown
 
     def deactivate(self):
         self.is_active = False
         for ghost in self.ghosts:
-            ghost.velocity = ghost_velocity
+            ghost.velocity = self.ghost_velocity
 
     def changeForm(self):
 

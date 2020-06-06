@@ -25,11 +25,6 @@ pacman_animations_paths = {"move_left":  ["../../res/animations/pacman/move_left
                                           "../../res/animations/pacman/dead/2.png",
                                           "../../res/animations/pacman/dead/3.png"]}
 
-pacman_velocity = 5
-pacman_boost = 3
-ghost_velocity = 4
-ghost_slowdown = 2
-pacman_cooldown = 10
 pacman_mana = 0
 pacman_score = 0
 pacman_lives = 3

@@ -3,6 +3,7 @@ import os
 import pygame
 from src.data import Constants
 
+
 class Creature(object):
 
     def __init__(self, x, y, width, height, velocity, direction, form, hitbox, animations):

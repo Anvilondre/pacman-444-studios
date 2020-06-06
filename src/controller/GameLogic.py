@@ -41,40 +41,45 @@ class Controller:
     def __init__(self, levels):
         self.levels = cycle(levels)
         self.game_over = \
-        self.window = \
-        self.current_level = \
-        self.walls = \
-        self.pellets = \
-        self.mega_pellets = \
-        self.pacman = \
-        self.path_finder = \
-        self.ghosts = \
-        self.speed_ability = \
-        self.transform_ability = \
-        self.ability_is_ready = None
+            self.window = \
+            self.current_level = \
+            self.walls = \
+            self.pellets = \
+            self.mega_pellets = \
+            self.pacman = \
+            self.path_finder = \
+            self.ghosts = \
+            self.speed_ability = \
+            self.transform_ability = \
+            self.ability_is_ready = None
         self.initial_setup()
 
     def initial_setup(self):
         self.game_over = False
         self.init_render()
         self.init_level()
-        self.renderer.set_map_dimensions((self.current_level.level_map.width, self.current_level.level_map.height))
+        self.renderer.set_map_dimensions(self.current_level.level_map.dims)
+        self.parse_level()
         self.init_pacman()
         self.init_ghosts()
 
     def init_render(self):
         pygame.init()
-        self.renderer = Renderer((0,0))
-        #self.window = pygame.display.set_mode((800, 600))
+        self.renderer = Renderer((0, 0))
+        # self.window = pygame.display.set_mode((800, 600))
 
     def init_level(self):
         self.current_level = next(self.levels)
+
+    def parse_level(self):
+        self.current_level.level_map.pre_process()
         self.walls = self.current_level.level_map.walls
         self.pellets = self.current_level.level_map.pellets
         self.mega_pellets = self.current_level.level_map.mega_pellets
 
     def init_pacman(self):
-        self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord, self.current_level.level_map.pacman_initial_coord,
+        self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord,
+                             self.current_level.level_map.pacman_initial_coord,
                              SECTOR_SIZE, SECTOR_SIZE, self.current_level.pacman_velocity)
 
     def init_ghosts(self):
@@ -176,7 +181,7 @@ class Controller:
             ghost.direction = self.path_finder.get_direction(ghost_coord, ghost.initial_location)
 
     def update_ghosts(self):
-        pacman_coord = get_sector_coord(self.pacman.x, self.pacman.y)#(self.pacman.x, self.pacman.y)
+        pacman_coord = get_sector_coord(self.pacman.x, self.pacman.y)  # (self.pacman.x, self.pacman.y)
         for ghost in self.ghosts:
             self.resolve_ghost_direction(ghost, pacman_coord)
             self.move_creature(ghost)
@@ -213,10 +218,11 @@ class Controller:
         clock = pygame.time.Clock()
         while True:
             miliseconds = clock.tick(30)
-            elapsed_time = miliseconds / 1000.0 #seconds
+            elapsed_time = miliseconds / 1000.0  # seconds
 
             self.handle_events()
             self.update_pacman()
             self.update_ghosts()
             # TODO: Implement renderer
-            self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts], elapsed_time)
+            self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts],
+                                 elapsed_time)

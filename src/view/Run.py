@@ -1,5 +1,3 @@
-import pygame
-
 from src.controller.GameLogic import Controller
 from src.data.Levels import Level1, Level2, Level3
 from itertools import cycle

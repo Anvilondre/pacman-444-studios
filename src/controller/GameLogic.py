@@ -170,7 +170,7 @@ class Controller:
     def resolve_ghost_direction(self, ghost, pacman_coord):
         ghost_coord = get_sector_coord(ghost.x, ghost.y)
 
-        print(ghost_coord, pacman_coord)
+        # print(ghost_coord, pacman_coord)
 
         if not ghost.is_alive:
             revive_ghost(ghost)

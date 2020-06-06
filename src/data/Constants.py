@@ -14,7 +14,6 @@ Structure:
         c) Ghost
 """
 
-
 ''' Creatures parameters '''
 
 # General
@@ -71,7 +70,7 @@ GAMESCREEN_BOUNDBOX_SURF_HEIGHT_RATIO = 980 / 1080
 GAMESCREEN_CELL_SIZE_RATIO = 100 / 1920
 
 # Animation
-ANIMATION_PERIOD = 0.1 # seconds
+ANIMATION_PERIOD = 0.1  # seconds
 
 ''' All file paths '''
 
@@ -81,57 +80,57 @@ SCREEN_BACKGROUND_IMAGE = ...  # TODO: Add path
 
 # PacMan
 
-pacman_hitbox_path = "../../res/hitbox/pacman.png"
-pacman_animations_paths = {"move_left": ["../../res/animations/pacman/move_left/0.png",
-                                         "../../res/animations/pacman/move_left/1.png",
-                                         "../../res/animations/pacman/move_left/2.png",
-                                         "../../res/animations/pacman/move_left/3.png"],
-                           "move_up": ["../../res/animations/pacman/move_up/0.png",
-                                       "../../res/animations/pacman/move_up/1.png",
-                                       "../../res/animations/pacman/move_up/2.png",
-                                       "../../res/animations/pacman/move_up/3.png"],
-                           "move_right": ["../../res/animations/pacman/move_right/0.png",
-                                          "../../res/animations/pacman/move_right/1.png",
-                                          "../../res/animations/pacman/move_right/2.png",
-                                          "../../res/animations/pacman/move_right/3.png"],
-                           "move_down": ["../../res/animations/pacman/move_down/0.png",
-                                         "../../res/animations/pacman/move_down/1.png",
-                                         "../../res/animations/pacman/move_down/2.png",
-                                         "../../res/animations/pacman/move_down/3.png"],
-                           "dead": ["../../res/animations/pacman/dead/0.png",
-                                    "../../res/animations/pacman/dead/1.png",
-                                    "../../res/animations/pacman/dead/2.png",
-                                    "../../res/animations/pacman/dead/3.png",
-                                    "../../res/animations/pacman/dead/4.png",
-                                    "../../res/animations/pacman/dead/5.png",
-                                    "../../res/animations/pacman/dead/6.png",
-                                    "../../res/animations/pacman/dead/7.png",
-                                    "../../res/animations/pacman/dead/8.png"]}
+pacman_hitbox_path = "../res/hitbox/pacman.png"
+pacman_animations_paths = {"move_left": ["../res/animations/pacman/move_left/0.png",
+                                         "../res/animations/pacman/move_left/1.png",
+                                         "../res/animations/pacman/move_left/2.png",
+                                         "../res/animations/pacman/move_left/3.png"],
+                           "move_up": ["../res/animations/pacman/move_up/0.png",
+                                       "../res/animations/pacman/move_up/1.png",
+                                       "../res/animations/pacman/move_up/2.png",
+                                       "../res/animations/pacman/move_up/3.png"],
+                           "move_right": ["../res/animations/pacman/move_right/0.png",
+                                          "../res/animations/pacman/move_right/1.png",
+                                          "../res/animations/pacman/move_right/2.png",
+                                          "../res/animations/pacman/move_right/3.png"],
+                           "move_down": ["../res/animations/pacman/move_down/0.png",
+                                         "../res/animations/pacman/move_down/1.png",
+                                         "../res/animations/pacman/move_down/2.png",
+                                         "../res/animations/pacman/move_down/3.png"],
+                           "dead": ["../res/animations/pacman/dead/0.png",
+                                    "../res/animations/pacman/dead/1.png",
+                                    "../res/animations/pacman/dead/2.png",
+                                    "../res/animations/pacman/dead/3.png",
+                                    "../res/animations/pacman/dead/4.png",
+                                    "../res/animations/pacman/dead/5.png",
+                                    "../res/animations/pacman/dead/6.png",
+                                    "../res/animations/pacman/dead/7.png",
+                                    "../res/animations/pacman/dead/8.png"]}
 
 # Ghosts
 
-ghost_hitbox_path = "../../res/hitbox/ghost.png"
-pinky_animations_paths = {"move_left": ["../../res/animations/pinky/move_left/0.png",
-                                        "../../res/animations/pinky/move_left/1.png",
-                                        "../../res/animations/pinky/move_left/2.png",
-                                        "../../res/animations/pinky/move_left/3.png"],
-                          "move_up": ["../../res/animations/pinky/move_up/0.png",
-                                      "../../res/animations/pinky/move_up/1.png",
-                                      "../../res/animations/pinky/move_up/2.png",
-                                      "../../res/animations/pinky/move_up/3.png"],
-                          "move_right": ["../../res/animations/pinky/move_right/0.png",
-                                         "../../res/animations/pinky/move_right/1.png",
-                                         "../../res/animations/pinky/move_right/2.png",
-                                         "../../res/animations/pinky/move_right/3.png"],
-                          "move_down": ["../../res/animations/pinky/move_down/0.png",
-                                        "../../res/animations/pinky/move_down/1.png",
-                                        "../../res/animations/pinky/move_down/2.png",
-                                        "../../res/animations/pinky/move_down/3.png"],
-                          "dead": ["../../res/animations/pinky/dead/0.png",
-                                   "../../res/animations/pinky/dead/1.png",
-                                   "../../res/animations/pinky/dead/2.png",
-                                   "../../res/animations/pinky/dead/3.png"]}
+ghost_hitbox_path = "../res/hitbox/ghost.png"
+pinky_animations_paths = {"move_left": ["../res/animations/pinky/move_left/0.png",
+                                        "../res/animations/pinky/move_left/1.png",
+                                        "../res/animations/pinky/move_left/2.png",
+                                        "../res/animations/pinky/move_left/3.png"],
+                          "move_up": ["../res/animations/pinky/move_up/0.png",
+                                      "../res/animations/pinky/move_up/1.png",
+                                      "../res/animations/pinky/move_up/2.png",
+                                      "../res/animations/pinky/move_up/3.png"],
+                          "move_right": ["../res/animations/pinky/move_right/0.png",
+                                         "../res/animations/pinky/move_right/1.png",
+                                         "../res/animations/pinky/move_right/2.png",
+                                         "../res/animations/pinky/move_right/3.png"],
+                          "move_down": ["../res/animations/pinky/move_down/0.png",
+                                        "../res/animations/pinky/move_down/1.png",
+                                        "../res/animations/pinky/move_down/2.png",
+                                        "../res/animations/pinky/move_down/3.png"],
+                          "dead": ["../res/animations/pinky/dead/0.png",
+                                   "../res/animations/pinky/dead/1.png",
+                                   "../res/animations/pinky/dead/2.png",
+                                   "../res/animations/pinky/dead/3.png"]}
 
 # Wall
-WALL_HITBOX_PATH = "../../res/hitbox/pacman.png"
-WALL_TEXTURE_PATH = "../../res/textures/wall.png"
+WALL_HITBOX_PATH = "../res/textures/wall.png"
+WALL_TEXTURE_PATH = "../res/textures/wall.png"

@@ -58,6 +58,7 @@ class Map:
 
         self.hash_map = hash_map
         self.pellets = pellets
+        self.mega_pellets = mega_pellets
         self.walls = walls
         self.hash_map = hash_map
         self.pacman_initial_coord = pacman_initial_coord

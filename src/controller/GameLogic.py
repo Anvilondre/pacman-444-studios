@@ -25,7 +25,7 @@ def move_ghost(ghost):
 
 
 def get_sector_coord(x, y):
-    return (x+35) // SECTOR_SIZE, (y+35) // SECTOR_SIZE
+    return (x) // SECTOR_SIZE, (y) // SECTOR_SIZE
 
 
 def revive_ghost(ghost):
@@ -225,4 +225,4 @@ class Controller:
             self.update_ghosts()
             # TODO: Implement renderer
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts],
-                                 elapsed_time, showgrid=True)
+                                 elapsed_time, showgrid=False, show_hitboxes=True)

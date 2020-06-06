@@ -141,7 +141,7 @@ class Renderer(object):
         place = text.get_rect(topleft=(self.lives_bar_surf_x, 0))
         self.window.blit(text, place)
 
-    def render(self, entities_list, elapsed_time, showgrid=False):
+    def render(self, entities_list, elapsed_time, showgrid=False, show_hitboxes=True):
         """entities_list: (pellets, mega_pellets, walls, cherry, pacman, ghosts)"""
         # Init surfaces
         print(self.map_dimensions, self.gamescreen_cell_size)
@@ -163,11 +163,21 @@ class Renderer(object):
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
             self.window.blit(rescaled_img, pellet.coord)
 
+            if show_hitboxes:
+                hitbox_preview = pellet.hitbox.image.convert()
+                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
+                self.window.blit(hitbox_preview, pellet.coord)
+
         # Draw mega pellets
         for mega_pellet in mega_pellets:
             surface = mega_pellet.texture
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
             self.window.blit(rescaled_img, mega_pellet.coord)
+
+            if show_hitboxes:
+                hitbox_preview = mega_pellet.hitbox.image.convert()
+                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
+                self.window.blit(hitbox_preview, mega_pellet.coord)
 
         # Draw walls
         for wall in walls:
@@ -175,11 +185,21 @@ class Renderer(object):
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
             self.window.blit(rescaled_img, wall.coord)
 
+            if show_hitboxes:
+                hitbox_preview = wall.hitbox.image.convert()
+                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
+                self.window.blit(hitbox_preview, wall.coord)
+
         # Draw cherries
         for cher in cherry:
             surface = cher.texture
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
             self.window.blit(rescaled_img, cher.coord)
+
+            if show_hitboxes:
+                hitbox_preview = cher.hitbox.image.convert()
+                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
+                self.window.blit(hitbox_preview, cher.coord)
 
         # Draw pacmans
         for pac in pacman:
@@ -219,6 +239,11 @@ class Renderer(object):
                         pac.animation_count = 0
             else:
                 raise Exception("Unable to identify pacman's state", pac)
+
+            if show_hitboxes:
+                hitbox_preview = pac.hitbox.image.convert()
+                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
+                self.window.blit(hitbox_preview, (pac.x, pac.y))
 
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
             self.window.blit(rescaled_img, (pac.x, pac.y))
@@ -261,6 +286,11 @@ class Renderer(object):
                         ghost.animation_count = 0
             else:
                 raise Exception("Unable to identify ghost's state:", ghost)
+
+            if show_hitboxes:
+                hitbox_preview = ghost.hitbox.image.convert()
+                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
+                self.window.blit(hitbox_preview, (ghost.x, ghost.y))
 
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
             self.window.blit(rescaled_img, (ghost.x, ghost.y))

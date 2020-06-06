@@ -1,5 +1,5 @@
 from src.model.MapObjects import Wall, Pellet, MegaPellet, Cherry
-
+from src.data.Constants import *
 
 class Map:
     def __init__(self, string_map):
@@ -23,7 +23,7 @@ class Map:
         for x in range(self.width):
             for y in range(self.height):
                 ch = self.string_map[y][x]
-                coord = (x, y)
+                coord = (x*SECTOR_SIZE, y*SECTOR_SIZE)
 
                 if ch == '#':
                     obj = Wall(coord)
@@ -58,10 +58,6 @@ class Map:
 
     def get_object_from_coord(self, x, y):
         return self.hash_map[(x, y)]
-
-    def get_linked_list(self):
-        raise NotImplementedError
-        # TODO
 
     def __str__(self):
         return '\n'.join(self.string_map)

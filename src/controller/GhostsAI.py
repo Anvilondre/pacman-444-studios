@@ -34,21 +34,27 @@ class PathFinder:
 
     def get_direction(self, start, end):
         """" Returns direction of the first move """
-        move = self.get_path(start, end)[0]
-        if move[0] > start[0]:
-            return 'right'
+        path = self.get_path(start, end)
+        if path is not None:
 
-        elif move[0] < start[0]:
-            return 'left'
+            move = path[0]
 
-        elif move[1] > start[1]:
-            return 'down'
+            if move[0] > start[0]:
+                return 'right'
 
-        elif move[1] < start[1]:
-            return 'up'
+            elif move[0] < start[0]:
+                return 'left'
 
+            elif move[1] > start[1]:
+                return 'down'
+
+            elif move[1] < start[1]:
+                return 'up'
+
+            else:
+                raise Exception('Illegal move')
         else:
-            raise Exception('Illegal move')
+            raise Exception('No path was found')
 
     def get_path(self, start, end):
 

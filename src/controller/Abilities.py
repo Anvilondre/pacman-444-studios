@@ -48,10 +48,6 @@ class SpeedAbility(Ability):
 class TransformAbility(Ability):
     """ Lets player freely cycle through forms while ability is active """
 
-    @property
-    def duration(self):
-        return self.duration
-
     def __init__(self, pacman, duration, ghosts, ghost_velocity, ghost_slowdown):
         self.ghosts = ghosts
         self.ghost_velocity = ghost_velocity

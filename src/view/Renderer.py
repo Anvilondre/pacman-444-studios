@@ -27,6 +27,10 @@ class Renderer(object):
         self._init_gamescreen(map_dimensions)
         self._init_gui_elements_list()
 
+    def set_map_dimensions(self, map_dimensions):
+        self.map_dimensions = map_dimensions
+        self._init_gamescreen(map_dimensions)
+
     def _init_background(self):
         self.background_surf = pygame.Surface((self.canvas_width, self.canvas_height))
         self.background_surf_x = 0
@@ -157,25 +161,25 @@ class Renderer(object):
         for pellet in pellets:
             surface = pellet.texture
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
-            self.window.blit(rescaled_img, (pellet.x, pellet.y))
+            self.window.blit(rescaled_img, pellet.coord)
 
         # Draw mega pellets
         for mega_pellet in mega_pellets:
             surface = mega_pellet.texture
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
-            self.window.blit(rescaled_img, (mega_pellet.x, mega_pellet.y))
+            self.window.blit(rescaled_img, mega_pellet.coord)
 
         # Draw walls
         for wall in walls:
             surface = wall.texture
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
-            self.window.blit(rescaled_img, (wall.x, wall.y))
+            self.window.blit(rescaled_img, wall.coord)
 
         # Draw cherries
         for cher in cherry:
             surface = cher.texture
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
-            self.window.blit(rescaled_img, (cher.x, cher.y))
+            self.window.blit(rescaled_img, cher.coord)
 
         # Draw pacmans
         for pac in pacman:

@@ -9,6 +9,8 @@ from src.controller.GhostsAI import PathFinder
 from threading import Timer
 from itertools import cycle
 
+from src.view.Renderer import Renderer
+
 
 def move_ghost(ghost):
     """ Move ghost """
@@ -56,12 +58,14 @@ class Controller:
         self.game_over = False
         self.init_render()
         self.init_level()
+        self.renderer.set_map_dimensions((self.current_level.level_map.width, self.current_level.level_map.height))
         self.init_pacman()
         self.init_ghosts()
 
     def init_render(self):
         pygame.init()
-        self.window = pygame.display.set_mode((800, 600))
+        self.renderer = Renderer((0,0))
+        #self.window = pygame.display.set_mode((800, 600))
 
     def init_level(self):
         self.current_level = next(self.levels)
@@ -70,7 +74,7 @@ class Controller:
         self.mega_pellets = self.current_level.level_map.mega_pellets
 
     def init_pacman(self):
-        self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord,
+        self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord, self.current_level.level_map.pacman_initial_coord,
                              SECTOR_SIZE, SECTOR_SIZE, self.current_level.pacman_velocity)
 
     def init_ghosts(self):
@@ -78,7 +82,7 @@ class Controller:
         self.ghosts = []
         for ghost_coord in self.current_level.level_map.ghosts_initial_coords:
             self.ghosts.append(
-                Ghost(*ghost_coord, SECTOR_SIZE, SECTOR_SIZE, self.current_level.ghosts_velocity))
+                Ghost(*ghost_coord, ghost_coord, SECTOR_SIZE, SECTOR_SIZE, self.current_level.ghosts_velocity))
 
     def init_abilities(self):
         self.speed_ability = SpeedAbility(self.pacman, self.current_level.speed_ability_duration,
@@ -124,7 +128,7 @@ class Controller:
 
     def collides_wall(self, creature):
         for wall in self.walls:
-            if pygame.sprite.collide_mask(creature.hitbox, wall.hitbox()):
+            if pygame.sprite.collide_mask(creature.hitbox, wall.hitbox):
                 return True
         else:
             return False
@@ -161,6 +165,8 @@ class Controller:
     def resolve_ghost_direction(self, ghost, pacman_coord):
         ghost_coord = get_sector_coord(ghost.x, ghost.y)
 
+        print(ghost_coord, pacman_coord)
+
         if not ghost.is_alive:
             revive_ghost(ghost)
 
@@ -170,7 +176,7 @@ class Controller:
             ghost.direction = self.path_finder.get_direction(ghost_coord, ghost.initial_location)
 
     def update_ghosts(self):
-        pacman_coord = (self.pacman.x, self.pacman.y)
+        pacman_coord = get_sector_coord(self.pacman.x, self.pacman.y)#(self.pacman.x, self.pacman.y)
         for ghost in self.ghosts:
             self.resolve_ghost_direction(ghost, pacman_coord)
             self.move_creature(ghost)
@@ -204,7 +210,13 @@ class Controller:
             self.game_over = True
 
     def run(self):
+        clock = pygame.time.Clock()
         while True:
+            miliseconds = clock.tick(30)
+            elapsed_time = miliseconds / 1000.0 #seconds
+
+            self.handle_events()
             self.update_pacman()
             self.update_ghosts()
             # TODO: Implement renderer
+            self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts], elapsed_time)

@@ -41,7 +41,7 @@ ghost_is_chasing = True
 
 # Window
 
-IS_FULLSCREEN = True
+IS_FULLSCREEN = False
 WINDOWED_SCREEN_WIDTH = 960
 WINDOWED_SCREEN_HEIGHT = 540
 TOP_BAR_HEIGHT_RATIO = 1 / 22
@@ -131,3 +131,7 @@ pinky_animations_paths = {"move_left": ["../../res/animations/pinky/move_left/0.
                                    "../../res/animations/pinky/dead/1.png",
                                    "../../res/animations/pinky/dead/2.png",
                                    "../../res/animations/pinky/dead/3.png"]}
+
+# Wall
+WALL_HITBOX_PATH = "../../res/hitbox/pacman.png"
+WALL_TEXTURE_PATH = "../../res/textures/wall.png"

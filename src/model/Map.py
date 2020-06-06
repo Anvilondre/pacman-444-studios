@@ -5,7 +5,9 @@ from src.data.Constants import SECTOR_SIZE
 class Map:
     def __init__(self, string_map):
         self.string_map = string_map
-        self.dims = (len(string_map[0]), len(string_map))
+        self.width = len(string_map[0])
+        self.height = len(string_map)
+        self.dims = (self.width, self.height)
         self.pellets = \
         self.mega_pellets = \
         self.walls = \

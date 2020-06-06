@@ -1,20 +1,21 @@
 import os
-
 import pygame
 from src.data import Constants
 
-
 class Creature(object):
 
-    def __init__(self, x, y, width, height, velocity, direction, form, hitbox, animations):
-        self.x = x
-        self.y = y
+    def __init__(self, x, y, width, height, velocity, direction, form, hitbox_path, animations):
+
         self.width = width
         self.height = height
         self.velocity = velocity
         self.direction = direction
         self.form = form
-        self.hitbox = hitbox
+        self.hitbox = self.create_hitbox_of(hitbox_path)
+        self._x = 0
+        self._y = 0
+        self.x = x
+        self.y = y
         self.animations = animations
 
     @property
@@ -23,13 +24,15 @@ class Creature(object):
 
     @x.setter
     def x(self, value: int):
-        if value >= 0 and isinstance(value, int):
-            self._x = value
+
+        if value >= 0 and (isinstance(value, int) or isinstance(value, float)):
+            if isinstance(value, float):
+                value = round(value)
+
             # Update hitbox x coordinate
-            self.hitbox.rect.move_ip(value, self.y)
-            return
-        if isinstance(value, float):
-            self._x = round(value)
+            self.hitbox.rect.move_ip(value-self.x, 0)
+            #Update creature's x coordinate
+            self._x = value
             return
 
         if value < 0:
@@ -43,13 +46,15 @@ class Creature(object):
 
     @y.setter
     def y(self, value: int):
-        if value >= 0 and isinstance(value, int):
-            self._y = value
+
+        if value >= 0 and (isinstance(value, int) or isinstance(value, float)):
+            if isinstance(value, float):
+                value = round(value)
+
             # Update hitbox y coordinate
-            self.hitbox.rect.move_ip(self.x, value)
-            return
-        if isinstance(value, float):
-            self._y = round(value)
+            self.hitbox.rect.move_ip(0, value-self.y)
+            #Update creature's y coordinate
+            self._y = value
             return
 
         if value < 0:
@@ -129,6 +134,7 @@ class Creature(object):
         if value in Constants.forms and isinstance(value, str):
             self._form = value
             return
+
         if value not in Constants.forms:
             raise ValueError("Form can only take these values: " + Constants.forms.__str__())
         if not isinstance(value, str):
@@ -139,8 +145,16 @@ class Creature(object):
         return self._hitbox
 
     @hitbox.setter
-    def hitbox(self, path: str):
-        """Assigns hitbox to the sprite with mask created from given image"""
+    def hitbox(self, value):
+        if isinstance(value, pygame.sprite.Sprite):
+            self._hitbox = value
+            return
+
+        if not isinstance(value, pygame.sprite.Sprite):
+            raise TypeError("Hitbox cannot be assigned to non-sprite object")
+
+    def create_hitbox_of(self, path, x=0, y=0):
+        """Returns sprite with mask created from given image"""
         if os.path.exists(path):
             img = pygame.image.load(path)
             img = pygame.transform.scale(img, (self.width, self.height))
@@ -157,9 +171,9 @@ class Creature(object):
             sprite.rect = sprite.image.get_rect()
 
             # Move sprite to the creature's position
-            sprite.rect.move_ip(self.x, self.y)
+            sprite.rect.move_ip(x, y)
 
-            self._hitbox = sprite
+            return sprite
         else:
             raise ValueError("Wrong path. Path does not exist.")
 
@@ -169,16 +183,18 @@ class Creature(object):
 
     @animations.setter
     def animations(self, animations_paths: dict):
+
         if animations_paths and isinstance(animations_paths, dict):
             animations = dict()
 
             for animation_type, animation_paths_list in animations_paths.items():
 
-                # Create list of images corresponding to current dict-item's paths
+                # Create list of images which are located at given path (at animations_paths)
                 animation_images_list = []
                 for path in animation_paths_list:
-                    img = pygame.image.load(path).convert()
+                    img = pygame.image.load(path)
                     img = pygame.transform.scale(img, (self.width, self.height))
+                    img = img.convert_alpha()
                     animation_images_list.append(img)
 
                 # Insert this list at corresponding key (animation type)
@@ -203,7 +219,7 @@ class Creature(object):
 class PacMan(Creature):
     def __init__(self, x, y, width, height, velocity, direction, form,
                  hitbox=Constants.pacman_hitbox_path, animations=Constants.pacman_animations_paths,
-                 cooldown=Constants.pacman_cooldown, mana=Constants.pacman_mana,
+                 cooldown=5, mana=Constants.pacman_mana,
                  score=Constants.pacman_score, lives=Constants.pacman_lives):
         super().__init__(x, y, width, height, velocity, direction, form, hitbox, animations)
         self.cooldown = cooldown
@@ -294,3 +310,4 @@ class Ghost(Creature):
 
     def __str__(self):
         return super().__str__() + "; is_chasing: " + str(self.is_chasing)
+

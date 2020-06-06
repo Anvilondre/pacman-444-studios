@@ -49,7 +49,7 @@ TOP_BAR_WIDTH_RATIO = 1000 / 1920
 BOTTOM_BAR_HEIGHT_RATIO = 1 / 22
 BOTTOM_BAR_WIDTH_RATIO = 1000 / 1920
 BOTTOM_BAR_X_RATIO = 470 / 1920
-BOTTOM_BAR_Y_RATIO = 1030 / 1920
+BOTTOM_BAR_Y_RATIO = 1030 / 1080
 
 LIVES_BAR_X_RATIO = BOTTOM_BAR_X_RATIO
 LIVES_BAR_Y_RATIO = BOTTOM_BAR_Y_RATIO
@@ -70,6 +70,8 @@ GAMESCREEN_BOUNDBOX_SURF_WIDTH_RATIO = 1920 / 1920  # TODO: Add explanation
 GAMESCREEN_BOUNDBOX_SURF_HEIGHT_RATIO = 980 / 1080
 GAMESCREEN_CELL_SIZE_RATIO = 36 / 1920
 
+# Animation
+ANIMATION_PERIOD = 0.1 # seconds
 
 ''' All file paths '''
 
@@ -99,7 +101,12 @@ pacman_animations_paths = {"move_left": ["../../res/animations/pacman/move_left/
                            "dead": ["../../res/animations/pacman/dead/0.png",
                                     "../../res/animations/pacman/dead/1.png",
                                     "../../res/animations/pacman/dead/2.png",
-                                    "../../res/animations/pacman/dead/3.png"]}
+                                    "../../res/animations/pacman/dead/3.png",
+                                    "../../res/animations/pacman/dead/4.png",
+                                    "../../res/animations/pacman/dead/5.png",
+                                    "../../res/animations/pacman/dead/6.png",
+                                    "../../res/animations/pacman/dead/7.png",
+                                    "../../res/animations/pacman/dead/8.png"]}
 
 # Ghosts
 

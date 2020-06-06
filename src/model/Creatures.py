@@ -19,6 +19,21 @@ class Creature(object):
         self.x = x
         self.y = y
         self.animations = animations
+        self.animation_count = 0
+        self.is_alive = True
+
+    @property
+    def is_alive(self):
+        return self._is_alive
+
+    @is_alive.setter
+    def is_alive(self, value):
+        if value is True:
+            self._is_alive = True
+        elif value is False:
+            self._is_alive = False
+        else:
+            raise ValueError("is_alive cannot be assigned to non-bool object:", type(value), value)
 
     @property
     def x(self):
@@ -38,9 +53,9 @@ class Creature(object):
             return
 
         if value < 0:
-            raise ValueError("X cannot be assigned to negative value")
+            raise ValueError("X cannot be assigned to negative value:", value)
         if not isinstance(value, int) and not isinstance(value, float):
-            raise TypeError("X cannot be assigned to non-numeric object.")
+            raise TypeError("X cannot be assigned to non-numeric object:", type(value), value)
 
     @property
     def y(self):
@@ -60,9 +75,9 @@ class Creature(object):
             return
 
         if value < 0:
-            raise ValueError("Y cannot be assigned to negative value")
+            raise ValueError("Y cannot be assigned to negative value: ", value)
         if not isinstance(value, int) and not isinstance(value, float):
-            raise TypeError("Y cannot be assigned to non-numeric object.")
+            raise TypeError("Y cannot be assigned to non-numeric object:", type(value), value)
 
     @property
     def initial_location(self):
@@ -70,25 +85,13 @@ class Creature(object):
 
     @initial_location.setter
     def initial_location(self, value:tuple):
-        if value[0] >= 0 and value[1] >= 0 and\
-                (isinstance(value[0], int) or isinstance(value[0], float)) and\
-                (isinstance(value[1], int) or isinstance(value[1], float)):
-
-            if isinstance(value[0], float):
-                value = (round(value[0]), value[1])
-            if isinstance(value[1], float):
-                value = (value[0], round(value[1]))
-
-            # Update creature's x coordinate
+        if value[0] >= 0 and value[1] >= 0:
+            value = (int(value[0]), int(value[1]))
             self._initial_location = value
             return
 
         if value[0] < 0 or value[1] < 0:
             raise ValueError("initial_value cannot be assigned to tuple with negative coordinate(s):", value)
-        if (not isinstance(value[0], int) and not isinstance(value[0], float)) or\
-           (not isinstance(value[1], int) and not isinstance(value[1], float)):
-            raise TypeError("initial_value cannot be assigned to non-numeric tuple:", value)
-
 
     @property
     def width(self):
@@ -104,9 +107,9 @@ class Creature(object):
             return
 
         if value < 0:
-            raise ValueError("Width cannot be assigned to negative value")
+            raise ValueError("Width cannot be assigned to negative value:", value)
         if not isinstance(value, int) and not isinstance(value, float):
-            raise TypeError("Width cannot be assigned to non-numeric object.")
+            raise TypeError("Width cannot be assigned to non-numeric object:", type(value), value)
 
     @property
     def height(self):
@@ -122,9 +125,9 @@ class Creature(object):
             return
 
         if value < 0:
-            raise ValueError("Height cannot be assigned to negative value")
+            raise ValueError("Height cannot be assigned to negative value:", value)
         if not isinstance(value, int) and not isinstance(value, float):
-            raise TypeError("Height cannot be assigned to non-numeric object.")
+            raise TypeError("Height cannot be assigned to non-numeric object:", type(value), value)
 
     @property
     def velocity(self):
@@ -135,9 +138,9 @@ class Creature(object):
         if value >= 0 and isinstance(value, int):
             self._velocity = value
         if value < 0:
-            raise ValueError("Velocity cannot be assigned to negative value")
+            raise ValueError("Velocity cannot be assigned to negative value:", value)
         if not isinstance(value, int):
-            raise TypeError("Velocity cannot be assigned to non-int object")
+            raise TypeError("Velocity cannot be assigned to non-int object:", type(value), value)
 
     @property
     def direction(self):
@@ -149,9 +152,9 @@ class Creature(object):
             self._direction = value
             return
         if value not in Constants.directions:
-            raise ValueError("Direction can only take these values: " + Constants.directions.__str__())
+            raise ValueError("Direction can only take these values: " + Constants.directions.__str__() + "\nInstead, it took:", value)
         if not isinstance(value, str):
-            raise TypeError("Direction cannot be assigned to non-str object")
+            raise TypeError("Direction cannot be assigned to non-str object:", type(value), value)
 
     @property
     def form(self):
@@ -164,9 +167,9 @@ class Creature(object):
             return
 
         if value not in Constants.forms:
-            raise ValueError("Form can only take these values: " + Constants.forms.__str__())
+            raise ValueError("Form can only take these values: " + Constants.forms.__str__() + "\nInstead, it took:", value)
         if not isinstance(value, str):
-            raise TypeError("Form cannot be assigned to non-str object")
+            raise TypeError("Form cannot be assigned to non-str object:", type(value), value)
 
     @property
     def hitbox(self):
@@ -179,7 +182,7 @@ class Creature(object):
             return
 
         if not isinstance(value, pygame.sprite.Sprite):
-            raise TypeError("Hitbox cannot be assigned to non-sprite object")
+            raise TypeError("Hitbox cannot be assigned to non-sprite object: ", type(value), value)
 
     def create_hitbox_of(self, path, x=0, y=0):
         """Returns sprite with mask created from given image"""
@@ -232,9 +235,9 @@ class Creature(object):
             return
 
         if not animations_paths:
-            raise ValueError("Animations cannot be assigned to None")
+            raise ValueError("Animations cannot be assigned to None:", animations_paths)
         if not isinstance(animations_paths, dict):
-            raise TypeError("Animations cannot be assigned to non-dict object")
+            raise TypeError("Animations cannot be assigned to non-dict object:", type(animations_paths), animations_paths)
 
     def __str__(self):
         return "x: " + str(self.x) + "; y: " + str(self.y) + "; initial_location: " + str(self.initial_location) + \
@@ -268,9 +271,9 @@ class PacMan(Creature):
             self._cooldown = value
             return
         if value < 0:
-            raise ValueError("Cooldown cannot be assigned to negative value")
+            raise ValueError("Cooldown cannot be assigned to negative value:", value)
         if not isinstance(value, int):
-            raise TypeError("Cooldown cannot be assigned to non-int object")
+            raise TypeError("Cooldown cannot be assigned to non-int object:", type(value), value)
 
     @property
     def mana(self):
@@ -282,9 +285,9 @@ class PacMan(Creature):
             self._mana = value
             return
         if value < 0:
-            raise ValueError("Mana cannot be assigned to negative value")
+            raise ValueError("Mana cannot be assigned to negative value:", value)
         if not isinstance(value, int):
-            raise TypeError("Mana cannot be assigned to non-int object")
+            raise TypeError("Mana cannot be assigned to non-int object:", type(value), value)
 
     @property
     def score(self):
@@ -296,9 +299,9 @@ class PacMan(Creature):
             self._score = value
             return
         if value < 0:
-            raise ValueError("Score cannot be assigned to negative value")
+            raise ValueError("Score cannot be assigned to negative value:", value)
         if not isinstance(value, int):
-            raise TypeError("Score cannot be assigned to non-int object")
+            raise TypeError("Score cannot be assigned to non-int object:", type(value), value)
 
     @property
     def lives(self):
@@ -310,9 +313,9 @@ class PacMan(Creature):
             self._lives = value
             return
         if value < 0:
-            raise ValueError("Lives cannot be assigned to negative value")
+            raise ValueError("Lives cannot be assigned to negative value:", value)
         if not isinstance(value, int):
-            raise TypeError("Lives cannot be assigned to non-int object")
+            raise TypeError("Lives cannot be assigned to non-int object:", type(value), value)
 
     @property
     def ghosts_eaten(self):
@@ -354,7 +357,22 @@ class Ghost(Creature):
         if isinstance(value, bool):
             self._is_chasing = value
         else:
-            raise TypeError("Is_chasing cannot be assigned to non-boolean objects")
+            raise TypeError("Is_chasing cannot be assigned to non-boolean objects:", type(value), value)
+
+    @property
+    def is_alive(self):
+        return self._is_alive
+
+    @is_alive.setter
+    def is_alive(self, value):
+        if value is True:
+            self._is_alive = True
+        elif value is False:
+            self._is_alive = False
+            self._is_chasing = False
+        else:
+            raise ValueError("is_alive cannot be assigned to non-bool object:", type(value), value)
+
 
     def __str__(self):
         return super().__str__() + "is_chasing: " + str(self.is_chasing)

@@ -237,11 +237,11 @@ class Creature(object):
             raise TypeError("Animations cannot be assigned to non-dict object")
 
     def __str__(self):
-        return "x: " + str(self.x) + "; y: " + str(self.y) + \
+        return "x: " + str(self.x) + "; y: " + str(self.y) + "; initial_location: " + str(self.initial_location) + \
                "; width: " + str(self.width) + "; height: " + str(self.height) + \
                "; velocity: " + str(self.velocity) + "; direction: " + str(self.direction) + \
                "; form: " + str(self.form) + "; hitbox: " + str(self.hitbox.image) + \
-               ";\nanimations: " + str(self.animations)
+               ";\nanimations: " + str(self.animations) + ";\n"
 
 
 class PacMan(Creature):
@@ -330,8 +330,9 @@ class PacMan(Creature):
 
     def __str__(self):
         return super().__str__() + \
-               "; cooldown: " + str(self.cooldown) + "; mana: " + str(self.mana) + \
-               "; score: " + str(self.score) + "; lives: " + str(self.lives)
+               "cooldown: " + str(self.cooldown) + "; mana: " + str(self.mana) + \
+               "; score: " + str(self.score) + "; lives: " + str(self.lives) + \
+               "; ghosts_eaten:" + str(self._ghosts_eaten)
 
 
 class Ghost(Creature):
@@ -356,4 +357,4 @@ class Ghost(Creature):
             raise TypeError("Is_chasing cannot be assigned to non-boolean objects")
 
     def __str__(self):
-        return super().__str__() + "; is_chasing: " + str(self.is_chasing)
+        return super().__str__() + "is_chasing: " + str(self.is_chasing)

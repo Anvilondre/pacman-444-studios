@@ -83,7 +83,8 @@ SCREEN_BACKGROUND_IMAGE = ...  # TODO: Add path
 
 # PacMan
 
-pacman_hitbox_path = "../res/hitbox/pacman.png"
+PACMAN_MAPOBJECT_HITBOX_PATH = "../res/hitbox/pacman.png"
+PACMAN_CREATURE_HITBOX_PATH = "../res/hitbox/pacman.png"
 pacman_animations_paths = {"move_left": ["../res/animations/pacman/move_left/0.png",
                                          "../res/animations/pacman/move_left/1.png",
                                          "../res/animations/pacman/move_left/2.png",
@@ -112,7 +113,8 @@ pacman_animations_paths = {"move_left": ["../res/animations/pacman/move_left/0.p
 
 # Ghosts
 
-ghost_hitbox_path = "../res/hitbox/ghost.png"
+GHOST_MAPOBJECT_HITBOX_PATH = "../res/hitbox/ghost.png"
+GHOST_CREATURE_HITBOX_PATH = "../res/hitbox/ghost.png"
 pinky_animations_paths = {"move_left": ["../res/animations/pinky/move_left/0.png",
                                         "../res/animations/pinky/move_left/1.png",
                                         "../res/animations/pinky/move_left/2.png",

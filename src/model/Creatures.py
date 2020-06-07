@@ -6,7 +6,8 @@ from src.data import Constants
 
 class Creature(object):
 
-    def __init__(self, x, y, initial_location, width, height, velocity, direction, form, hitbox_path, animations):
+    def __init__(self, x, y, initial_location, width, height, velocity, direction, form,
+                 mapobject_hitbox_path, creature_hitbox_path, animations):
         self.initial_location = initial_location
         self.width = width
         self.height = height
@@ -14,7 +15,8 @@ class Creature(object):
         self.direction = direction
         self.preferred_direction = self.direction
         self.form = form
-        self.hitbox = self.create_hitbox_of(hitbox_path)
+        self.mapobject_hitbox = self.create_hitbox_of(mapobject_hitbox_path)
+        self.creature_hitbox = self.create_hitbox_of(creature_hitbox_path)
         self._x = 0
         self._y = 0
         self.x = x
@@ -48,7 +50,8 @@ class Creature(object):
                 value = round(value)
 
             # Update hitbox x coordinate
-            self.hitbox.rect.move_ip(value - self.x, 0)
+            self.mapobject_hitbox.rect.move_ip(value - self.x, 0)
+            self.creature_hitbox.rect.move_ip(value - self.x, 0)
             # Update creature's x coordinate
             self._x = value
             return
@@ -70,7 +73,8 @@ class Creature(object):
                 value = round(value)
 
             # Update hitbox y coordinate
-            self.hitbox.rect.move_ip(0, value - self.y)
+            self.mapobject_hitbox.rect.move_ip(0, value - self.y)
+            self.creature_hitbox.rect.move_ip(0, value - self.y)
             # Update creature's y coordinate
             self._y = value
             return
@@ -187,17 +191,30 @@ class Creature(object):
             raise TypeError("Form cannot be assigned to non-str object:", type(value), value)
 
     @property
-    def hitbox(self):
-        return self._hitbox
+    def mapobject_hitbox(self):
+        return self._mapobject_hitbox
 
-    @hitbox.setter
-    def hitbox(self, value):
+    @mapobject_hitbox.setter
+    def mapobject_hitbox(self, value):
         if isinstance(value, pygame.sprite.Sprite):
-            self._hitbox = value
+            self._mapobject_hitbox = value
             return
 
         if not isinstance(value, pygame.sprite.Sprite):
-            raise TypeError("Hitbox cannot be assigned to non-sprite object: ", type(value), value)
+            raise TypeError("mapobject_hitbox cannot be assigned to non-sprite object: ", type(value), value)
+
+    @property
+    def creature_hitbox(self):
+        return self._creature_hitbox
+
+    @creature_hitbox.setter
+    def creature_hitbox(self, value):
+        if isinstance(value, pygame.sprite.Sprite):
+            self._creature_hitbox = value
+            return
+
+        if not isinstance(value, pygame.sprite.Sprite):
+            raise TypeError("creature_hitbox cannot be assigned to non-sprite object: ", type(value), value)
 
     def create_hitbox_of(self, path, x=0, y=0):
         """Returns sprite with mask created from given image"""
@@ -259,18 +276,21 @@ class Creature(object):
         return "x: " + str(self.x) + "; y: " + str(self.y) + "; initial_location: " + str(self.initial_location) + \
                "; width: " + str(self.width) + "; height: " + str(self.height) + \
                "; velocity: " + str(self.velocity) + "; direction: " + str(self.direction) + \
-               "; form: " + str(self.form) + "; hitbox: " + str(self.hitbox.image) + \
+               "; form: " + str(self.form) + "; mapobject_hitbox: " + str(self.mapobject_hitbox.image) + \
+               "; creature_hitbox: " + str(self.creature_hitbox.image) + \
                ";\nanimations: " + str(self.animations) + ";\n"
 
 
 class PacMan(Creature):
     def __init__(self, x, y, initial_location, width, height, velocity, direction="left", form="random",
-                 hitbox=Constants.pacman_hitbox_path, animations=Constants.pacman_animations_paths,
+                 mapobject_hitbox=Constants.PACMAN_MAPOBJECT_HITBOX_PATH,
+                 creature_hitbox=Constants.PACMAN_CREATURE_HITBOX_PATH,
+                 animations=Constants.pacman_animations_paths,
                  cooldown=5, mana=Constants.pacman_mana,
                  score=Constants.pacman_score, lives=Constants.pacman_lives, ghosts_eaten=0):
         super().__init__(x, y, initial_location, width, height, velocity, direction,
                          Constants.forms[random.randint(0, 2)] if form == "random" else form,
-                         hitbox, animations)
+                         mapobject_hitbox, creature_hitbox, animations)
         self.cooldown = cooldown
         self.mana = mana
         self.score = score
@@ -357,11 +377,13 @@ class PacMan(Creature):
 class Ghost(Creature):
 
     def __init__(self, x, y, initial_location, width, height, velocity, direction="up", form="random",
-                 hitbox=Constants.ghost_hitbox_path, animations=Constants.pinky_animations_paths,
+                 mapobject_hitbox=Constants.GHOST_MAPOBJECT_HITBOX_PATH,
+                 creature_hitbox=Constants.GHOST_CREATURE_HITBOX_PATH,
+                 animations=Constants.pinky_animations_paths,
                  is_chasing=Constants.ghost_is_chasing):
         super().__init__(x, y, initial_location, width, height, velocity, direction,
                          Constants.forms[random.randint(0, 2)] if form == "random" else form,
-                         hitbox, animations)
+                         mapobject_hitbox, creature_hitbox, animations)
         self.is_chasing = is_chasing
 
     @property

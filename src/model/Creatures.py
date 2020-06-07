@@ -21,6 +21,7 @@ class Creature(object):
         self._y = 0
         self.x = x
         self.y = y
+        self.coord = (self.x, self.y)
         self.animations = animations
         self.animation_count = 0
         self.is_alive = True
@@ -83,6 +84,20 @@ class Creature(object):
             raise ValueError("Y cannot be assigned to negative value: ", value)
         if not isinstance(value, int) and not isinstance(value, float):
             raise TypeError("Y cannot be assigned to non-numeric object:", type(value), value)
+
+    @property
+    def coord(self):
+        return self.x, self.y
+
+    @coord.setter
+    def coord(self, value: tuple):
+        if value[0] >= 0 and value[1] >= 0:
+            self._x = value[0]
+            self._y = value[1]
+            return
+
+        if value[0] < 0 or value[1] < 0:
+            raise ValueError("coord cannot be assigned to tuple with negative coordinate(s):", value)
 
     @property
     def initial_location(self):
@@ -227,7 +242,7 @@ class Creature(object):
             sprite = pygame.sprite.Sprite()
             sprite.surface = pygame.Surface((self.width, self.height))
 
-            # Make image opaque
+            # Make image transparent
             sprite.image = img.convert_alpha()
 
             # Get mask out of the image

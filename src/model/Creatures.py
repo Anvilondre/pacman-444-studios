@@ -12,6 +12,7 @@ class Creature(object):
         self.height = height
         self.velocity = velocity
         self.direction = direction
+        self.preferred_direction = self.direction
         self.form = form
         self.hitbox = self.create_hitbox_of(hitbox_path)
         self._x = 0
@@ -157,6 +158,20 @@ class Creature(object):
             raise TypeError("Direction cannot be assigned to non-str object:", type(value), value)
 
     @property
+    def preferred_direction(self):
+        return self._preferred_direction
+
+    @preferred_direction.setter
+    def preferred_direction(self, value: str):
+        if value in Constants.directions and isinstance(value, str):
+            self._preferred_direction = value
+            return
+        if value not in Constants.directions:
+            raise ValueError("preferred_direction can only take these values: " + Constants.directions.__str__() + "\nInstead, it took:",value)
+        if not isinstance(value, str):
+            raise TypeError("preferred_direction cannot be assigned to non-str object:", type(value), value)
+
+    @property
     def form(self):
         return self._form
 
@@ -186,6 +201,7 @@ class Creature(object):
 
     def create_hitbox_of(self, path, x=0, y=0):
         """Returns sprite with mask created from given image"""
+
         if os.path.exists(path):
             img = pygame.image.load(path)
             img = pygame.transform.scale(img, (self.width, self.height))

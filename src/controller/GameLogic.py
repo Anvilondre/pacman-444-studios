@@ -12,20 +12,8 @@ from itertools import cycle
 from src.view.Renderer import Renderer
 
 
-def move_ghost(ghost):
-    """ Move ghost """
-    if ghost.direction == 'left':
-        ghost.x -= ghost.velocity
-    elif ghost.direction == 'up':
-        ghost.y -= ghost.velocity
-    elif ghost.direction == 'right':
-        ghost.x += ghost.velocity
-    elif ghost.direction == 'down':
-        ghost.y += ghost.velocity
-
-
 def get_sector_coord(x, y):
-    return (x) // SECTOR_SIZE, (y) // SECTOR_SIZE
+    return int(x/36), int(y/36)
 
 
 def revive_ghost(ghost):
@@ -82,6 +70,7 @@ class Controller:
         self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord,
                              self.current_level.level_map.pacman_initial_coord,
                              SECTOR_SIZE, SECTOR_SIZE, self.current_level.pacman_velocity)
+        self.ability_is_ready = True
 
     def init_ghosts(self):
         self.path_finder = PathFinder(self.current_level.level_map.hash_map)
@@ -108,13 +97,13 @@ class Controller:
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == K_LEFT:
-                    self.pacman.direction = 'left'
+                    self.pacman.preferred_direction = 'left'
                 elif event.key == K_UP:
-                    self.pacman.direction = 'up'
+                    self.pacman.preferred_direction = 'up'
                 elif event.key == K_RIGHT:
-                    self.pacman.direction = 'right'
+                    self.pacman.preferred_direction = 'right'
                 elif event.key == K_DOWN:
-                    self.pacman.direction = 'down'
+                    self.pacman.preferred_direction = 'down'
 
                 elif event.key == K_1 and self.pacman.mana > 0 and self.ability_is_ready:
                     self.speed_ability.run()
@@ -139,26 +128,41 @@ class Controller:
         else:
             return False
 
-    def move_creature(self, creature):
-        """ Move pac-man and check collision with wall-list """
-        direction = creature.direction
-        creature_coords = (creature.x, creature.y)
+    def move_creature_direction(self, creature, direction, vel=None):
+        if vel is None:
+            vel = creature.velocity
 
         if direction == 'up':
-            creature.y -= creature.velocity
+            creature.y -= vel
 
         elif direction == 'down':
-            creature.y += creature.velocity
+            creature.y += vel
 
         elif direction == 'left':
-            creature.x -= creature.velocity
+            creature.x -= vel
 
         elif direction == 'right':
-            creature.x += creature.velocity
+            creature.x += vel
 
         else:
             raise Exception('Illegal direction')
 
+    def move_creature(self, creature):
+        """ Move pac-man and check collision with wall-list """
+        creature_coords = (creature.x, creature.y)
+        direction = creature.preferred_direction
+
+        if direction != creature.direction:
+            self.move_creature_direction(creature, direction, creature.width/2)
+            if not self.collides_wall(creature):
+                (creature.x, creature.y) = creature_coords
+                self.move_creature_direction(creature, direction)
+                creature.direction = direction
+                return
+            else:
+                (creature.x, creature.y) = creature_coords
+
+        self.move_creature_direction(creature, creature.direction)
         if self.collides_wall(creature):
             (creature.x, creature.y) = creature_coords
 
@@ -171,17 +175,16 @@ class Controller:
     def resolve_ghost_direction(self, ghost, pacman_coord):
         ghost_coord = get_sector_coord(ghost.x + ghost.width / 2, ghost.y + ghost.height / 2)
 
-
         if not ghost.is_alive:
             revive_ghost(ghost)
 
         if ghost.is_chasing and ghost.is_alive:
-            ghost.direction = self.path_finder.get_direction(ghost_coord, pacman_coord)
+            ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, pacman_coord)
         else:
-            ghost.direction = self.path_finder.get_direction(ghost_coord, ghost.initial_location)
+            ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, ghost.initial_location)
 
     def update_ghosts(self):
-        pacman_coord = get_sector_coord(self.pacman.x + self.pacman.width / 2, self.pacman.y + self.pacman.height)
+        pacman_coord = get_sector_coord(self.pacman.x + self.pacman.width / 2, self.pacman.y + self.pacman.height / 2)
         for ghost in self.ghosts:
             self.resolve_ghost_direction(ghost, pacman_coord)
             self.move_creature(ghost)
@@ -217,7 +220,7 @@ class Controller:
     def run(self):
         clock = pygame.time.Clock()
         while True:
-            miliseconds = clock.tick(15)
+            miliseconds = clock.tick(150)
             elapsed_time = miliseconds / 1000.0  # seconds
 
             self.handle_events()
@@ -225,4 +228,4 @@ class Controller:
             self.update_ghosts()
             # TODO: Implement renderer
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts],
-                                 elapsed_time, showgrid=False, show_hitboxes=False)
+                                 elapsed_time, showgrid=False, show_hitboxes=True)

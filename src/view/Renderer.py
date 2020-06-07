@@ -10,7 +10,7 @@ class Renderer(object):
 
         self.map_dimensions = map_dimensions
         self.animation_period = Constants.ANIMATION_PERIOD  # seconds
-        self.time_elapsed_from_prev_animation_frame = 0
+        self.time_elapsed_from_prev_animation_frame = 0 # seconds
 
         # Set window mode
         if is_fullscreen is True:
@@ -22,6 +22,7 @@ class Renderer(object):
         self.canvas_width = pygame.display.get_surface().get_width()
         self.canvas_height = pygame.display.get_surface().get_height()
 
+        # Init GUI and all required surfaces
         self._init_background()
         self._init_gui()
         self._init_gamescreen(map_dimensions)
@@ -139,7 +140,7 @@ class Renderer(object):
 
     def render(self, entities_list, elapsed_time, showgrid=False, show_hitboxes=True):
         """entities_list: (pellets, mega_pellets, walls, cherry, pacman, ghosts)"""
-        # Init surfaces
+
         # Unpack entities_list
         pellets, mega_pellets, walls, cherry, pacman, ghosts = entities_list
         # Unpack map_dimensions (unit: cells)
@@ -236,7 +237,11 @@ class Renderer(object):
                 raise Exception("Unable to identify pacman's state", pac)
 
             if show_hitboxes:
-                hitbox_preview = pac.hitbox.image.convert()
+                hitbox_preview = pac.mapobject_hitbox.image.convert()
+                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
+                self.window.blit(hitbox_preview, (pac.x, pac.y))
+
+                hitbox_preview = pac.creature_hitbox.image.convert()
                 hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
                 self.window.blit(hitbox_preview, (pac.x, pac.y))
 
@@ -283,7 +288,11 @@ class Renderer(object):
                 raise Exception("Unable to identify ghost's state:", ghost)
 
             if show_hitboxes:
-                hitbox_preview = ghost.hitbox.image.convert()
+                hitbox_preview = ghost.mapobject_hitbox.image.convert()
+                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
+                self.window.blit(hitbox_preview, (ghost.x, ghost.y))
+
+                hitbox_preview = ghost.creature_hitbox.image.convert()
                 hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
                 self.window.blit(hitbox_preview, (ghost.x, ghost.y))
 

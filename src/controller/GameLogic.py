@@ -133,7 +133,7 @@ class Controller:
 
     def collides_wall(self, creature):
         for wall in self.walls:
-            if pygame.sprite.collide_mask(creature.hitbox, wall.hitbox):
+            if pygame.sprite.collide_mask(creature.mapobject_hitbox, wall.hitbox):
                 return True
         else:
             return False
@@ -188,7 +188,7 @@ class Controller:
 
     def check_pacman_ghost_collision(self):  # TODO: Change hitbox
         for ghost in self.ghosts:
-            if pygame.sprite.collide_mask(self.pacman.hitbox, ghost.hitbox):
+            if pygame.sprite.collide_mask(self.pacman.creature_hitbox, ghost.creature_hitbox):
                 if self.pacman.form == ghost.form:
                     ghost_died(ghost)
                 else:
@@ -196,13 +196,13 @@ class Controller:
 
     def check_pellet_collision(self):  # TODO: Change hitbox
         for pellet in self.pellets:
-            if pygame.sprite.collide_mask(self.pacman.hitbox, pellet.hitbox):
+            if pygame.sprite.collide_mask(self.pacman.mapobject_hitbox, pellet.hitbox):
                 self.pacman.score += pellet.value
                 self.pellets.remove(pellet)
 
     def check_mega_pellet_collision(self):  # TODO: Change hitbox
         for mega_pellet in self.mega_pellets:
-            if pygame.sprite.collide_mask(self.pacman.hitbox, mega_pellet.hitbox):
+            if pygame.sprite.collide_mask(self.pacman.mapobject_hitbox, mega_pellet.hitbox):
                 self.pacman.score += mega_pellet.value
                 self.pacman.mana += 1
                 self.mega_pellets.remove(mega_pellet)

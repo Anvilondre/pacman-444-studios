@@ -73,7 +73,7 @@ GAMESCREEN_CELL_SIZE_RATIO = 36 * 2 / 1920
 ANIMATION_PERIOD = 0.1  # seconds
 
 # Debug
-HITBOX_OPACITY = 250
+HITBOX_OPACITY = 96
 HITBOX_COLOR = ((0, 255, 198))
 
 ''' All file paths '''
@@ -117,21 +117,13 @@ pacman_animations_paths = {"move_left": ["../res/animations/pacman/move_left/0.p
 GHOST_MAPOBJECT_HITBOX_PATH = "../res/hitbox/ghost_mapobject.png"
 GHOST_CREATURE_HITBOX_PATH = "../res/hitbox/ghost_creature.png"
 pinky_animations_paths = {"move_left": ["../res/animations/pinky/move_left/0.png",
-                                        "../res/animations/pinky/move_left/1.png",
-                                        "../res/animations/pinky/move_left/2.png",
-                                        "../res/animations/pinky/move_left/3.png"],
+                                        "../res/animations/pinky/move_left/1.png"],
                           "move_up": ["../res/animations/pinky/move_up/0.png",
-                                      "../res/animations/pinky/move_up/1.png",
-                                      "../res/animations/pinky/move_up/2.png",
-                                      "../res/animations/pinky/move_up/3.png"],
+                                      "../res/animations/pinky/move_up/1.png"],
                           "move_right": ["../res/animations/pinky/move_right/0.png",
-                                         "../res/animations/pinky/move_right/1.png",
-                                         "../res/animations/pinky/move_right/2.png",
-                                         "../res/animations/pinky/move_right/3.png"],
+                                         "../res/animations/pinky/move_right/1.png"],
                           "move_down": ["../res/animations/pinky/move_down/0.png",
-                                        "../res/animations/pinky/move_down/1.png",
-                                        "../res/animations/pinky/move_down/2.png",
-                                        "../res/animations/pinky/move_down/3.png"],
+                                        "../res/animations/pinky/move_down/1.png"],
                           "dead": ["../res/animations/pinky/dead/0.png",
                                    "../res/animations/pinky/dead/1.png",
                                    "../res/animations/pinky/dead/2.png",

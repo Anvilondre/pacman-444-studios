@@ -207,6 +207,7 @@ class Renderer(object):
         self._draw_ghosts(ghosts, show_hitboxes=show_hitboxes)
 
         self._draw_text(pacman[0])
+        pygame.display.set_caption("Elapsed time: " + str(elapsed_time))
 
         # Draw Grid
         if showgrid:
@@ -265,43 +266,53 @@ class Renderer(object):
             else:
                 raise Exception("Unable to identify pacman's state", pac)
 
-            if show_hitboxes:
-                self._show_hitbox(pac)
-
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
             self.window.blit(rescaled_img, self._mapscreen_coords_to_gamescreen_coords((pac.x, pac.y)))
+
+            if show_hitboxes:
+                self._show_hitbox(pac)
 
     def _draw_ghosts(self, ghosts, show_hitboxes = False):
         for ghost in ghosts:
             if ghost.is_alive is True and ghost.direction == "left":
+                if ghost.animation_count >= 2:
+                    ghost.animation_count = 0
                 surface = ghost.animations["move_left"][ghost.animation_count]
                 if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
                     ghost.animation_count += 1
-                    if ghost.animation_count >= 4:
+                    if ghost.animation_count >= 2:
                         ghost.animation_count = 0
 
             elif ghost.is_alive is True and ghost.direction == "up":
+                if ghost.animation_count >= 2:
+                    ghost.animation_count = 0
                 surface = ghost.animations["move_up"][ghost.animation_count]
                 if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
                     ghost.animation_count += 1
-                    if ghost.animation_count >= 4:
+                    if ghost.animation_count >= 2:
                         ghost.animation_count = 0
 
             elif ghost.is_alive is True and ghost.direction == "right":
+                if ghost.animation_count >= 2:
+                    ghost.animation_count = 0
                 surface = ghost.animations["move_right"][ghost.animation_count]
                 if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
                     ghost.animation_count += 1
-                    if ghost.animation_count >= 4:
+                    if ghost.animation_count >= 2:
                         ghost.animation_count = 0
 
             elif ghost.is_alive is True and ghost.direction == "down":
+                if ghost.animation_count >= 2:
+                    ghost.animation_count = 0
                 surface = ghost.animations["move_down"][ghost.animation_count]
                 if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
                     ghost.animation_count += 1
-                    if ghost.animation_count >= 4:
+                    if ghost.animation_count >= 2:
                         ghost.animation_count = 0
 
             elif ghost.is_alive is False:
+                if ghost.animation_count >= 2:
+                    ghost.animation_count = 0
                 surface = ghost.animations["dead"][ghost.animation_count]
                 if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
                     ghost.animation_count += 1
@@ -310,8 +321,8 @@ class Renderer(object):
             else:
                 raise Exception("Unable to identify ghost's state:", ghost)
 
-            if show_hitboxes:
-                self._show_hitbox(ghost)
-
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
             self.window.blit(rescaled_img, self._mapscreen_coords_to_gamescreen_coords((ghost.x, ghost.y)))
+
+            if show_hitboxes:
+                self._show_hitbox(ghost)

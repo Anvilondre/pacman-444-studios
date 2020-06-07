@@ -30,6 +30,7 @@ class Renderer(object):
     def set_map_dimensions(self, map_dimensions):
         self.map_dimensions = map_dimensions
         self._init_gamescreen(map_dimensions)
+        self._init_gui_elements_list()
 
     def _init_background(self):
         self.background_surf = pygame.Surface((self.canvas_width, self.canvas_height))
@@ -76,7 +77,6 @@ class Renderer(object):
         self.gamescreen_cell_size = int(Constants.GAMESCREEN_CELL_SIZE_RATIO * self.canvas_width)
         self.gamescreen_surf_width = map_dimensions[0] * self.gamescreen_cell_size
         self.gamescreen_surf_height = map_dimensions[1] * self.gamescreen_cell_size
-
         self._rescale_gamescreen(map_dimensions)
 
         self.gamescreen_surf = pygame.Surface((self.gamescreen_surf_width, self.gamescreen_surf_height))
@@ -88,24 +88,21 @@ class Renderer(object):
         """Rescale gamescreen if it's bigger, than gamescreen bounds"""
         if self.gamescreen_surf_width > self.gamescreen_boundbox_surf_width and \
                 self.gamescreen_surf_height > self.gamescreen_boundbox_surf_height:
-            self.gamescreen_cell_size = int(
-                self.gamescreen_cell_size * min(self.gamescreen_boundbox_surf_width / self.gamescreen_surf_width,
+            self.gamescreen_cell_size = int(self.gamescreen_cell_size * min(self.gamescreen_boundbox_surf_width / self.gamescreen_surf_width,
                                                 self.gamescreen_boundbox_surf_height / self.gamescreen_surf_height))
             # Recalculate width and height
             self.gamescreen_surf_width = map_dimensions[0] * self.gamescreen_cell_size
             self.gamescreen_surf_height = map_dimensions[1] * self.gamescreen_cell_size
 
         if self.gamescreen_surf_width > self.gamescreen_boundbox_surf_width:
-            self.gamescreen_cell_size = int(
-                self.gamescreen_cell_size * self.gamescreen_boundbox_surf_width / self.gamescreen_surf_width)
+            self.gamescreen_cell_size = int(self.gamescreen_cell_size * self.gamescreen_boundbox_surf_width / self.gamescreen_surf_width)
 
             # Recalculate width and height
             self.gamescreen_surf_width = map_dimensions[0] * self.gamescreen_cell_size
             self.gamescreen_surf_height = map_dimensions[1] * self.gamescreen_cell_size
 
         if self.gamescreen_surf_height > self.gamescreen_boundbox_surf_height:
-            self.gamescreen_cell_size = int(
-                self.gamescreen_cell_size * self.gamescreen_boundbox_surf_height / self.gamescreen_surf_height)
+            self.gamescreen_cell_size = int(self.gamescreen_cell_size * self.gamescreen_boundbox_surf_height / self.gamescreen_surf_height)
 
             # Recalculate width and height
             self.gamescreen_surf_width = map_dimensions[0] * self.gamescreen_cell_size
@@ -115,8 +112,7 @@ class Renderer(object):
         """Creates a list of all gui elements and their absolute positions on the canvas"""
         self.gui_elements = []
         self.gui_elements.append([self.background_surf, self.background_surf_x, self.background_surf_y])
-        self.gui_elements.append(
-            [self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
+        self.gui_elements.append([self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
         self.gui_elements.append([self.gamescreen_surf, self.gamescreen_surf_x, self.gamescreen_surf_y])
 
         self.gui_elements.append([self.lives_bar_surf, self.lives_bar_surf_x, self.lives_bar_surf_y])

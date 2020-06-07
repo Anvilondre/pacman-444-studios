@@ -13,7 +13,7 @@ from src.view.Renderer import Renderer
 
 
 def get_sector_coord(x, y):
-    return int(x/36), int(y/36)
+    return int(x / 36), int(y / 36)
 
 
 def revive_ghost(ghost):
@@ -23,6 +23,26 @@ def revive_ghost(ghost):
 
 def ghost_died(ghost):  # TODO: Animations
     ghost._is_alive = False
+
+
+def move_creature_direction(creature, direction, vel=None):
+    if vel is None:
+        vel = creature.velocity
+
+    if direction == 'up':
+        creature.y -= vel
+
+    elif direction == 'down':
+        creature.y += vel
+
+    elif direction == 'left':
+        creature.x -= vel
+
+    elif direction == 'right':
+        creature.x += vel
+
+    else:
+        raise Exception('Illegal direction')
 
 
 class Controller:
@@ -116,7 +136,6 @@ class Controller:
                     elif self.transform_ability.is_active:
                         self.transform_ability.changeForm()
 
-
     def set_cooldown_timer(self):
         self.ability_is_ready = False
         timer = Timer(self.current_level.pacman_cooldown, self.set_ability_ready)  # run timer for cooldown
@@ -132,41 +151,22 @@ class Controller:
         else:
             return False
 
-    def move_creature_direction(self, creature, direction, vel=None):
-        if vel is None:
-            vel = creature.velocity
-
-        if direction == 'up':
-            creature.y -= vel
-
-        elif direction == 'down':
-            creature.y += vel
-
-        elif direction == 'left':
-            creature.x -= vel
-
-        elif direction == 'right':
-            creature.x += vel
-
-        else:
-            raise Exception('Illegal direction')
-
     def move_creature(self, creature):
         """ Move pac-man and check collision with wall-list """
         creature_coords = (creature.x, creature.y)
         direction = creature.preferred_direction
 
         if direction != creature.direction:
-            self.move_creature_direction(creature, direction, creature.width/2)
+            move_creature_direction(creature, direction, creature.width / 2)
             if not self.collides_wall(creature):
                 (creature.x, creature.y) = creature_coords
-                self.move_creature_direction(creature, direction)
+                move_creature_direction(creature, direction)
                 creature.direction = direction
                 return
             else:
                 (creature.x, creature.y) = creature_coords
 
-        self.move_creature_direction(creature, creature.direction)
+        move_creature_direction(creature, creature.direction)
         if self.collides_wall(creature):
             (creature.x, creature.y) = creature_coords
 
@@ -176,22 +176,32 @@ class Controller:
         self.check_pellet_collision()
         self.check_mega_pellet_collision()
 
-    def resolve_ghost_direction(self, ghost, pacman_coord):
+    def resolve_ghost_direction(self, ghost, pacman_coord, used_sectors=[], used_val=0):
         ghost_coord = get_sector_coord(ghost.x + ghost.width / 2, ghost.y + ghost.height / 2)
 
         if not ghost.is_alive:
             revive_ghost(ghost)
 
         if ghost.is_chasing and ghost.is_alive:
-            ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, pacman_coord)
+            path = self.path_finder.get_path(ghost_coord, pacman_coord, used_sectors, used_val)
+            ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, path)
         else:
-            ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, ghost.initial_location)
+            path = self.path_finder.get_path(ghost_coord, ghost.initial_location)
+            ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, path)
 
-    def update_ghosts(self):
+        return path
+
+    def update_ghosts(self, hardcore=True):
         pacman_coord = get_sector_coord(self.pacman.x + self.pacman.width / 2, self.pacman.y + self.pacman.height / 2)
-        for ghost in self.ghosts:
-            self.resolve_ghost_direction(ghost, pacman_coord)
-            self.move_creature(ghost)
+        if hardcore:
+            used_sectors = []
+            for ghost in self.ghosts:
+                used_sectors.extend(self.resolve_ghost_direction(ghost, pacman_coord, used_sectors))  # Hardcore mode
+                self.move_creature(ghost)
+        else:
+            for ghost in self.ghosts:
+                self.resolve_ghost_direction(ghost, pacman_coord)
+                self.move_creature(ghost)
 
     def check_pacman_ghost_collision(self):  # TODO: Change hitbox
         for ghost in self.ghosts:
@@ -224,12 +234,13 @@ class Controller:
     def run(self):
         clock = pygame.time.Clock()
         while True:
-            miliseconds = clock.tick(250)
+            miliseconds = clock.tick(3)
             elapsed_time = miliseconds / 1000.0  # seconds
 
             self.handle_events()
             self.update_pacman()
-            self.update_ghosts()
+            self.update_ghosts(hardcore=True)
+
             # TODO: Implement renderer
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts],
                                  elapsed_time, showgrid=False, show_hitboxes=True)

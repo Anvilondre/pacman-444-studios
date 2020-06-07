@@ -32,9 +32,8 @@ class PathFinder:
     def __init__(self, hash_map):
         self.hash_map = hash_map
 
-    def get_direction(self, start, end):
+    def get_direction(self, start, path):
         """" Returns direction of the first move """
-        path = self.get_path(start, end)
         if path:
 
             move = path[0]
@@ -56,7 +55,7 @@ class PathFinder:
         else:
             return None
 
-    def get_path(self, start, end):
+    def get_path(self, start, end, used_nodes=[], used_val=0):
 
         """" A* search """
 
@@ -112,7 +111,7 @@ class PathFinder:
                     neighbor.position[1] - goal_node.position[1])
 
                 # Evaluate the cost
-                neighbor.f = neighbor.g + neighbor.h
+                neighbor.f = neighbor.g + neighbor.h + used_nodes.count(neighbor.position) * used_val
 
                 # Add node to open list if it's not already present or has lower cost
                 if neighbor.is_optimal(open_nodes):

@@ -109,9 +109,13 @@ class Controller:
                     self.speed_ability.run()
                     self.set_cooldown_timer()
 
-                elif event.key == K_2 and self.pacman.mana > 0 and self.ability_is_ready:
-                    self.transform_ability.run()  # call set_cooldown_timer()
-                    self.set_cooldown_timer()
+                elif event.key == K_2:
+                    if self.pacman.mana > 0 and self.ability_is_ready:
+                        self.transform_ability.run()  # call set_cooldown_timer()
+                        self.set_cooldown_timer()
+                    elif self.transform_ability.is_active:
+                        self.transform_ability.changeForm()
+
 
     def set_cooldown_timer(self):
         self.ability_is_ready = False
@@ -220,7 +224,7 @@ class Controller:
     def run(self):
         clock = pygame.time.Clock()
         while True:
-            miliseconds = clock.tick(150)
+            miliseconds = clock.tick(250)
             elapsed_time = miliseconds / 1000.0  # seconds
 
             self.handle_events()

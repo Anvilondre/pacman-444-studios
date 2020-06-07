@@ -8,9 +8,11 @@ class Renderer(object):
                  windowed_screen_width=Constants.WINDOWED_SCREEN_WIDTH,
                  windowed_screen_height=Constants.WINDOWED_SCREEN_HEIGHT):
 
-        self.map_dimensions = map_dimensions
+        self.map_dimensions = map_dimensions # cells
+        self.map_size = [map_dimensions[0] * Constants.SECTOR_SIZE, map_dimensions[1] * Constants.SECTOR_SIZE,] # px
         self.animation_period = Constants.ANIMATION_PERIOD  # seconds
         self.time_elapsed_from_prev_animation_frame = 0 # seconds
+
 
         # Set window mode
         if is_fullscreen is True:
@@ -29,7 +31,8 @@ class Renderer(object):
         self._init_gui_elements_list()
 
     def set_map_dimensions(self, map_dimensions):
-        self.map_dimensions = map_dimensions
+        self.map_dimensions = map_dimensions  # cells
+        self.map_size = [map_dimensions[0] * Constants.SECTOR_SIZE, map_dimensions[1] * Constants.SECTOR_SIZE,] # px
         self._init_gamescreen(map_dimensions)
         self._init_gui_elements_list()
 
@@ -133,18 +136,58 @@ class Renderer(object):
                               x * self.gamescreen_cell_size + self.gamescreen_surf_y))
 
     def _draw_text(self, pacman):
+        # TODO
         font = pygame.font.SysFont('Comic Sans MS', 30)
         text = font.render("Score: " + str(pacman.score), 1, (255, 255, 255))
         place = text.get_rect(topleft=(self.lives_bar_surf_x, 0))
         self.window.blit(text, place)
+
+    def _mapscreen_coords_to_gamescreen_coords(self, coords):
+        x = coords[0] *  self.gamescreen_surf_width / self.map_size[0] + self.gamescreen_surf_x
+        y = coords[1] * self.gamescreen_surf_height / self.map_size[1] + self.gamescreen_surf_y
+        return (x, y)
+
+    def _mapscreen_xy_to_gamescreen_coords(self, x, y):
+        x = x * self.gamescreen_surf_width / self.map_size[0]
+        y = y * self.gamescreen_surf_height / self.map_size[1]
+        return (x, y)
+
+    def _show_hitbox(self, gameObject):
+        """This method shows all the hitboxes gameObject has"""
+        try:
+            hitbox_preview = gameObject.hitbox.image
+            self._show_transparent_hitbox(gameObject, hitbox_preview)
+        except:
+            pass
+
+        try:
+            hitbox_preview = gameObject.mapobject_hitbox.image
+            self._show_transparent_hitbox(gameObject, hitbox_preview)
+        except:
+            pass
+
+        try:
+            hitbox_preview = gameObject.creature_hitbox.image
+            self._show_transparent_hitbox(gameObject, hitbox_preview)
+        except:
+            pass
+
+    def _show_transparent_hitbox(self, gameObject, hitbox_preview):
+
+        x, y = self._mapscreen_coords_to_gamescreen_coords(gameObject.coord)
+        rescaled_hitbox_preview = pygame.transform.scale(hitbox_preview, (self.gamescreen_cell_size, self.gamescreen_cell_size))
+
+        temp = pygame.Surface((rescaled_hitbox_preview.get_width(), rescaled_hitbox_preview.get_height())).convert()
+        temp.blit(self.window, (-x, -y))
+        temp.blit(rescaled_hitbox_preview, (0, 0))
+        temp.set_alpha(Constants.HITBOX_OPACITY)
+        self.window.blit(temp, (x, y))
 
     def render(self, entities_list, elapsed_time, showgrid=False, show_hitboxes=True):
         """entities_list: (pellets, mega_pellets, walls, cherry, pacman, ghosts)"""
 
         # Unpack entities_list
         pellets, mega_pellets, walls, cherry, pacman, ghosts = entities_list
-        # Unpack map_dimensions (unit: cells)
-        map_width, map_height = self.map_dimensions
 
         # Draw GUI
         for element in self.gui_elements:
@@ -153,51 +196,37 @@ class Renderer(object):
         # This variable is needed for proper animation speed independent of FPS
         self.time_elapsed_from_prev_animation_frame += elapsed_time
 
-        # Draw pellets
-        for pellet in pellets:
-            surface = pellet.texture
+        # Draw mapobjects
+        self._draw_mapobjects(walls, show_hitboxes=show_hitboxes)
+        self._draw_mapobjects(pellets, show_hitboxes=show_hitboxes)
+        self._draw_mapobjects(mega_pellets, show_hitboxes=show_hitboxes)
+        self._draw_mapobjects(cherry, show_hitboxes=show_hitboxes)
+
+        # Draw creatures
+        self._draw_pacmans(pacman, show_hitboxes=show_hitboxes)
+        self._draw_ghosts(ghosts, show_hitboxes=show_hitboxes)
+
+        self._draw_text(pacman[0])
+
+        # Draw Grid
+        if showgrid:
+            self._draw_grid()
+
+        if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
+            self.time_elapsed_from_prev_animation_frame = 0
+
+        pygame.display.update()
+
+    def _draw_mapobjects(self, mapobjects, show_hitboxes = False):
+        for obj in mapobjects:
+            surface = obj.texture
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
-            self.window.blit(rescaled_img, pellet.coord)
+            self.window.blit(rescaled_img, self._mapscreen_coords_to_gamescreen_coords(obj.coord))
 
             if show_hitboxes:
-                hitbox_preview = pellet.hitbox.image.convert()
-                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
-                self.window.blit(hitbox_preview, pellet.coord)
+                self._show_hitbox(obj)
 
-        # Draw mega pellets
-        for mega_pellet in mega_pellets:
-            surface = mega_pellet.texture
-            rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
-            self.window.blit(rescaled_img, mega_pellet.coord)
-
-            if show_hitboxes:
-                hitbox_preview = mega_pellet.hitbox.image.convert()
-                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
-                self.window.blit(hitbox_preview, mega_pellet.coord)
-
-        # Draw walls
-        for wall in walls:
-            surface = wall.texture
-            rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
-            self.window.blit(rescaled_img, wall.coord)
-
-            if show_hitboxes:
-                hitbox_preview = wall.hitbox.image.convert()
-                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
-                self.window.blit(hitbox_preview, wall.coord)
-
-        # Draw cherries
-        for cher in cherry:
-            surface = cher.texture
-            rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
-            self.window.blit(rescaled_img, cher.coord)
-
-            if show_hitboxes:
-                hitbox_preview = cher.hitbox.image.convert()
-                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
-                self.window.blit(hitbox_preview, cher.coord)
-
-        # Draw pacmans
+    def _draw_pacmans(self, pacman, show_hitboxes = False):
         for pac in pacman:
             if pac.is_alive is True and pac.direction == "left":
                 surface = pac.animations["move_left"][pac.animation_count]
@@ -237,18 +266,12 @@ class Renderer(object):
                 raise Exception("Unable to identify pacman's state", pac)
 
             if show_hitboxes:
-                hitbox_preview = pac.mapobject_hitbox.image.convert()
-                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
-                self.window.blit(hitbox_preview, (pac.x, pac.y))
-
-                hitbox_preview = pac.creature_hitbox.image.convert()
-                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
-                self.window.blit(hitbox_preview, (pac.x, pac.y))
+                self._show_hitbox(pac)
 
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
-            self.window.blit(rescaled_img, (pac.x, pac.y))
+            self.window.blit(rescaled_img, self._mapscreen_coords_to_gamescreen_coords((pac.x, pac.y)))
 
-        # Draw ghosts
+    def _draw_ghosts(self, ghosts, show_hitboxes = False):
         for ghost in ghosts:
             if ghost.is_alive is True and ghost.direction == "left":
                 surface = ghost.animations["move_left"][ghost.animation_count]
@@ -288,24 +311,7 @@ class Renderer(object):
                 raise Exception("Unable to identify ghost's state:", ghost)
 
             if show_hitboxes:
-                hitbox_preview = ghost.mapobject_hitbox.image.convert()
-                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
-                self.window.blit(hitbox_preview, (ghost.x, ghost.y))
-
-                hitbox_preview = ghost.creature_hitbox.image.convert()
-                hitbox_preview.set_alpha(Constants.HITBOX_OPACITY)
-                self.window.blit(hitbox_preview, (ghost.x, ghost.y))
+                self._show_hitbox(ghost)
 
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
-            self.window.blit(rescaled_img, (ghost.x, ghost.y))
-
-        self._draw_text(pacman[0])
-
-        # Draw Grid
-        if showgrid:
-            self._draw_grid()
-
-        if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
-            self.time_elapsed_from_prev_animation_frame = 0
-
-        pygame.display.update()
+            self.window.blit(rescaled_img, self._mapscreen_coords_to_gamescreen_coords((ghost.x, ghost.y)))

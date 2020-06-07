@@ -66,7 +66,7 @@ class MapObject():
 
     @texture.setter
     def texture(self, texture_path):
-        #self._texture = value
+
         img = pygame.image.load(texture_path)
         img = pygame.transform.scale(img, (self.width, self.height))
         img = img.convert_alpha()
@@ -83,7 +83,7 @@ class MapObject():
             sprite = pygame.sprite.Sprite()
             sprite.surface = pygame.Surface((self.width, self.height))
 
-            # Make image opaque
+            # Make image transparent
             sprite.image = img.convert_alpha()
 
             # Get mask out of the image
@@ -101,7 +101,7 @@ class MapObject():
 class Pellet(MapObject):
 
     def __init__(self, coord, width=Constants.SECTOR_SIZE, height=Constants.SECTOR_SIZE,
-                 hitbox_path=Constants.PELLET_HITBOX_PATH, texture=Constants.PELLET_HITBOX_PATH,
+                 hitbox_path=Constants.PELLET_HITBOX_PATH, texture=Constants.PELLET_TEXTURE_PATH,
                  value = PELLET_VALUE):
         self.value = value
         super().__init__(coord, width, height, hitbox_path, texture)
@@ -113,7 +113,7 @@ class Pellet(MapObject):
 class MegaPellet(MapObject):
 
     def __init__(self, coord, width=Constants.SECTOR_SIZE, height=Constants.SECTOR_SIZE,
-                 hitbox_path=Constants.MEGAPELLET_HITBOX_PATH, texture=Constants.MEGAPELLET_HITBOX_PATH,
+                 hitbox_path=Constants.MEGAPELLET_HITBOX_PATH, texture=Constants.MEGAPELLET_TEXTURE_PATH,
                  value = PELLET_VALUE):
         self.value = value
         super().__init__(coord, width, height, hitbox_path, texture)
@@ -125,7 +125,7 @@ class MegaPellet(MapObject):
 class Cherry(MapObject):
 
     def __init__(self, coord, width=Constants.SECTOR_SIZE, height=Constants.SECTOR_SIZE,
-                 hitbox_path=Constants.WALL_HITBOX_PATH, texture=Constants.WALL_TEXTURE_PATH,
+                 hitbox_path=Constants.CHERRY_HITBOX_PATH, texture=Constants.CHERRY_TEXTURE_PATH,
                  value=PELLET_VALUE):
         self.value = value
         super().__init__(coord, width, height, hitbox_path, texture)

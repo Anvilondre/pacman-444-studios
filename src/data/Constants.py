@@ -67,13 +67,14 @@ FRUITS_BAR_WIDTH = 200 / 1000
 
 GAMESCREEN_BOUNDBOX_SURF_WIDTH_RATIO = 1920 / 1920  # TODO: Add explanation
 GAMESCREEN_BOUNDBOX_SURF_HEIGHT_RATIO = 980 / 1080
-GAMESCREEN_CELL_SIZE_RATIO = 36*2 / 1920
+GAMESCREEN_CELL_SIZE_RATIO = 36 * 2 / 1920
 
 # Animation
 ANIMATION_PERIOD = 0.1  # seconds
 
 # Debug
-HITBOX_OPACITY = 150
+HITBOX_OPACITY = 250
+HITBOX_COLOR = ((0, 255, 198))
 
 ''' All file paths '''
 
@@ -83,8 +84,8 @@ SCREEN_BACKGROUND_IMAGE = ...  # TODO: Add path
 
 # PacMan
 
-PACMAN_MAPOBJECT_HITBOX_PATH = "../res/hitbox/pacman.png"
-PACMAN_CREATURE_HITBOX_PATH = "../res/hitbox/pacman.png"
+PACMAN_MAPOBJECT_HITBOX_PATH = "../res/hitbox/pacman_mapobject.png"
+PACMAN_CREATURE_HITBOX_PATH = "../res/hitbox/pacman_creature.png"
 pacman_animations_paths = {"move_left": ["../res/animations/pacman/move_left/0.png",
                                          "../res/animations/pacman/move_left/1.png",
                                          "../res/animations/pacman/move_left/2.png",
@@ -113,8 +114,8 @@ pacman_animations_paths = {"move_left": ["../res/animations/pacman/move_left/0.p
 
 # Ghosts
 
-GHOST_MAPOBJECT_HITBOX_PATH = "../res/hitbox/ghost.png"
-GHOST_CREATURE_HITBOX_PATH = "../res/hitbox/ghost.png"
+GHOST_MAPOBJECT_HITBOX_PATH = "../res/hitbox/ghost_mapobject.png"
+GHOST_CREATURE_HITBOX_PATH = "../res/hitbox/ghost_creature.png"
 pinky_animations_paths = {"move_left": ["../res/animations/pinky/move_left/0.png",
                                         "../res/animations/pinky/move_left/1.png",
                                         "../res/animations/pinky/move_left/2.png",
@@ -137,13 +138,17 @@ pinky_animations_paths = {"move_left": ["../res/animations/pinky/move_left/0.png
                                    "../res/animations/pinky/dead/3.png"]}
 
 # Wall
-WALL_HITBOX_PATH = "../res/textures/wall.png"
-WALL_TEXTURE_PATH = "../res/hitbox/wall.png"
+WALL_HITBOX_PATH = "../res/hitbox/wall.png"
+WALL_TEXTURE_PATH = "../res/textures/wall.png"
+
+# Cherry
+CHERRY_HITBOX_PATH = "../res/hitbox/wall.png"
+CHERRY_TEXTURE_PATH = "../res/textures/wall.png"
 
 # Pellet
-PELLET_HITBOX_PATH = "../res/textures/pellet.png"
-PELLET_TEXTURE_PATH = "../res/hitbox/pellet.png"
+PELLET_HITBOX_PATH = "../res/hitbox/pellet.png"
+PELLET_TEXTURE_PATH = "../res/textures/pellet.png"
 
 # Mega pellet
-MEGAPELLET_HITBOX_PATH = "../res/textures/mega_pellet.png"
-MEGAPELLET_TEXTURE_PATH = "../res/hitbox/mega_pellet.png"
+MEGAPELLET_HITBOX_PATH = "../res/hitbox/mega_pellet.png"
+MEGAPELLET_TEXTURE_PATH = "../res/textures/mega_pellet.png"

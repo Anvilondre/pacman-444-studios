@@ -13,7 +13,7 @@ from src.view.Renderer import Renderer
 
 
 def get_sector_coord(x, y):
-    return int(x / 36), int(y / 36)
+    return int(x // SECTOR_SIZE), int(y // SECTOR_SIZE)
 
 
 def revive_ghost(ghost):
@@ -22,7 +22,7 @@ def revive_ghost(ghost):
 
 
 def ghost_died(ghost):  # TODO: Animations
-    ghost._is_alive = False
+    ghost.is_alive = False
 
 
 def move_creature_direction(creature, direction, vel=None):
@@ -45,6 +45,19 @@ def move_creature_direction(creature, direction, vel=None):
         raise Exception('Illegal direction')
 
 
+def lean_pacman_to_wall(creature, wall):
+    """ Leans creature to the wall if they have collision """
+
+    if wall.coord[1] > creature.y:  # wall is below
+        creature.y = wall.coord[1] - creature.height
+    elif wall.coord[1] < creature.y:  # wall on top
+        creature.y = wall.coord[1] + wall.height
+    elif wall.coord[0] < creature.x:  # wall on left
+        creature.x = wall.coord[0] + creature.width
+    elif wall.coord[0] > creature.x:  # wall on right
+        creature.x = wall.coord[0] - wall.width
+
+
 class Controller:
     def __init__(self, levels):
         self.levels = cycle(levels)
@@ -59,6 +72,7 @@ class Controller:
             self.ghosts = \
             self.speed_ability = \
             self.transform_ability = \
+            self.ability_timer = \
             self.ability_is_ready = None
         self.initial_setup()
 
@@ -75,7 +89,6 @@ class Controller:
     def init_render(self):
         pygame.init()
         self.renderer = Renderer((0, 0), is_fullscreen=False)
-        # self.window = pygame.display.set_mode((800, 600))
 
     def init_level(self):
         self.current_level = next(self.levels)
@@ -138,11 +151,23 @@ class Controller:
 
     def set_cooldown_timer(self):
         self.ability_is_ready = False
-        timer = Timer(self.current_level.pacman_cooldown, self.set_ability_ready)  # run timer for cooldown
-        timer.start()
+        self.ability_timer = Timer(self.current_level.pacman_cooldown, self.set_ability_ready)  # run timer for cooldown
+        self.ability_timer.start()
 
     def set_ability_ready(self):
         self.ability_is_ready = True
+
+    def deactivate_active_ability(self):
+        if self.ability_timer is not None and self.ability_timer.is_alive:
+            self.ability_is_ready = True
+
+            if self.transform_ability.is_active:
+                self.transform_ability.deactivate()
+
+            else:
+                self.speed_ability.deactivate()
+
+            self.ability_timer.cancel()
 
     def collides_wall(self, creature):
         for wall in self.walls:
@@ -150,6 +175,11 @@ class Controller:
                 return True
         else:
             return False
+
+    def get_collided_wall(self, creature):
+        for wall in self.walls:
+            if pygame.sprite.collide_mask(creature.mapobject_hitbox, wall.hitbox):
+                return wall
 
     def move_creature(self, creature):
         """ Move pac-man and check collision with wall-list """
@@ -167,14 +197,44 @@ class Controller:
                 (creature.x, creature.y) = creature_coords
 
         move_creature_direction(creature, creature.direction)
+        self.teleport_activate(creature)
         if self.collides_wall(creature):
-            (creature.x, creature.y) = creature_coords
+            lean_pacman_to_wall(creature, self.get_collided_wall(creature))
+
+    def teleport_activate(self, creature):
+        """ If coordinate of the pacman in teleport area then changes
+            coordinate of pacman to the opposite map side"""
+        map_width = self.current_level.level_map.width * SECTOR_SIZE
+        map_height = self.current_level.level_map.height * SECTOR_SIZE
+
+        if creature.x <= -SECTOR_SIZE:  # left teleport
+            creature.x = map_width
+        elif creature.x >= map_width:  # right teleport
+            creature.x = 0
+        elif creature.y <= -SECTOR_SIZE:  # top teleport
+            creature.y = map_height
+        elif creature.y >= map_height:  # bottom teleport
+            creature.y = 0
+        else:
+            return False
 
     def update_pacman(self):
         self.move_creature(self.pacman)
         self.check_pacman_ghost_collision()
         self.check_pellet_collision()
         self.check_mega_pellet_collision()
+
+    def update_level(self):
+        """ Jumps to the next level if all pellets are picked """
+        if not self.pellets and not self.mega_pellets:
+            self.init_level()
+            self.map_restart()
+
+    def map_restart(self):
+        """ Restart current map """
+        self.parse_level()
+        self.init_pacman()
+        self.init_ghosts()
 
     def resolve_ghost_direction(self, ghost, pacman_coord, used_sectors=[], used_val=0):
         ghost_coord = get_sector_coord(ghost.x + ghost.width / 2, ghost.y + ghost.height / 2)
@@ -229,18 +289,21 @@ class Controller:
             self.pacman.lives -= 1
             (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
         else:
-            self.game_over = True
+            self.map_restart()
+
+        self.deactivate_active_ability()
 
     def run(self):
         clock = pygame.time.Clock()
         while True:
-            miliseconds = clock.tick(3)
+            miliseconds = clock.tick(60)
             elapsed_time = miliseconds / 1000.0  # seconds
 
             self.handle_events()
             self.update_pacman()
             self.update_ghosts(hardcore=True)
+            self.update_level()
 
             # TODO: Implement renderer
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts],
-                                 elapsed_time, showgrid=False, show_hitboxes=True)
+                                 elapsed_time, showgrid=False, show_hitboxes=False)

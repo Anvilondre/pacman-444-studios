@@ -46,7 +46,7 @@ class Creature(object):
     @x.setter
     def x(self, value: int):
 
-        if value >= 0 and (isinstance(value, int) or isinstance(value, float)):
+        if isinstance(value, int) or isinstance(value, float):
             if isinstance(value, float):
                 value = round(value)
 
@@ -56,11 +56,11 @@ class Creature(object):
             # Update creature's x coordinate
             self._x = value
             return
-
-        if value < 0:
-            raise ValueError("X cannot be assigned to negative value:", value)
-        if not isinstance(value, int) and not isinstance(value, float):
-            raise TypeError("X cannot be assigned to non-numeric object:", type(value), value)
+        #TODO
+        # if value < 0:
+        #     raise ValueError("X cannot be assigned to negative value:", value)
+        # if not isinstance(value, int) and not isinstance(value, float):
+        #     raise TypeError("X cannot be assigned to non-numeric object:", type(value), value)
 
     @property
     def y(self):
@@ -69,7 +69,7 @@ class Creature(object):
     @y.setter
     def y(self, value: int):
 
-        if value >= 0 and (isinstance(value, int) or isinstance(value, float)):
+        if isinstance(value, int) or isinstance(value, float):
             if isinstance(value, float):
                 value = round(value)
 
@@ -79,11 +79,11 @@ class Creature(object):
             # Update creature's y coordinate
             self._y = value
             return
-
-        if value < 0:
-            raise ValueError("Y cannot be assigned to negative value: ", value)
-        if not isinstance(value, int) and not isinstance(value, float):
-            raise TypeError("Y cannot be assigned to non-numeric object:", type(value), value)
+        #TODO
+        # if value < 0:
+        #     raise ValueError("Y cannot be assigned to negative value: ", value)
+        # if not isinstance(value, int) and not isinstance(value, float):
+        #     raise TypeError("Y cannot be assigned to non-numeric object:", type(value), value)
 
     @property
     def coord(self):

@@ -54,7 +54,7 @@ class Map:
                 else:
                     obj = None
 
-                hash_map[str_coord] = obj
+                hash_map[str_coord] = 1 if isinstance(obj, Wall) else 0
 
         self.hash_map = hash_map
         self.pellets = pellets

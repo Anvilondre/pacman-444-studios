@@ -91,7 +91,7 @@ class PathFinder:
                 map_value = self.hash_map.get(item)
 
                 # Skip walls
-                if isinstance(map_value, Wall):
+                if map_value:
                     continue
 
                 neighbor = Node(item, current_node)

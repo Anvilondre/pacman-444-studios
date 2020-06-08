@@ -52,7 +52,7 @@ class Level1(Level):
     pacman_cooldown = 10
     speed_ability_duration = 5
     transform_ability_duration = 5
-    ghosts_velocity = 3
+    ghosts_velocity = 2
     ghosts_slowdown = 0
 
     level_map = Map(["###################",
@@ -63,8 +63,8 @@ class Level1(Level):
                      "#....#...#...#....#",
                      "####.###.#.###.####",
                      "####.#.......#.####",
-                     "####.#.## ##.#.####",
-                     ".......#.$.#.......",
+                     "####.#.##$##.#.####",
+                     ".......#$$$#.......",
                      "####.#.#####.#.####",
                      "####.#.......#.####",
                      "####.#.#####.#.####",

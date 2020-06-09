@@ -358,7 +358,7 @@ class Controller:
     def run(self):
         clock = pygame.time.Clock()
         while True:
-            miliseconds = clock.tick(200)
+            miliseconds = clock.tick(60)
             self.tick_time = miliseconds / 1000.0  # seconds
 
             if self.tick_time > 0.3:
@@ -368,6 +368,7 @@ class Controller:
             self.physics_update(self.tick_time)
             self.update_ghosts(self.tick_time, hardcore=False)
             self.update_level()
+
             # # TODO: Implement renderer
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts],
                                  self.tick_time, showgrid=False, show_hitboxes=False)

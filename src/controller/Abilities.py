@@ -33,16 +33,22 @@ class SpeedAbility(Ability):
     def __init__(self, pacman, duration, pacman_vel, pacman_boost):
         self.pacman_velocity = pacman_vel
         self.pacman_boost = pacman_boost
+        self.is_active = False
         super().__init__(pacman, duration)
 
-    def run(self):
-        super().run()
+    def run(self, pacman_vel, pacman_boost):
+        self.activate(pacman_vel, pacman_boost)
+        self.duration_timer.start()
 
-    def activate(self):
-        self.pacman.velocity += self.pacman_boost
+    def activate(self, pacman_vel, pacman_boost):
+        self.pacman_velocity = pacman_vel
+        self.pacman_boost = pacman_boost
+        self.is_active = True
+        self.pacman.velocity = int(pacman_vel + pacman_boost)
 
     def deactivate(self):
-        self.pacman.velocity = self.pacman_velocity
+        self.is_active = False
+        self.pacman.velocity = int(self.pacman_velocity)
 
 
 class TransformAbility(Ability):

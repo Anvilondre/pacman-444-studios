@@ -4,7 +4,7 @@ import pygame
 from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
 from src.controller.Abilities import SpeedAbility, TransformAbility
 from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
-    PACMAN_PX_PER_SECOND, GHOST_PX_PER_SECOND, GLOBAL_TICK_RATE
+    PACMAN_PX_PER_SECOND, GHOST_PX_PER_SECOND, GLOBAL_TICK_RATE, PACMAN_BOOST_PX_PER_SECOND
 from src.model.Creatures import PacMan, Ghost
 from src.controller.GhostsAI import PathFinder
 from threading import Timer
@@ -122,7 +122,7 @@ class Controller:
 
     def init_abilities(self):
         self.speed_ability = SpeedAbility(self.pacman, self.current_level.speed_ability_duration,
-                                          self.current_level.pacman_velocity, self.current_level.pacman_boost)
+                                          self.pacman.velocity, self.current_level.pacman_boost)
 
         self.transform_ability = TransformAbility(self.pacman, self.current_level.speed_ability_duration, self.ghosts,
                                                   self.current_level.ghosts_velocity,
@@ -147,7 +147,14 @@ class Controller:
                     self.pacman.preferred_direction = 'down'
 
                 elif event.key == K_1 and self.pacman.mana > 0 and self.ability_is_ready:
-                    self.speed_ability.run()
+                    if self.tick_time > DESIRED_PHYSICS_TICK_TIME:
+                        boost_tick_time = self.tick_time
+                    else:
+                        boost_tick_time = DESIRED_PHYSICS_TICK_TIME
+
+                    pacman_vel = boost_tick_time * PACMAN_PX_PER_SECOND
+                    pacman_boost = boost_tick_time * PACMAN_BOOST_PX_PER_SECOND
+                    self.speed_ability.run(pacman_vel, pacman_boost)
                     self.set_cooldown_timer()
 
                 elif event.key == K_2:
@@ -227,8 +234,9 @@ class Controller:
             return False
 
     def update_pacman(self, counter_physics_tick_time):
-        self.pacman.velocity = int(PACMAN_PX_PER_SECOND * counter_physics_tick_time)
-        # print("pacman: " + str(self.pacman.velocity))
+        if not self.speed_ability.is_active:
+            self.pacman.velocity = int(PACMAN_PX_PER_SECOND * counter_physics_tick_time)
+        print("pacman: " + str(self.pacman.velocity))
         self.move_creature(self.pacman)
         self.check_pacman_ghost_collision()
         self.check_pellet_collision()
@@ -264,7 +272,7 @@ class Controller:
     def update_ghosts(self, tick_time, hardcore=True):
         self.counter_ai_tick_time += tick_time
         if self.counter_ai_tick_time > DESIRED_AI_TICK_TIME:
-            start_time = time.time() * 1000
+            start_time = time.time()
             pacman_coord = get_sector_coord(self.pacman.x + self.pacman.width / 2,
                                             self.pacman.y + self.pacman.height / 2)
             if hardcore:
@@ -275,14 +283,15 @@ class Controller:
             else:
                 for ghost in self.ghosts:
                     self.resolve_ghost_direction(ghost, pacman_coord)
-            end_time = time.time() * 1000
+            end_time = time.time()
             self.ghost_update_exec_time = end_time - start_time
+            # self.time_convert(self.ghost_update_exec_time)
             self.counter_ai_tick_time = 0
 
     def move_ghosts(self, counter_physics_tick_time):
         for ghost in self.ghosts:
             ghost.velocity = int(GHOST_PX_PER_SECOND * counter_physics_tick_time)
-            # print("GHOST: " + str(ghost.velocity))
+            print("GHOST: " + str(ghost.velocity))
             self.move_creature(ghost)
 
     def check_pacman_ghost_collision(self):  # TODO: Change hitbox
@@ -323,12 +332,19 @@ class Controller:
 
         if self.counter_physics_tick_time >= DESIRED_PHYSICS_TICK_TIME:
             start_time = time.time()
-            self.handle_events()
             self.update_pacman(DESIRED_PHYSICS_TICK_TIME)
             self.move_ghosts(DESIRED_PHYSICS_TICK_TIME)
             self.counter_physics_tick_time = 0
             end_time = time.time()
             self.physics_update_exec_time = end_time - start_time
+            self.time_convert(self.physics_update_exec_time)
+
+    def time_convert(self, sec):
+        mins = sec // 60
+        sec = sec % 60
+        hours = mins // 60
+        mins = mins % 60
+        # print("Time Lapsed = {0}:{1}:{2}".format(int(hours), int(mins), sec))
 
     def render_update(self, tick_time):
         self.desired_render_tick_time += tick_time
@@ -342,16 +358,16 @@ class Controller:
     def run(self):
         clock = pygame.time.Clock()
         while True:
-            miliseconds = clock.tick(80)
-            tick_time = miliseconds / 1000.0  # seconds
+            miliseconds = clock.tick(200)
+            self.tick_time = miliseconds / 1000.0  # seconds
 
-            if tick_time > 0.3:
-                tick_time = 1 / GLOBAL_TICK_RATE
+            if self.tick_time > 0.3:
+                self.tick_time = 1 / GLOBAL_TICK_RATE
 
             self.handle_events()
-            self.physics_update(tick_time)
-            self.update_ghosts(tick_time, hardcore=False)
+            self.physics_update(self.tick_time)
+            self.update_ghosts(self.tick_time, hardcore=False)
             self.update_level()
             # # TODO: Implement renderer
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts],
-                                 tick_time, showgrid=False, show_hitboxes=False)
+                                 self.tick_time, showgrid=False, show_hitboxes=False)

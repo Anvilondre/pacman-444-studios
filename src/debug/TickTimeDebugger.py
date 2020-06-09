@@ -1,54 +1,70 @@
 #import matplotlib.pyplot as plt
+import threading
+
 import random
 from itertools import count
-import pandas as pd
+from time import sleep
+
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+from src.data import Constants
+
 class TickTimeDebugger(object):
+    """How to use: call .run() in init and then call .update() in main loop"""
 
-    def __init__(self, desired_tick_time):
-        self.desired_tick_time = desired_tick_time
+    def __init__(self):
         # [[%actual data%], (%max number of values%)]
-        self.data = {"physics_data": [], "ai_data": [], "render_data": []}
-        self.data_boundaries = {"physics_data": 20, "ai_data": 10, "render_data": 5}
-        # self.physics_data = []
-        # self.ai_data = []
-        # self.render_data = []
+        self.max_displayed_t = Constants.GLOBAL_TICK_RATE*10
+        self.data = {"physics_data": [0 for i in range(self.max_displayed_t)],
+                     "ai_data": [0 for i in range(self.max_displayed_t)],
+                     "render_data": [0 for i in range(self.max_displayed_t)]}
+        self.x = [i for i in range(self.max_displayed_t)]
+        self.index = count()
 
-    def update_data(self):
-        pass
 
-    def update(self, physics_tick_time, ai_tick_time, render_tick_time):
-        pass
+    def delete_overflowed_data(self):
+        # while len(self.x) >= self.max_displayed_t:
+        #     self.x.pop()
 
-    def show(self):
+        for datalist in list(self.data.values()):
+            while len(datalist) >= self.max_displayed_t:
+                datalist.pop(0)
+
+    def update(self, physics_exec_time, ai_exec_time, render_exec_time):
+        self.delete_overflowed_data()
+
+        # update x
+        #self.x.append(next(self.index))
+
+        # update y
+        self.data["physics_data"].append(physics_exec_time)
+        self.data["ai_data"].append(ai_exec_time)
+        self.data["render_data"].append(render_exec_time)
+
+
+
+    def _run(self):
+        plt.figure(figsize=(15, 3))
         plt.style.use('fivethirtyeight')
-
-        x_vals = []
-        y_vals = []
-
-        index = count()
+        plt.ylabel("Execution time")
 
         def animate(i):
-            data = pd.read_csv('data.csv')
-            x = data['x_value']
-            y1 = data['total_1']
-            y2 = data['total_2']
-
             plt.cla()
 
-            plt.plot(x, y1, label='Channel 1')
-            plt.plot(x, y2, label='Channel 2')
+            for item in self.data.items():
+                plt.plot(self.x, item[1], label=item[0])
+                plt.yscale('log')
 
             plt.legend(loc='upper left')
             plt.tight_layout()
 
-        ani = FuncAnimation(plt.gcf(), animate, interval=1000)
+        ani = FuncAnimation(plt.gcf(), animate, interval=1/Constants.GLOBAL_TICK_RATE*1000)
 
         plt.tight_layout()
         plt.show()
 
-
-db = TickTimeDebugger(0.017)
-db.show()
+    def run(self):
+        plot = threading.Thread(target=self._run, args=())
+        plot.daemon = True  # Daemonize thread
+        plot.start()

@@ -5,6 +5,7 @@ from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
 from src.controller.Abilities import SpeedAbility, TransformAbility
 from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
     PACMAN_PX_PER_SECOND, GHOST_PX_PER_SECOND, GLOBAL_TICK_RATE
+from src.debug.TickTimeDebugger import TickTimeDebugger
 from src.model.Creatures import PacMan, Ghost
 from src.controller.GhostsAI import PathFinder
 from threading import Timer
@@ -87,6 +88,7 @@ class Controller:
     def initial_setup(self):
         self.game_over = False
         self.init_render()
+        self.init_debugger()
         self.init_level()
         self.renderer.set_map_dimensions(self.current_level.level_map.dims)
         self.parse_level()
@@ -97,6 +99,9 @@ class Controller:
     def init_render(self):
         pygame.init()
         self.renderer = Renderer((0, 0), is_fullscreen=False)
+
+    def init_debugger(self):
+        self.ticktime_debugger = TickTimeDebugger()
 
     def init_level(self):
         self.current_level = next(self.levels)
@@ -341,6 +346,8 @@ class Controller:
 
     def run(self):
         clock = pygame.time.Clock()
+        self.ticktime_debugger.run()
+
         while True:
             miliseconds = clock.tick(80)
             tick_time = miliseconds / 1000.0  # seconds
@@ -355,3 +362,5 @@ class Controller:
             # # TODO: Implement renderer
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts],
                                  tick_time, showgrid=False, show_hitboxes=False)
+            self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time, self.render_update_exec_time)
+

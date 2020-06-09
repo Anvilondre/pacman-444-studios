@@ -185,10 +185,10 @@ class Creature(object):
         if value in Constants.directions and isinstance(value, str):
             self._preferred_direction = value
             return
-        if value not in Constants.directions:
-            raise ValueError("preferred_direction can only take these values: " + Constants.directions.__str__() + "\nInstead, it took:",value)
-        if not isinstance(value, str):
-            raise TypeError("preferred_direction cannot be assigned to non-str object:", type(value), value)
+        # if value not in Constants.directions:
+        #     raise ValueError("preferred_direction can only take these values: " + Constants.directions.__str__() + "\nInstead, it took:",value)
+        # if not isinstance(value, str):
+        #     raise TypeError("preferred_direction cannot be assigned to non-str object:", type(value), value)
 
     @property
     def form(self):

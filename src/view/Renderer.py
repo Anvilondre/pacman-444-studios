@@ -86,7 +86,7 @@ class Renderer(object):
         self.gamescreen_surf = pygame.Surface((self.gamescreen_surf_width, self.gamescreen_surf_height))
         self.gamescreen_surf_x = self.canvas_width / 2 - self.gamescreen_surf.get_width() / 2
         self.gamescreen_surf_y = self.canvas_height / 2 - self.gamescreen_surf.get_height() / 2
-        self.gamescreen_surf.fill((255, 100, 100))
+        self.gamescreen_surf.fill(Constants.GAMESCREEN_COLOR)
 
     def _rescale_gamescreen(self, map_dimensions):
         """Rescale gamescreen if it's bigger, than gamescreen bounds"""

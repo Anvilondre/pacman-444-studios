@@ -8,6 +8,8 @@ class Renderer(object):
                  windowed_screen_width=Constants.WINDOWED_SCREEN_WIDTH,
                  windowed_screen_height=Constants.WINDOWED_SCREEN_HEIGHT):
 
+        self.first_map_render = True
+
         self.map_dimensions = map_dimensions # cells
         self.map_size = [map_dimensions[0] * Constants.SECTOR_SIZE, map_dimensions[1] * Constants.SECTOR_SIZE,] # px
         self.animation_period = Constants.ANIMATION_PERIOD  # seconds
@@ -27,46 +29,30 @@ class Renderer(object):
         self._init_background()
         self._init_gui()
         self._init_gamescreen(map_dimensions)
+        self._init_covers()
+
+        # Init element lists
+        self._init_bg_elements_list()
         self._init_gui_elements_list()
+        self._init_covers_list()
 
     def set_map_dimensions(self, map_dimensions):
         self.map_dimensions = map_dimensions  # cells
         self.map_size = [map_dimensions[0] * Constants.SECTOR_SIZE, map_dimensions[1] * Constants.SECTOR_SIZE,] # px
+
+        # Because map dimensions have changed, we have to update our gamescreen surf, cell size and
+        # update all elements dependant on latter
         self._init_gamescreen(map_dimensions)
+        self._init_bg_elements_list()
         self._init_gui_elements_list()
+        self._init_covers()
+        self._init_covers_list()
 
     def _init_background(self):
         self.background_surf = pygame.Surface((self.canvas_width, self.canvas_height))
         self.background_surf_x = 0
         self.background_surf_y = 0
-        self.background_surf.fill((0, 0, 0))
-
-    def _init_gui(self):
-        self.top_bar_width = Constants.TOP_BAR_WIDTH_RATIO * self.canvas_width
-        self.top_bar_height = Constants.TOP_BAR_HEIGHT_RATIO * self.canvas_height
-        self.bottom_bar_width = Constants.BOTTOM_BAR_WIDTH_RATIO * self.canvas_width
-        self.bottom_bar_height = Constants.BOTTOM_BAR_HEIGHT_RATIO * self.canvas_height
-
-        self.lives_bar_surf_width = int(Constants.LIVES_BAR_WIDTH * self.bottom_bar_width)
-        self.lives_bar_surf_height = int(self.bottom_bar_height)
-        self.lives_bar_surf = pygame.Surface((self.lives_bar_surf_width, self.lives_bar_surf_height))
-        self.lives_bar_surf_x = Constants.BOTTOM_BAR_X_RATIO * self.canvas_width
-        self.lives_bar_surf_y = Constants.BOTTOM_BAR_Y_RATIO * self.canvas_height
-        self.lives_bar_surf.fill((203, 124, 30))
-
-        self.abilities_bar_surf_width = int(Constants.ABILITIES_BAR_WIDTH * self.bottom_bar_width)
-        self.abilities_bar_surf_height = int(self.bottom_bar_height)
-        self.abilities_bar_surf = pygame.Surface((self.abilities_bar_surf_width, self.abilities_bar_surf_height))
-        self.abilities_bar_surf_x = self.lives_bar_surf_x + self.lives_bar_surf_width
-        self.abilities_bar_surf_y = self.lives_bar_surf_y
-        self.abilities_bar_surf.fill((65, 204, 186))
-
-        self.fruits_bar_surf_width = int(Constants.FRUITS_BAR_WIDTH * self.bottom_bar_width)
-        self.fruits_bar_surf_height = int(self.bottom_bar_height)
-        self.fruits_bar_surf = pygame.Surface((self.fruits_bar_surf_width, self.fruits_bar_surf_height))
-        self.fruits_bar_surf_x = self.abilities_bar_surf_x + self.abilities_bar_surf_width
-        self.fruits_bar_surf_y = self.abilities_bar_surf_y
-        self.fruits_bar_surf.fill((204, 65, 107))
+        self.background_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
 
         self.gamescreen_boundbox_surf_width = int(Constants.GAMESCREEN_BOUNDBOX_SURF_WIDTH_RATIO * self.canvas_width)
         self.gamescreen_boundbox_surf_height = int(Constants.GAMESCREEN_BOUNDBOX_SURF_HEIGHT_RATIO * self.canvas_height)
@@ -74,7 +60,7 @@ class Renderer(object):
             (self.gamescreen_boundbox_surf_width, self.gamescreen_boundbox_surf_height))
         self.gamescreen_boundbox_surf_x = self.canvas_width / 2 - self.gamescreen_boundbox_surf.get_width() / 2
         self.gamescreen_boundbox_surf_y = self.canvas_height / 2 - self.gamescreen_boundbox_surf.get_height() / 2
-        self.gamescreen_boundbox_surf.fill((80, 0, 0))
+        self.gamescreen_boundbox_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
 
     def _init_gamescreen(self, map_dimensions):
         self.gamescreen_cell_size = int(Constants.GAMESCREEN_CELL_SIZE_RATIO * self.canvas_width)
@@ -111,16 +97,78 @@ class Renderer(object):
             self.gamescreen_surf_width = map_dimensions[0] * self.gamescreen_cell_size
             self.gamescreen_surf_height = map_dimensions[1] * self.gamescreen_cell_size
 
+    def _init_gui(self):
+        self.top_bar_width = Constants.TOP_BAR_WIDTH_RATIO * self.canvas_width
+        self.top_bar_height = Constants.TOP_BAR_HEIGHT_RATIO * self.canvas_height
+        self.bottom_bar_width = Constants.BOTTOM_BAR_WIDTH_RATIO * self.canvas_width
+        self.bottom_bar_height = Constants.BOTTOM_BAR_HEIGHT_RATIO * self.canvas_height
+
+        self.lives_bar_surf_width = int(Constants.LIVES_BAR_WIDTH * self.bottom_bar_width)
+        self.lives_bar_surf_height = int(self.bottom_bar_height)
+        self.lives_bar_surf = pygame.Surface((self.lives_bar_surf_width, self.lives_bar_surf_height))
+        self.lives_bar_surf_x = Constants.BOTTOM_BAR_X_RATIO * self.canvas_width
+        self.lives_bar_surf_y = Constants.BOTTOM_BAR_Y_RATIO * self.canvas_height
+        self.lives_bar_surf.fill((203, 124, 30))
+
+        self.abilities_bar_surf_width = int(Constants.ABILITIES_BAR_WIDTH * self.bottom_bar_width)
+        self.abilities_bar_surf_height = int(self.bottom_bar_height)
+        self.abilities_bar_surf = pygame.Surface((self.abilities_bar_surf_width, self.abilities_bar_surf_height))
+        self.abilities_bar_surf_x = self.lives_bar_surf_x + self.lives_bar_surf_width
+        self.abilities_bar_surf_y = self.lives_bar_surf_y
+        self.abilities_bar_surf.fill((65, 204, 186))
+
+        self.fruits_bar_surf_width = int(Constants.FRUITS_BAR_WIDTH * self.bottom_bar_width)
+        self.fruits_bar_surf_height = int(self.bottom_bar_height)
+        self.fruits_bar_surf = pygame.Surface((self.fruits_bar_surf_width, self.fruits_bar_surf_height))
+        self.fruits_bar_surf_x = self.abilities_bar_surf_x + self.abilities_bar_surf_width
+        self.fruits_bar_surf_y = self.abilities_bar_surf_y
+        self.fruits_bar_surf.fill((204, 65, 107))
+
+    def _init_covers(self):
+        self.left_teleport_cover_surf = pygame.Surface((self.gamescreen_cell_size, self.gamescreen_surf_height))
+        self.left_teleport_cover_surf_x = self.gamescreen_surf_x - self.gamescreen_cell_size
+        self.left_teleport_cover_surf_y = self.gamescreen_surf_y
+        self.left_teleport_cover_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
+
+        self.up_teleport_cover_surf = pygame.Surface((self.gamescreen_surf_width, self.gamescreen_cell_size))
+        self.up_teleport_cover_surf_x = self.gamescreen_surf_x
+        self.up_teleport_cover_surf_y = self.gamescreen_surf_y - self.gamescreen_cell_size
+        self.up_teleport_cover_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
+
+        self.right_teleport_cover_surf = pygame.Surface((self.gamescreen_cell_size, self.gamescreen_surf_height))
+        self.right_teleport_cover_surf_x = self.gamescreen_surf_x + self.gamescreen_surf_width
+        self.right_teleport_cover_surf_y = self.gamescreen_surf_y
+        self.right_teleport_cover_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
+
+        self.down_teleport_cover_surf = pygame.Surface((self.gamescreen_surf_width, self.gamescreen_cell_size))
+        self.down_teleport_cover_surf_x = self.gamescreen_surf_x
+        self.down_teleport_cover_surf_y = self.gamescreen_surf_y + self.gamescreen_surf_height
+        self.down_teleport_cover_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
+
+    def _init_bg_elements_list(self):
+        """Creates a list of all background elements and their absolute positions on the canvas"""
+        self.bg_elements = []
+
+        self.bg_elements.append([self.background_surf, self.background_surf_x, self.background_surf_y])
+        self.bg_elements.append([self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
+        self.bg_elements.append([self.gamescreen_surf, self.gamescreen_surf_x, self.gamescreen_surf_y])
+
     def _init_gui_elements_list(self):
         """Creates a list of all gui elements and their absolute positions on the canvas"""
         self.gui_elements = []
-        self.gui_elements.append([self.background_surf, self.background_surf_x, self.background_surf_y])
-        self.gui_elements.append([self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
-        self.gui_elements.append([self.gamescreen_surf, self.gamescreen_surf_x, self.gamescreen_surf_y])
 
         self.gui_elements.append([self.lives_bar_surf, self.lives_bar_surf_x, self.lives_bar_surf_y])
         self.gui_elements.append([self.abilities_bar_surf, self.abilities_bar_surf_x, self.abilities_bar_surf_y])
         self.gui_elements.append([self.fruits_bar_surf, self.fruits_bar_surf_x, self.fruits_bar_surf_y])
+
+    def _init_covers_list(self):
+        """Creates a list of all covers and their absolute positions on the canvas"""
+        self.covers = []
+
+        self.covers.append([self.left_teleport_cover_surf, self.left_teleport_cover_surf_x, self.left_teleport_cover_surf_y])
+        self.covers.append([self.up_teleport_cover_surf, self.up_teleport_cover_surf_x, self.up_teleport_cover_surf_y])
+        self.covers.append([self.right_teleport_cover_surf, self.right_teleport_cover_surf_x, self.right_teleport_cover_surf_y])
+        self.covers.append([self.down_teleport_cover_surf, self.down_teleport_cover_surf_x, self.down_teleport_cover_surf_y])
 
     def _draw_grid(self):
         for x in range(self.gamescreen_surf_width // self.gamescreen_cell_size + 1):
@@ -188,15 +236,18 @@ class Renderer(object):
         # Unpack entities_list
         pellets, mega_pellets, walls, cherry, pacman, ghosts = entities_list
 
-        # Draw GUI
-        for element in self.gui_elements:
+        # Draw background
+        for element in self.bg_elements:
             self.window.blit(element[0], (element[1], element[2]))
 
         # This variable is needed for proper animation speed independent of FPS
         self.time_elapsed_from_prev_animation_frame += elapsed_time
 
         # Draw mapobjects
-        self._draw_mapobjects(walls, show_hitboxes=show_hitboxes)
+        if self.first_map_render:
+            self._draw_mapobjects(walls, show_hitboxes=show_hitboxes)
+            # TODO
+            self.first_map_render = True
         self._draw_mapobjects(pellets, show_hitboxes=show_hitboxes)
         self._draw_mapobjects(mega_pellets, show_hitboxes=show_hitboxes)
         self._draw_mapobjects(cherry, show_hitboxes=show_hitboxes)
@@ -207,6 +258,14 @@ class Renderer(object):
 
         #self._draw_text(pacman[0])
         #pygame.display.set_caption("Elapsed time: " + str(elapsed_time))
+
+        # Draw covers
+        for cover in self.covers:
+            self.window.blit(cover[0], (cover[1], cover[2]))
+
+        # Draw GUI
+        for element in self.gui_elements:
+            self.window.blit(element[0], (element[1], element[2]))
 
         # Draw Grid
         if showgrid:

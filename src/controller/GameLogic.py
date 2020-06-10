@@ -4,7 +4,7 @@ import pygame
 from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
 from src.controller.Abilities import SpeedAbility, TransformAbility
 from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
-    PACMAN_PX_PER_SECOND, GHOST_PX_PER_SECOND, GLOBAL_TICK_RATE
+    PACMAN_PX_PER_SECOND, GHOST_PX_PER_SECOND, GLOBAL_TICK_RATE, PACMAN_BOOST_PX_PER_SECOND
 from src.debug.TickTimeDebugger import TickTimeDebugger
 from src.model.Creatures import PacMan, Ghost
 from src.controller.GhostsAI import PathFinder
@@ -379,4 +379,3 @@ class Controller:
 
             self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time,
                                           self.render_update_exec_time, self.tick_time)
-            print(self.ticktime_debugger.data_updated)

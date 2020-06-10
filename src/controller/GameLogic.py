@@ -205,7 +205,6 @@ class Controller:
         """ Move pac-man and check collision with wall-list """
         creature_coords = (creature.x, creature.y)
         direction = creature.preferred_direction
-
         if direction != creature.direction:
             move_creature_direction(creature, direction, creature.width / 2)
             if not self.collides_wall(creature):
@@ -215,11 +214,61 @@ class Controller:
                 return
             else:
                 (creature.x, creature.y) = creature_coords
+                self.is_at_sector(creature, creature_coords)
 
+        # (creature.x, creature.y) = creature_coords
         move_creature_direction(creature, creature.direction)
         self.teleport_activate(creature)
         if self.collides_wall(creature):
             lean_pacman_to_wall(creature, self.get_collided_wall(creature))
+
+    def check_direction(self, creature, creature_coord, direction):
+        pass
+
+    def is_at_sector(self, creature, creature_coords):
+        direction = creature.preferred_direction
+        px_delay = 5
+
+        if creature.direction == 'right':
+            teleport_coordinate = creature.x - creature.x % SECTOR_SIZE + SECTOR_SIZE
+            if creature.x + px_delay >= teleport_coordinate:
+                creature.x = teleport_coordinate
+                move_creature_direction(creature, direction, creature.width / 2)
+                if not self.collides_wall(creature):
+                    creature.y = creature_coords[1]
+                    creature.direction = direction
+                else:
+                    (creature.x, creature.y) = creature_coords
+        elif creature.direction == 'left':
+            teleport_coordinate = creature.x - creature.x % SECTOR_SIZE
+            if creature.x - px_delay <= teleport_coordinate:
+                creature.x = teleport_coordinate
+                move_creature_direction(creature, direction, creature.width / 2)
+                if not self.collides_wall(creature):
+                    creature.y = creature_coords[1]
+                    creature.direction = direction
+                else:
+                    (creature.x, creature.y) = creature_coords
+        elif creature.direction == 'up':
+            teleport_coordinate = creature.y - creature.y % SECTOR_SIZE
+            if creature.y - px_delay <= teleport_coordinate:
+                creature.y = teleport_coordinate
+                move_creature_direction(creature, direction, creature.width / 2)
+                if not self.collides_wall(creature):
+                    creature.x = creature_coords[0]
+                    creature.direction = direction
+                else:
+                    (creature.x, creature.y) = creature_coords
+        elif creature.direction == 'down':
+            teleport_coordinate = creature.y - creature.y % SECTOR_SIZE + SECTOR_SIZE
+            if creature.y + px_delay >= teleport_coordinate:
+                creature.y = teleport_coordinate
+                move_creature_direction(creature, direction, creature.width / 2)
+                if not self.collides_wall(creature):
+                    creature.x = creature_coords[0]
+                    creature.direction = direction
+                else:
+                    (creature.x, creature.y) = creature_coords
 
     def teleport_activate(self, creature):
         """ If coordinate of the pacman in teleport area then changes
@@ -241,7 +290,7 @@ class Controller:
     def update_pacman(self, counter_physics_tick_time):
         if not self.speed_ability.is_active:
             self.pacman.velocity = int(PACMAN_PX_PER_SECOND * counter_physics_tick_time)
-        print("pacman: " + str(self.pacman.velocity))
+        # print("pacman: " + str(self.pacman.velocity))
         self.move_creature(self.pacman)
         self.check_pacman_ghost_collision()
         self.check_pellet_collision()
@@ -296,10 +345,10 @@ class Controller:
     def move_ghosts(self, counter_physics_tick_time):
         for ghost in self.ghosts:
             ghost.velocity = int(GHOST_PX_PER_SECOND * counter_physics_tick_time)
-            print("GHOST: " + str(ghost.velocity))
+            # print("GHOST: " + str(ghost.velocity))
             self.move_creature(ghost)
 
-    def check_pacman_ghost_collision(self):
+    def check_pacman_ghost_collision(self):  # TODO: Change hitbox
         for ghost in self.ghosts:
             if pygame.sprite.collide_mask(self.pacman.creature_hitbox, ghost.creature_hitbox):
                 if self.pacman.form == ghost.form:
@@ -307,13 +356,13 @@ class Controller:
                 else:
                     self.pacman_die()
 
-    def check_pellet_collision(self):
+    def check_pellet_collision(self):  # TODO: Change hitbox
         for pellet in self.pellets:
             if pygame.sprite.collide_mask(self.pacman.mapobject_hitbox, pellet.hitbox):
                 self.pacman.score += pellet.value
                 self.pellets.remove(pellet)
 
-    def check_mega_pellet_collision(self):
+    def check_mega_pellet_collision(self):  # TODO: Change hitbox
         for mega_pellet in self.mega_pellets:
             if pygame.sprite.collide_mask(self.pacman.mapobject_hitbox, mega_pellet.hitbox):
                 self.pacman.score += mega_pellet.value
@@ -337,8 +386,8 @@ class Controller:
 
         if self.counter_physics_tick_time >= DESIRED_PHYSICS_TICK_TIME:
             start_time = time.time()
-            self.update_pacman(DESIRED_PHYSICS_TICK_TIME)
-            self.move_ghosts(DESIRED_PHYSICS_TICK_TIME)
+            self.update_pacman(self.counter_physics_tick_time)
+            self.move_ghosts(self.counter_physics_tick_time)
             self.counter_physics_tick_time = 0
             end_time = time.time()
             self.physics_update_exec_time = end_time - start_time
@@ -362,7 +411,7 @@ class Controller:
 
     def run(self):
         clock = pygame.time.Clock()
-        #self.ticktime_debugger.run()
+        # self.ticktime_debugger.run()
         while True:
             miliseconds = clock.tick(GLOBAL_TICK_RATE)
             self.tick_time = miliseconds / 1000.0  # seconds

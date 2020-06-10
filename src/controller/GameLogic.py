@@ -81,6 +81,9 @@ class Controller:
             self.physics_update_exec_time = \
             self.render_update_exec_time = \
             self.counter_physics_tick_time = 0
+        self.tick_time = \
+        self.map_width = \
+        self.map_height = \
         self.counter_ai_tick_time = 0
         self.desired_render_tick_time = 0
         self.initial_setup()
@@ -111,6 +114,8 @@ class Controller:
         self.walls = self.current_level.level_map.walls
         self.pellets = self.current_level.level_map.pellets
         self.mega_pellets = self.current_level.level_map.mega_pellets
+        self.map_width = self.current_level.level_map.width * SECTOR_SIZE
+        self.map_height = self.current_level.level_map.height * SECTOR_SIZE
 
     def init_pacman(self):
         self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord,
@@ -205,7 +210,8 @@ class Controller:
         """ Move pac-man and check collision with wall-list """
         creature_coords = (creature.x, creature.y)
         direction = creature.preferred_direction
-        if direction != creature.direction:
+
+        if direction != creature.direction and not self.is_off_map(creature_coords):
             move_creature_direction(creature, direction, creature.width / 2)
             if not self.collides_wall(creature):
                 (creature.x, creature.y) = creature_coords
@@ -214,75 +220,81 @@ class Controller:
                 return
             else:
                 (creature.x, creature.y) = creature_coords
-                self.is_at_sector(creature, creature_coords)
+                self.change_direction(creature, creature_coords)
 
-        # (creature.x, creature.y) = creature_coords
         move_creature_direction(creature, creature.direction)
         self.teleport_activate(creature)
         if self.collides_wall(creature):
             lean_pacman_to_wall(creature, self.get_collided_wall(creature))
 
-    def check_direction(self, creature, creature_coord, direction):
-        pass
-
-    def is_at_sector(self, creature, creature_coords):
+    def change_direction(self, creature, creature_coords):
+        """ Change creature direction at optimal time"""
         direction = creature.preferred_direction
         px_delay = 5
 
         if creature.direction == 'right':
-            teleport_coordinate = creature.x - creature.x % SECTOR_SIZE + SECTOR_SIZE
-            if creature.x + px_delay >= teleport_coordinate:
-                creature.x = teleport_coordinate
-                move_creature_direction(creature, direction, creature.width / 2)
-                if not self.collides_wall(creature):
-                    creature.y = creature_coords[1]
-                    creature.direction = direction
-                else:
-                    (creature.x, creature.y) = creature_coords
+            change_direction_coord = creature.x - creature.x % SECTOR_SIZE + SECTOR_SIZE
+            if creature.x + px_delay >= change_direction_coord:
+                change_direction_coords = (change_direction_coord, creature.y)
+                self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
+
         elif creature.direction == 'left':
-            teleport_coordinate = creature.x - creature.x % SECTOR_SIZE
-            if creature.x - px_delay <= teleport_coordinate:
-                creature.x = teleport_coordinate
-                move_creature_direction(creature, direction, creature.width / 2)
-                if not self.collides_wall(creature):
-                    creature.y = creature_coords[1]
-                    creature.direction = direction
-                else:
-                    (creature.x, creature.y) = creature_coords
+            change_direction_coord = creature.x - creature.x % SECTOR_SIZE
+            if creature.x - px_delay <= change_direction_coord:
+                change_direction_coords = (change_direction_coord, creature.y)
+                self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
+
         elif creature.direction == 'up':
-            teleport_coordinate = creature.y - creature.y % SECTOR_SIZE
-            if creature.y - px_delay <= teleport_coordinate:
-                creature.y = teleport_coordinate
-                move_creature_direction(creature, direction, creature.width / 2)
-                if not self.collides_wall(creature):
-                    creature.x = creature_coords[0]
-                    creature.direction = direction
-                else:
-                    (creature.x, creature.y) = creature_coords
+            change_direction_coord = creature.y - creature.y % SECTOR_SIZE
+            if creature.y - px_delay <= change_direction_coord:
+                change_direction_coords = (creature.x, change_direction_coord)
+                self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
+
         elif creature.direction == 'down':
-            teleport_coordinate = creature.y - creature.y % SECTOR_SIZE + SECTOR_SIZE
-            if creature.y + px_delay >= teleport_coordinate:
-                creature.y = teleport_coordinate
-                move_creature_direction(creature, direction, creature.width / 2)
-                if not self.collides_wall(creature):
-                    creature.x = creature_coords[0]
-                    creature.direction = direction
-                else:
-                    (creature.x, creature.y) = creature_coords
+            change_direction_coord = creature.y - creature.y % SECTOR_SIZE + SECTOR_SIZE
+            if creature.y + px_delay >= change_direction_coord:
+                change_direction_coords = (creature.x, change_direction_coord)
+                self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
+
+    def is_off_map(self, coords):
+        """ Checks if the object is behind the map """
+        x = coords[0]
+        y = coords[1]
+
+        if x < 0:
+            return True
+        elif x > self.map_width - SECTOR_SIZE:
+            return True
+        elif y < 0:
+            return True
+        elif y > self.map_height - SECTOR_SIZE:
+            return True
+        else:
+            return False
+
+    def check_change_direction(self, creature, direction, change_direction_coords, creature_coords):
+        (creature.x, creature.y) = change_direction_coords
+        move_creature_direction(creature, direction, creature.width / 2)
+        if not self.collides_wall(creature):
+            if creature.x != change_direction_coords[0]:
+                creature.x = change_direction_coords[0]
+            else:
+                creature.y = change_direction_coords[1]
+            creature.direction = direction
+        else:
+            (creature.x, creature.y) = creature_coords
 
     def teleport_activate(self, creature):
         """ If coordinate of the pacman in teleport area then changes
             coordinate of pacman to the opposite map side"""
-        map_width = self.current_level.level_map.width * SECTOR_SIZE
-        map_height = self.current_level.level_map.height * SECTOR_SIZE
 
         if creature.x <= -SECTOR_SIZE:  # left teleport
-            creature.x = map_width
-        elif creature.x >= map_width:  # right teleport
+            creature.x = self.map_width
+        elif creature.x >= self.map_width:  # right teleport
             creature.x = 0
         elif creature.y <= -SECTOR_SIZE:  # top teleport
-            creature.y = map_height
-        elif creature.y >= map_height:  # bottom teleport
+            creature.y = self.map_height
+        elif creature.y >= self.map_height:  # bottom teleport
             creature.y = 0
         else:
             return False
@@ -411,7 +423,7 @@ class Controller:
 
     def run(self):
         clock = pygame.time.Clock()
-        # self.ticktime_debugger.run()
+        self.ticktime_debugger.run()
         while True:
             miliseconds = clock.tick(GLOBAL_TICK_RATE)
             self.tick_time = miliseconds / 1000.0  # seconds

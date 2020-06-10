@@ -299,7 +299,7 @@ class Controller:
             print("GHOST: " + str(ghost.velocity))
             self.move_creature(ghost)
 
-    def check_pacman_ghost_collision(self):  # TODO: Change hitbox
+    def check_pacman_ghost_collision(self):
         for ghost in self.ghosts:
             if pygame.sprite.collide_mask(self.pacman.creature_hitbox, ghost.creature_hitbox):
                 if self.pacman.form == ghost.form:
@@ -307,13 +307,13 @@ class Controller:
                 else:
                     self.pacman_die()
 
-    def check_pellet_collision(self):  # TODO: Change hitbox
+    def check_pellet_collision(self):
         for pellet in self.pellets:
             if pygame.sprite.collide_mask(self.pacman.mapobject_hitbox, pellet.hitbox):
                 self.pacman.score += pellet.value
                 self.pellets.remove(pellet)
 
-    def check_mega_pellet_collision(self):  # TODO: Change hitbox
+    def check_mega_pellet_collision(self):
         for mega_pellet in self.mega_pellets:
             if pygame.sprite.collide_mask(self.pacman.mapobject_hitbox, mega_pellet.hitbox):
                 self.pacman.score += mega_pellet.value
@@ -362,7 +362,7 @@ class Controller:
 
     def run(self):
         clock = pygame.time.Clock()
-        self.ticktime_debugger.run()
+        #self.ticktime_debugger.run()
         while True:
             miliseconds = clock.tick(GLOBAL_TICK_RATE)
             self.tick_time = miliseconds / 1000.0  # seconds

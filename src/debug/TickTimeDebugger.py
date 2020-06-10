@@ -13,9 +13,9 @@ class TickTimeDebugger(object):
 
     def __init__(self):
         self.max_displayed_t = Constants.GLOBAL_TICK_RATE * 10
-        self.data = {"physics_data": [0 for i in range(self.max_displayed_t)],
-                     "ai_data": [0 for i in range(self.max_displayed_t)],
-                     "render_data": [0 for i in range(self.max_displayed_t)],
+        self.data = {"physics_execution_time": [0 for i in range(self.max_displayed_t)],
+                     "ai_execution_time": [0 for i in range(self.max_displayed_t)],
+                     "render_execution_time": [0 for i in range(self.max_displayed_t)],
                      "tick_time": [0 for i in range(self.max_displayed_t)]}
         self.x = [i for i in range(self.max_displayed_t)]
         self.index = count()
@@ -29,9 +29,9 @@ class TickTimeDebugger(object):
         self.delete_overflowed_data()
 
         # update y
-        self.data["physics_data"].append(physics_exec_time)
-        self.data["ai_data"].append(ai_exec_time)
-        self.data["render_data"].append(render_exec_time)
+        self.data["physics_execution_time"].append(physics_exec_time)
+        self.data["ai_execution_time"].append(ai_exec_time)
+        self.data["render_execution_time"].append(render_exec_time)
         self.data["tick_time"].append(tick_time)
 
     def _animate(self):

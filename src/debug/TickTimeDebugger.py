@@ -54,8 +54,8 @@ class TickTimeDebugger(object):
         self.fig.set_size_inches(12,3)
         self.fig.tight_layout()
         self.fig.canvas.manager.window.wm_geometry("+%d+%d" % (0, 0))
-        self.ax1.set_facecolor(Constants.PLOT_WINDOW_BACKGROUND_COLOR)
-        self.ax2.set_facecolor(Constants.PLOT_WINDOW_BACKGROUND_COLOR)
+        self.ax1.set_facecolor("#eeeeee")
+        self.ax2.set_facecolor("#eeeeee")
 
         self.ax1.set_ylim([0, 1])
         self.ax2.set_ylim([0, 1])

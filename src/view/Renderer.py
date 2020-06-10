@@ -13,7 +13,6 @@ class Renderer(object):
         self.animation_period = Constants.ANIMATION_PERIOD  # seconds
         self.time_elapsed_from_prev_animation_frame = 0 # seconds
 
-
         # Set window mode
         if is_fullscreen is True:
             self.window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -206,8 +205,8 @@ class Renderer(object):
         self._draw_pacmans(pacman, show_hitboxes=show_hitboxes)
         self._draw_ghosts(ghosts, show_hitboxes=show_hitboxes)
 
-        self._draw_text(pacman[0])
-        pygame.display.set_caption("Elapsed time: " + str(elapsed_time))
+        #self._draw_text(pacman[0])
+        #pygame.display.set_caption("Elapsed time: " + str(elapsed_time))
 
         # Draw Grid
         if showgrid:

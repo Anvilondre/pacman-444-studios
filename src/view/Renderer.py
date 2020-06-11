@@ -194,23 +194,25 @@ class Renderer(object):
         self.fruits_bar_surf.fill((204, 65, 107))
 
     def _init_teleport_covers(self):
-        self.left_teleport_cover_surf = pygame.Surface((self.gamescreen_cell_size, self.gamescreen_surf_height))
-        self.left_teleport_cover_surf_x = self.gamescreen_surf_x - self.gamescreen_cell_size
+        self.left_teleport_cover_surf = pygame.Surface((self.gamescreen_surf_x, self.gamescreen_surf_height))
+        self.left_teleport_cover_surf_x = 0
         self.left_teleport_cover_surf_y = self.gamescreen_surf_y
         self.left_teleport_cover_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
 
-        self.up_teleport_cover_surf = pygame.Surface((self.gamescreen_surf_width, self.gamescreen_cell_size))
-        self.up_teleport_cover_surf_x = self.gamescreen_surf_x
+        self.up_teleport_cover_surf = pygame.Surface((self.gamescreen_boundbox_surf_width, self.gamescreen_surf_y))
+        self.up_teleport_cover_surf_x = 0
         self.up_teleport_cover_surf_y = self.gamescreen_surf_y - self.gamescreen_cell_size
         self.up_teleport_cover_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
 
-        self.right_teleport_cover_surf = pygame.Surface((self.gamescreen_cell_size, self.gamescreen_surf_height))
+        self.right_teleport_cover_surf = pygame.Surface((self.gamescreen_boundbox_surf_width -
+                                                         (self.gamescreen_surf_x + self.gamescreen_surf_width),
+                                                         self.gamescreen_surf_height))
         self.right_teleport_cover_surf_x = self.gamescreen_surf_x + self.gamescreen_surf_width
         self.right_teleport_cover_surf_y = self.gamescreen_surf_y
         self.right_teleport_cover_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
 
-        self.down_teleport_cover_surf = pygame.Surface((self.gamescreen_surf_width, self.gamescreen_cell_size))
-        self.down_teleport_cover_surf_x = self.gamescreen_surf_x
+        self.down_teleport_cover_surf = pygame.Surface((self.gamescreen_boundbox_surf_width, self.gamescreen_cell_size))
+        self.down_teleport_cover_surf_x = 0
         self.down_teleport_cover_surf_y = self.gamescreen_surf_y + self.gamescreen_surf_height
         self.down_teleport_cover_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
 
@@ -357,10 +359,15 @@ class Renderer(object):
             else:
                 radius = 2 * Constants.SECTOR_SIZE
 
-                # Redraw all when pacman teleports (because of low/inconsistent tickrate or pacman's death
+                # Redraw all when pacman teleports (because of low/inconsistent tickrate or pacman's death)
                 for pacman, prev_pacman in zip(pacmans, prev_pacmans):
                     if distance(pacman.coord, prev_pacman.coord) >= radius:
                         self._redraw_all_mapobjects(entities_list, show_hitboxes)
+                # Redraw all when ghost teleports (because of low/inconsistent tickrate)
+                for ghost, prev_ghost in zip(ghosts, prev_ghosts):
+                    if distance(ghost.coord, prev_ghost.coord) >= radius:
+                        self._redraw_all_mapobjects(entities_list, show_hitboxes)
+
 
                 self._draw_mapobjects(self._get_near_objects(pacmans + ghosts, floors, radius), show_hitboxes)
                 self._draw_mapobjects(self._get_near_objects(pacmans + ghosts, pellets, radius), show_hitboxes)

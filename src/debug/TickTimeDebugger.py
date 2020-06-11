@@ -82,7 +82,22 @@ class TickTimeDebugger(object):
             self.ax1.set_facecolor("#eeeeee")
             self.ax2.set_facecolor("#eeeeee")
 
-            self.ax1.set_ylim([0, 1.33 * 1/Constants.GLOBAL_TICK_RATE])
+            ax1_avg_y = 0
+            ax2_avg_y = 0
+            for i in range(len(list(self.data.keys()))):
+                if i <= 2:
+                    ax1_current_avg = sum(self.data[list(self.data.keys())[i]]) / len(self.data[list(self.data.keys())[i]])
+                    if ax1_current_avg > ax1_avg_y:
+                        ax1_avg_y = ax1_current_avg
+                if i >= 3:
+                    ax2_current_avg = sum(self.data[list(self.data.keys())[i]]) / len(self.data[list(self.data.keys())[i]])
+                    if ax2_current_avg > ax2_avg_y:
+                        ax2_avg_y = ax2_current_avg
+
+            ax1_avg_y += 1/Constants.GLOBAL_TICK_RATE
+            ax2_avg_y += 1/Constants.GLOBAL_TICK_RATE
+
+            self.ax1.set_ylim([0, ax1_avg_y])
             self.ax2.set_ylim([0, 2 * 1/Constants.GLOBAL_TICK_RATE])
 
             self.ax1.set_ylabel("Execution time")

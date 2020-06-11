@@ -455,7 +455,7 @@ class Controller:
             miliseconds = clock.tick(GLOBAL_TICK_RATE)
             self.tick_time = miliseconds / 1000.0  # seconds
 
-            if self.tick_time > 0.3:
+            if self.tick_time > 0.1:
                 self.tick_time = 1 / GLOBAL_TICK_RATE
 
             self.handle_events()

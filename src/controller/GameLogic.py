@@ -127,7 +127,7 @@ class Controller:
         self.ability_is_ready = True
 
     def init_ghosts(self):
-        self.path_finder = PathFinder(self.current_level.level_map.hash_map)
+        self.path_finder = PathFinder(self.current_level.level_map.linked_list)
         self.ghosts = []
         for ghost_coord in self.current_level.level_map.ghosts_initial_coords:
             self.ghosts.append(
@@ -159,10 +159,11 @@ class Controller:
                 elif event.key == K_DOWN:
                     self.pacman.preferred_direction = 'down'
                 elif event.key == K_F1:
-                    try:
-                        self.ticktime_debugger.save_as_image()
-                    except:
-                        print("Can't save ticktime image.")
+                    self.ticktime_debugger.save_as_image()
+
+                    #try:
+                    #except Exception:
+                    #    print("Can't save ticktime image.")
 
                 elif event.key == K_1 and self.pacman.mana > 0 and self.ability_is_ready:
                     if self.tick_time > DESIRED_PHYSICS_TICK_TIME:
@@ -436,7 +437,8 @@ class Controller:
         self.desired_render_tick_time += tick_time
         if self.desired_render_tick_time > DESIRED_RENDER_TICK_TIME:
             start_time = time.time()
-            self.renderer.render([self.pellets, self.mega_pellets, self.walls, [], [self.pacman], self.ghosts],
+            self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
+                                  [], [self.pacman], self.ghosts],
                                  tick_time, showgrid=False, show_hitboxes=False)
             end_time = time.time()
             self.render_update_exec_time = end_time - start_time
@@ -454,7 +456,7 @@ class Controller:
 
             self.handle_events()
             self.physics_update(self.tick_time)
-            self.update_ghosts(self.tick_time, hardcore=False)
+            self.update_ghosts(self.tick_time, hardcore=True)
             self.update_level()
 
             self.render_update(self.tick_time)

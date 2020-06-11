@@ -19,11 +19,13 @@ def get_sector_coord(x, y):
 
 
 def revive_ghost(ghost):
+
     if (ghost.x, ghost.y) == ghost.initial_location:
         ghost.is_alive = True
 
 
 def ghost_died(ghost):  # TODO: Animations
+    # print("GHOST DIE")
     ghost.is_alive = False
 
 
@@ -82,9 +84,9 @@ class Controller:
             self.render_update_exec_time = \
             self.counter_physics_tick_time = 0
         self.tick_time = \
-        self.map_width = \
-        self.map_height = \
-        self.counter_ai_tick_time = 0
+            self.map_width = \
+            self.map_height = \
+            self.counter_ai_tick_time = 0
         self.desired_render_tick_time = 0
         self.initial_setup()
 
@@ -300,6 +302,8 @@ class Controller:
             return False
 
     def update_pacman(self, counter_physics_tick_time):
+        if not self.pacman.is_alive:
+            self.revive_pacman()
         if not self.speed_ability.is_active:
             self.pacman.velocity = int(PACMAN_PX_PER_SECOND * counter_physics_tick_time)
         # print("pacman: " + str(self.pacman.velocity))
@@ -311,26 +315,31 @@ class Controller:
     def update_level(self):
         """ Jumps to the next level if all pellets are picked """
         if not self.pellets and not self.mega_pellets:
-            self.init_level()
-            self.map_restart()
+            self.initial_setup()
 
     def map_restart(self):
         """ Restart current map """
         self.parse_level()
         self.init_pacman()
         self.init_ghosts()
+        self.init_abilities()
 
     def resolve_ghost_direction(self, ghost, pacman_coord, used_sectors=[], used_val=0):
         ghost_coord = get_sector_coord(ghost.x + ghost.width / 2, ghost.y + ghost.height / 2)
-
+        ghost_init_coord = get_sector_coord(ghost.initial_location[0] + ghost.width / 2, ghost.initial_location[1] +
+                                            ghost.width / 2)
         if not ghost.is_alive:
-            revive_ghost(ghost)
+            if ghost_coord == ghost_init_coord:
+                ghost.is_alive = True
+                ghost.is_chasing = True
 
-        if pacman_coord != ghost_coord:
+        if pacman_coord != ghost_coord and ghost.is_chasing and self.pacman.is_alive:
             path = self.path_finder.get_path(ghost_coord, pacman_coord, used_sectors, used_val)
             ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, path)
         else:
-            path = self.path_finder.get_path(ghost_coord, ghost.initial_location)
+            ghost_init_coord = get_sector_coord(ghost.initial_location[0] + ghost.width/2, ghost.initial_location[1] +
+                                                ghost.width/2)
+            path = self.path_finder.get_path(ghost_coord, ghost_init_coord)
             ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, path)
 
         return path
@@ -381,9 +390,14 @@ class Controller:
                 self.pacman.mana += 1
                 self.mega_pellets.remove(mega_pellet)
 
+    def revive_pacman(self):
+        self.pacman.is_alive = True
+        (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
+
     def pacman_die(self):  # TODO: Animations
         if self.pacman.lives > 0:
             self.pacman.lives -= 1
+            self.pacman.is_alive = False
             (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
         else:
             self.map_restart()
@@ -423,7 +437,7 @@ class Controller:
 
     def run(self):
         clock = pygame.time.Clock()
-        self.ticktime_debugger.run()
+        # self.ticktime_debugger.run()
         while True:
             miliseconds = clock.tick(GLOBAL_TICK_RATE)
             self.tick_time = miliseconds / 1000.0  # seconds

@@ -210,8 +210,7 @@ class Renderer(object):
         self.bg_elements = []
 
         self.bg_elements.append([self.background_surf, self.background_surf_x, self.background_surf_y])
-        self.bg_elements.append(
-            [self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
+        self.bg_elements.append([self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
         self.bg_elements.append([self.gamescreen_surf, self.gamescreen_surf_x, self.gamescreen_surf_y])
 
     def _init_gui_elements_list(self):
@@ -301,7 +300,9 @@ class Renderer(object):
         """entities_list: (pellets, mega_pellets, walls, cherry, pacman, ghosts)"""
 
         # Unpack entities_list
+        self.prev_entites = entities_list
         pellets, mega_pellets, walls, cherry, pacman, ghosts = entities_list
+        prev_pellets, prev_mega_pellets, prev_walls, prev_cherry, prev_pacman, prev_ghosts = self.prev_entites
 
         # Draw background
         for element in self.bg_elements:
@@ -358,6 +359,8 @@ class Renderer(object):
     def _draw_pacmans(self, pacman, show_hitboxes=False):
         for pac in pacman:
             if pac.is_alive is True and pac.direction == "left":
+                if pac.animation_count >= 4:
+                    pac.animation_count = 0
                 surface = pac.animations["move_left"][pac.animation_count]
                 if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
                     pac.animation_count += 1
@@ -365,6 +368,8 @@ class Renderer(object):
                         pac.animation_count = 0
 
             elif pac.is_alive is True and pac.direction == "up":
+                if pac.animation_count >= 4:
+                    pac.animation_count = 0
                 surface = pac.animations["move_up"][pac.animation_count]
                 if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
                     pac.animation_count += 1
@@ -372,6 +377,8 @@ class Renderer(object):
                         pac.animation_count = 0
 
             elif pac.is_alive is True and pac.direction == "right":
+                if pac.animation_count >= 4:
+                    pac.animation_count = 0
                 surface = pac.animations["move_right"][pac.animation_count]
                 if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
                     pac.animation_count += 1
@@ -379,6 +386,8 @@ class Renderer(object):
                         pac.animation_count = 0
 
             elif pac.is_alive is True and pac.direction == "down":
+                if pac.animation_count >= 4:
+                    pac.animation_count = 0
                 surface = pac.animations["move_down"][pac.animation_count]
                 if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
                     pac.animation_count += 1
@@ -386,6 +395,8 @@ class Renderer(object):
                         pac.animation_count = 0
 
             elif pac.is_alive is False:
+                if pac.animation_count >= 9:
+                    pac.animation_count = 0
                 surface = pac.animations["dead"][pac.animation_count]
                 if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
                     pac.animation_count += 1

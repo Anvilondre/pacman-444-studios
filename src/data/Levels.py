@@ -48,7 +48,7 @@ class Level(ABC):
 class Level1(Level):
 
     pacman_velocity = 6
-    pacman_boost = 6
+    pacman_boost = 20
     pacman_cooldown = 10
     speed_ability_duration = 5
     transform_ability_duration = 5
@@ -64,7 +64,7 @@ class Level1(Level):
                      "####.###.#.###.####",
                      "####.#.......#.####",
                      "####.#.## ##.#.####",
-                     ".......# . #.......",
+                     ".......# $ #.......",
                      "####.#.#####.#.####",
                      "####.#.......#.####",
                      "####.#.#####.#.####",

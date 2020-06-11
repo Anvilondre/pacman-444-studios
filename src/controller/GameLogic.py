@@ -1,11 +1,12 @@
 import sys
 
 import pygame
+from pygame.constants import K_F1
 from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
 from src.controller.Abilities import SpeedAbility, TransformAbility
 from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
     PACMAN_PX_PER_SECOND, GHOST_PX_PER_SECOND, GLOBAL_TICK_RATE, PACMAN_BOOST_PX_PER_SECOND
-from src.debug.TickTimeDebugger import TickTimeDebugger
+from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
 from src.controller.GhostsAI import PathFinder
 from threading import Timer
@@ -106,7 +107,7 @@ class Controller:
         self.renderer = Renderer((0, 0), is_fullscreen=False)
 
     def init_debugger(self):
-        self.ticktime_debugger = TickTimeDebugger()
+        self.ticktime_debugger = TickTimeDebugger(mode=Modes.Store)
 
     def init_level(self):
         self.current_level = next(self.levels)
@@ -157,6 +158,11 @@ class Controller:
                     self.pacman.preferred_direction = 'right'
                 elif event.key == K_DOWN:
                     self.pacman.preferred_direction = 'down'
+                elif event.key == K_F1:
+                    try:
+                        self.ticktime_debugger.save_as_image()
+                    except:
+                        print("Can't save ticktime image.")
 
                 elif event.key == K_1 and self.pacman.mana > 0 and self.ability_is_ready:
                     if self.tick_time > DESIRED_PHYSICS_TICK_TIME:
@@ -236,25 +242,25 @@ class Controller:
 
         if creature.direction == 'right':
             change_direction_coord = creature.x - creature.x % SECTOR_SIZE + SECTOR_SIZE
-            if creature.x + px_delay >= change_direction_coord:
+            if creature.x + px_delay >= change_direction_coord or creature.x - px_delay >= change_direction_coord:
                 change_direction_coords = (change_direction_coord, creature.y)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
         elif creature.direction == 'left':
             change_direction_coord = creature.x - creature.x % SECTOR_SIZE
-            if creature.x - px_delay <= change_direction_coord:
+            if creature.x - px_delay <= change_direction_coord or creature.x + px_delay <= change_direction_coord:
                 change_direction_coords = (change_direction_coord, creature.y)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
         elif creature.direction == 'up':
             change_direction_coord = creature.y - creature.y % SECTOR_SIZE
-            if creature.y - px_delay <= change_direction_coord:
+            if creature.y - px_delay <= change_direction_coord or creature.y + px_delay <= change_direction_coord:
                 change_direction_coords = (creature.x, change_direction_coord)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
         elif creature.direction == 'down':
             change_direction_coord = creature.y - creature.y % SECTOR_SIZE + SECTOR_SIZE
-            if creature.y + px_delay >= change_direction_coord:
+            if creature.y + px_delay >= change_direction_coord or creature.y - px_delay >= change_direction_coord:
                 change_direction_coords = (creature.x, change_direction_coord)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
@@ -333,7 +339,7 @@ class Controller:
                 ghost.is_alive = True
                 ghost.is_chasing = True
 
-        if pacman_coord != ghost_coord and ghost.is_chasing and self.pacman.is_alive:
+        if ghost.is_chasing and self.pacman.is_alive:
             path = self.path_finder.get_path(ghost_coord, pacman_coord, used_sectors, used_val)
             ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, path)
         else:
@@ -437,8 +443,9 @@ class Controller:
 
     def run(self):
         clock = pygame.time.Clock()
-        # self.ticktime_debugger.run()
-        while True:
+        self.ticktime_debugger.run()
+        run = True
+        while run:
             miliseconds = clock.tick(GLOBAL_TICK_RATE)
             self.tick_time = miliseconds / 1000.0  # seconds
 
@@ -454,3 +461,6 @@ class Controller:
 
             self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time,
                                           self.render_update_exec_time, self.tick_time)
+
+
+        pygame.quit()

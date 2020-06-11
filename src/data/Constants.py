@@ -59,12 +59,12 @@ FRUITS_BAR_X_RATIO = 470 / 1920
 FRUITS_BAR_Y_RATIO = 1030 / 1920
 
 # GameLogic
-DESIRED_PHYSICS_TICK_TIME = 0.033
+DESIRED_PHYSICS_TICK_TIME = 0.016
 DESIRED_AI_TICK_TIME = 0.2
 DESIRED_RENDER_TICK_TIME = 0.033
-PACMAN_PX_PER_SECOND = 36 * 4
+PACMAN_PX_PER_SECOND = 36 * 5
 PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
-GHOST_PX_PER_SECOND = 36 * 4
+GHOST_PX_PER_SECOND = 36 * 5
 
 GLOBAL_TICK_RATE = 60
 
@@ -159,3 +159,9 @@ PELLET_TEXTURE_PATH = "../res/textures/pellet.png"
 # Mega pellet
 MEGAPELLET_HITBOX_PATH = "../res/hitbox/mega_pellet.png"
 MEGAPELLET_TEXTURE_PATH = "../res/textures/mega_pellet.png"
+
+# Icons
+LIVES_ICON_PATH = "../res/icons/life_icon.png"
+
+# Debugger
+DEFAULT_GRAPH_SAVEPATH="debug/graphs/ticktime.png"

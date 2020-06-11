@@ -1,4 +1,4 @@
-from src.model.MapObjects import Wall, Pellet, MegaPellet, Cherry
+from src.model.MapObjects import Wall, Pellet, MegaPellet, Cherry, Floor
 from src.data.Constants import SECTOR_SIZE
 
 
@@ -11,15 +11,19 @@ class Map:
         self.pellets = \
         self.mega_pellets = \
         self.walls = \
+        self.floors = \
         self.hash_map = \
         self.pacman_initial_coord = \
-        self.ghosts_initial_coords = None
+        self.ghosts_initial_coords = \
+        self.linked_list = None
 
     def pre_process(self):
         pellets = []
         mega_pellets = []
         walls = []
+        floors = []
         hash_map = {}
+        linked_list = {}
         pacman_initial_coord = (0, 0)
         ghosts_initial_coords = []
         for x in range(self.width):
@@ -54,15 +58,33 @@ class Map:
                 else:
                     obj = None
 
-                hash_map[str_coord] = 1 if isinstance(obj, Wall) else 0
+                if ch != '#':
+                    floors.append(Floor(coord))
+
+                if ch != '#' and x != 0 and x != self.width - 1 and y != 0 and y != self.height:
+                    neighbors = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+                    nbr = []
+                    for item in neighbors:
+
+                        map_value = self.string_map[item[1]][item[0]]
+
+                        # Skip walls
+                        if map_value != "#":
+                            nbr.append(item)
+
+                    linked_list[str_coord] = nbr
+
+                hash_map[str_coord] = obj
 
         self.hash_map = hash_map
         self.pellets = pellets
         self.mega_pellets = mega_pellets
         self.walls = walls
+        self.floors = floors
         self.hash_map = hash_map
         self.pacman_initial_coord = pacman_initial_coord
         self.ghosts_initial_coords = ghosts_initial_coords
+        self.linked_list = linked_list
 
     def get_object_from_coord(self, x, y):
         return self.hash_map[(x, y)]

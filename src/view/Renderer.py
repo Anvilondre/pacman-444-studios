@@ -301,8 +301,8 @@ class Renderer(object):
 
         # Unpack entities_list
         self.prev_entites = entities_list
-        pellets, mega_pellets, walls, cherry, pacman, ghosts = entities_list
-        prev_pellets, prev_mega_pellets, prev_walls, prev_cherry, prev_pacman, prev_ghosts = self.prev_entites
+        pellets, mega_pellets, walls, floors, cherry, pacman, ghosts = entities_list
+        #prev_pellets, prev_mega_pellets, prev_walls, prev_cherry, prev_pacman, prev_ghosts = self.prev_entites TODO
 
         # Draw background
         for element in self.bg_elements:
@@ -314,6 +314,7 @@ class Renderer(object):
         # Draw mapobjects
         if self.first_map_render:
             self._draw_mapobjects(walls, show_hitboxes=show_hitboxes)
+            self._draw_mapobjects(floors, show_hitboxes=show_hitboxes)
             # TODO
             self.first_map_render = True
         self._draw_mapobjects(pellets, show_hitboxes=show_hitboxes)

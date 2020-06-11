@@ -160,6 +160,10 @@ PELLET_TEXTURE_PATH = "../res/textures/pellet.png"
 MEGAPELLET_HITBOX_PATH = "../res/hitbox/mega_pellet.png"
 MEGAPELLET_TEXTURE_PATH = "../res/textures/mega_pellet.png"
 
+# Floor
+FLOOR_HITBOX_PATH = "../res/hitbox/mega_pellet.png"  # TODO: paths
+FLOOR_TEXTURE_PATH = "../res/hitbox/mega_pellet.png"
+
 # Icons
 LIVES_ICON_PATH = "../res/icons/life_icon.png"
 

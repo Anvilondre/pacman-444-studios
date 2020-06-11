@@ -6,7 +6,7 @@ from src.data import Constants
 from src.data.Constants import PELLET_VALUE
 
 
-#window = pygame.display.set_mode((200, 200))
+# window = pygame.display.set_mode((200, 200))
 class MapObject():
 
     def __init__(self, coord, width, height, hitbox_path, texture):
@@ -102,7 +102,7 @@ class Pellet(MapObject):
 
     def __init__(self, coord, width=Constants.SECTOR_SIZE, height=Constants.SECTOR_SIZE,
                  hitbox_path=Constants.PELLET_HITBOX_PATH, texture=Constants.PELLET_TEXTURE_PATH,
-                 value = PELLET_VALUE):
+                 value=PELLET_VALUE):
         self.value = value
         super().__init__(coord, width, height, hitbox_path, texture)
 
@@ -114,7 +114,7 @@ class MegaPellet(MapObject):
 
     def __init__(self, coord, width=Constants.SECTOR_SIZE, height=Constants.SECTOR_SIZE,
                  hitbox_path=Constants.MEGAPELLET_HITBOX_PATH, texture=Constants.MEGAPELLET_TEXTURE_PATH,
-                 value = PELLET_VALUE):
+                 value=PELLET_VALUE):
         self.value = value
         super().__init__(coord, width, height, hitbox_path, texture)
 
@@ -141,3 +141,9 @@ class Wall(MapObject):
 
     def __str__(self):
         return "coord: " + str(self.coord) + "; type: Wall"
+
+
+class Floor(MapObject):
+    def __init__(self, coord, width=Constants.SECTOR_SIZE, height=Constants.SECTOR_SIZE,
+                 hitbox_path=Constants.FLOOR_HITBOX_PATH, texture=Constants.FLOOR_TEXTURE_PATH):
+        super().__init__(coord, width, height, hitbox_path, texture)

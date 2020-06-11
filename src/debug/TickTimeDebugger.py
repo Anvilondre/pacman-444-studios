@@ -2,6 +2,7 @@ import enum
 import threading
 from itertools import count
 
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import pyplot
 from matplotlib.animation import FuncAnimation
@@ -19,6 +20,7 @@ class TickTimeDebugger(object):
     How to use: call .run() in init and then call .update() in main loop"""
 
     def __init__(self, mode=Modes.LiveView):
+        matplotlib.use('TKAgg')
         self.mode = mode
         self.max_displayed_x = Constants.GLOBAL_TICK_RATE * 10
         self.index = count()

@@ -131,18 +131,18 @@ pacman_animations_paths = {"move_left": ["../res/animations/pacman/move_left/0.p
 
 GHOST_MAPOBJECT_HITBOX_PATH = "../res/hitbox/ghost_mapobject.png"
 GHOST_CREATURE_HITBOX_PATH = "../res/hitbox/ghost_creature.png"
-pinky_animations_paths = {"move_left": ["../res/animations/pinky/move_left/0.png",
-                                        "../res/animations/pinky/move_left/1.png"],
-                          "move_up": ["../res/animations/pinky/move_up/0.png",
-                                      "../res/animations/pinky/move_up/1.png"],
-                          "move_right": ["../res/animations/pinky/move_right/0.png",
-                                         "../res/animations/pinky/move_right/1.png"],
-                          "move_down": ["../res/animations/pinky/move_down/0.png",
-                                        "../res/animations/pinky/move_down/1.png"],
-                          "dead": ["../res/animations/pinky/dead/0.png",
-                                   "../res/animations/pinky/dead/1.png",
-                                   "../res/animations/pinky/dead/2.png",
-                                   "../res/animations/pinky/dead/3.png"]}
+pinky_animations_paths = {"move_left": ["../res/animations/red/move_left/0.png",
+                                        "../res/animations/red/move_left/1.png"],
+                          "move_up": ["../res/animations/red/move_up/0.png",
+                                      "../res/animations/red/move_up/1.png"],
+                          "move_right": ["../res/animations/red/move_right/0.png",
+                                         "../res/animations/red/move_right/1.png"],
+                          "move_down": ["../res/animations/red/move_down/0.png",
+                                        "../res/animations/red/move_down/1.png"],
+                          "dead": ["../res/animations/red/dead/0.png",
+                                   "../res/animations/red/dead/1.png",
+                                   "../res/animations/red/dead/2.png",
+                                   "../res/animations/red/dead/3.png"]}
 
 # Wall
 WALL_HITBOX_PATH = "../res/hitbox/wall.png"

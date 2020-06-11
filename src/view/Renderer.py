@@ -506,11 +506,15 @@ class Renderer(object):
             elif ghost.is_alive is False:
                 if ghost.animation_count >= 2:
                     ghost.animation_count = 0
-                surface = ghost.animations["dead"][ghost.animation_count]
-                if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
-                    ghost.animation_count += 1
-                    if ghost.animation_count >= 9:
-                        ghost.animation_count = 0
+                if ghost.direction == "up":
+                    surface = ghost.animations["dead"][0]
+                elif ghost.direction == "left":
+                    surface = ghost.animations["dead"][1]
+                elif ghost.direction == "down":
+                    surface = ghost.animations["dead"][2]
+                elif ghost.direction == "right":
+                    surface = ghost.animations["dead"][3]
+
             else:
                 raise Exception("Unable to identify ghost's state:", ghost)
 

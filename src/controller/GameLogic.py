@@ -1,11 +1,12 @@
 import sys
 
+import random
 import pygame
 from pygame.constants import K_F1
 from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
 from src.controller.Abilities import SpeedAbility, TransformAbility
 from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
-    PACMAN_PX_PER_SECOND, GHOST_PX_PER_SECOND, GLOBAL_TICK_RATE, PACMAN_BOOST_PX_PER_SECOND
+    PACMAN_PX_PER_SECOND, GHOST_PX_PER_SECOND, GLOBAL_TICK_RATE, PACMAN_BOOST_PX_PER_SECOND, forms
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
 from src.controller.GhostsAI import PathFinder
@@ -336,6 +337,7 @@ class Controller:
                                             ghost.width / 2)
         if not ghost.is_alive:
             if ghost_coord == ghost_init_coord:
+                ghost.form = forms[random.randint(0, 2)]
                 ghost.is_alive = True
                 ghost.is_chasing = True
 
@@ -401,7 +403,7 @@ class Controller:
         (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
 
     def pacman_die(self):  # TODO: Animations
-        if self.pacman.lives > 0:
+        if self.pacman.lives > 1:
             self.pacman.lives -= 1
             self.pacman.is_alive = False
             (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord

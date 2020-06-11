@@ -457,7 +457,7 @@ class Renderer(object):
                     if pac.animation_count >= 9:
                         pac.animation_count = 0
             else:
-                raise Exception("Unable to identify pacman's state", pac)
+                raise Exception("Unable to identify pacman's state: " + str(pac))
 
             rescaled_img = pygame.transform.scale(surface, (self.gamescreen_cell_size, self.gamescreen_cell_size))
             self.window.blit(rescaled_img, self._mapscreen_coords_to_gamescreen_coords((pac.x, pac.y)))

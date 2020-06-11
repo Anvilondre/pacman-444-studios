@@ -300,12 +300,13 @@ class PacMan(Creature):
     def __init__(self, x, y, initial_location, width, height, velocity, direction="left", form="random",
                  mapobject_hitbox=Constants.PACMAN_MAPOBJECT_HITBOX_PATH,
                  creature_hitbox=Constants.PACMAN_CREATURE_HITBOX_PATH,
-                 animations=Constants.pacman_animations_paths,
+                 animations=Constants.PACMAN_RED_ANIMATIONS_PATHS,
                  cooldown=5, mana=Constants.pacman_mana,
                  score=Constants.pacman_score, lives=Constants.pacman_lives, ghosts_eaten=0):
         super().__init__(x, y, initial_location, width, height, velocity, direction,
                          Constants.forms[random.randint(0, 2)] if form == "random" else form,
                          mapobject_hitbox, creature_hitbox, animations)
+        self.form = self.form
         self.cooldown = cooldown
         self.mana = mana
         self.score = score
@@ -382,6 +383,22 @@ class PacMan(Creature):
         if not isinstance(value, int):
             raise TypeError("Lives cannot be assigned to non-int object:", value)
 
+    @property
+    def form(self):
+        return self._form
+
+    @form.setter
+    def form(self, value: str):
+        if value in Constants.forms and isinstance(value, str):
+            self._form = value
+            if value == "red":
+                self.animations = Constants.PACMAN_RED_ANIMATIONS_PATHS
+            elif value == "green":
+                self.animations = Constants.PACMAN_GREEN_ANIMATIONS_PATHS
+            elif value == "blue":
+                self.animations = Constants.PACMAN_BLUE_ANIMATIONS_PATHS
+            return
+
     def __str__(self):
         return super().__str__() + \
                "cooldown: " + str(self.cooldown) + "; mana: " + str(self.mana) + \
@@ -394,7 +411,7 @@ class Ghost(Creature):
     def __init__(self, x, y, initial_location, width, height, velocity, direction="up", form="random",
                  mapobject_hitbox=Constants.GHOST_MAPOBJECT_HITBOX_PATH,
                  creature_hitbox=Constants.GHOST_CREATURE_HITBOX_PATH,
-                 animations=Constants.RED_ANIMATIONS_PATHS,
+                 animations=Constants.GHOST_RED_ANIMATIONS_PATHS,
                  is_chasing=Constants.ghost_is_chasing):
         super().__init__(x, y, initial_location, width, height, velocity, direction,
                          Constants.forms[random.randint(0, 2)] if form == "random" else form,
@@ -436,11 +453,11 @@ class Ghost(Creature):
         if value in Constants.forms and isinstance(value, str):
             self._form = value
             if value == "red":
-                self.animations = Constants.RED_ANIMATIONS_PATHS
+                self.animations = Constants.GHOST_RED_ANIMATIONS_PATHS
             elif value == "green":
-                self.animations = Constants.GREEN_ANIMATIONS_PATHS
+                self.animations = Constants.GHOST_GREEN_ANIMATIONS_PATHS
             elif value == "blue":
-                self.animations = Constants.BLUE_ANIMATIONS_PATHS
+                self.animations = Constants.GHOST_BLUE_ANIMATIONS_PATHS
             return
 
     def __str__(self):

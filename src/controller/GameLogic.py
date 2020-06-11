@@ -13,7 +13,7 @@ from src.controller.GhostsAI import PathFinder
 from threading import Timer
 from itertools import cycle
 import time
-from src.view.Renderer import Renderer
+from src.view.Renderer import Renderer, RenderModes
 
 
 def get_sector_coord(x, y):
@@ -331,6 +331,7 @@ class Controller:
         self.init_pacman()
         self.init_ghosts()
         self.init_abilities()
+        self.renderer.restart()
 
     def resolve_ghost_direction(self, ghost, pacman_coord, used_sectors=[], used_val=0):
         ghost_coord = get_sector_coord(ghost.x + ghost.width / 2, ghost.y + ghost.height / 2)
@@ -441,7 +442,8 @@ class Controller:
             start_time = time.time()
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
                                   [], [self.pacman], self.ghosts],
-                                 tick_time, showgrid=False, show_hitboxes=False)
+                                  tick_time, showgrid=False, show_hitboxes=False,
+                                  render_mode=RenderModes.PartialRedraw_A)
             end_time = time.time()
             self.render_update_exec_time = end_time - start_time
 
@@ -465,6 +467,5 @@ class Controller:
 
             self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time,
                                           self.render_update_exec_time, self.tick_time)
-
 
         pygame.quit()

@@ -1,6 +1,16 @@
+import enum
+import math
+
 import pygame
 
 from src.data import Constants
+
+def distance(a, b):
+    return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+
+class RenderModes(enum.Enum):
+    RedrawAll = 0  # Redraws every single object every tick
+    PartialRedraw_A = 1  # Redraws all objects (excluding walls) in given radius
 
 
 class LineOfIconsWidget(object):
@@ -29,8 +39,8 @@ class LineOfIconsWidget(object):
     def append(self):
         self._n += 1
         self.icons.append([pygame.transform.scale(self.image, (self.icon_size, self.icon_size)),
-            self.boundrect.x + (self._n - 1) * self.box_size + self.icon_margins,
-            self.boundrect.y])
+                           self.boundrect.x + (self._n - 1) * self.box_size + self.icon_margins,
+                           self.boundrect.y])
 
         # TODO: buggy when n > 10
         # If icons width is greater than width of boundrect..
@@ -43,8 +53,7 @@ class LineOfIconsWidget(object):
             for i, icon in enumerate(self.icons):
                 icon[0] = pygame.transform.scale(icon[0], (self.icon_size, self.icon_size))
                 icon[1] = self.boundrect.x + i * self.box_size + self.icon_margins
-                icon[2] = self.boundrect.y + (self.boundrect.height - self.icon_size)/4
-
+                icon[2] = self.boundrect.y + (self.boundrect.height - self.icon_size) / 4
 
     def pop(self):
         if self._n > 0:
@@ -57,7 +66,7 @@ class Renderer(object):
                  windowed_screen_width=Constants.WINDOWED_SCREEN_WIDTH,
                  windowed_screen_height=Constants.WINDOWED_SCREEN_HEIGHT):
 
-        self.first_map_render = True
+        self.initial_map_render = True
 
         self.map_dimensions = map_dimensions  # cells
         self.map_size = [map_dimensions[0] * Constants.SECTOR_SIZE, map_dimensions[1] * Constants.SECTOR_SIZE, ]  # px
@@ -78,12 +87,12 @@ class Renderer(object):
         self._init_background()
         self._init_gui()
         self._init_gamescreen(map_dimensions)
-        self._init_covers()
+        self._init_teleport_covers()
 
         # Init element lists
         self._init_bg_elements_list()
         self._init_gui_elements_list()
-        self._init_covers_list()
+        self._init_teleport_covers_list()
 
     def set_map_dimensions(self, map_dimensions):
         self.map_dimensions = map_dimensions  # cells
@@ -94,8 +103,8 @@ class Renderer(object):
         self._init_gamescreen(map_dimensions)
         self._init_bg_elements_list()
         self._init_gui_elements_list()
-        self._init_covers()
-        self._init_covers_list()
+        self._init_teleport_covers()
+        self._init_teleport_covers_list()
 
     def _init_background(self):
         self.background_surf = pygame.Surface((self.canvas_width, self.canvas_height))
@@ -184,7 +193,7 @@ class Renderer(object):
         self.fruits_bar_surf_y = self.abilities_bar_surf_y
         self.fruits_bar_surf.fill((204, 65, 107))
 
-    def _init_covers(self):
+    def _init_teleport_covers(self):
         self.left_teleport_cover_surf = pygame.Surface((self.gamescreen_cell_size, self.gamescreen_surf_height))
         self.left_teleport_cover_surf_x = self.gamescreen_surf_x - self.gamescreen_cell_size
         self.left_teleport_cover_surf_y = self.gamescreen_surf_y
@@ -209,9 +218,9 @@ class Renderer(object):
         """Creates a list of all background elements and their absolute positions on the canvas"""
         self.bg_elements = []
 
-        self.bg_elements.append([self.background_surf, self.background_surf_x, self.background_surf_y])
-        self.bg_elements.append([self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
-        self.bg_elements.append([self.gamescreen_surf, self.gamescreen_surf_x, self.gamescreen_surf_y])
+        #self.bg_elements.append([self.background_surf, self.background_surf_x, self.background_surf_y])
+        # self.bg_elements.append([self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
+        # self.bg_elements.append([self.gamescreen_surf, self.gamescreen_surf_x, self.gamescreen_surf_y])
 
     def _init_gui_elements_list(self):
         """Creates a list of all gui elements and their absolute positions on the canvas"""
@@ -223,7 +232,7 @@ class Renderer(object):
         for icon in self.lives_icons.icons:
             self.gui_elements.append(icon)
 
-    def _init_covers_list(self):
+    def _init_teleport_covers_list(self):
         """Creates a list of all covers and their absolute positions on the canvas"""
         self.covers = []
 
@@ -296,13 +305,38 @@ class Renderer(object):
         temp.set_alpha(Constants.HITBOX_OPACITY)
         self.window.blit(temp, (x, y))
 
-    def render(self, entities_list, elapsed_time, showgrid=False, show_hitboxes=True):
-        """entities_list: (pellets, mega_pellets, walls, cherry, pacman, ghosts)"""
+    def _get_near_objects(self, center_objects, objects, radius=2 * Constants.SECTOR_SIZE):
+        near_objects = []
+
+        for pacman in center_objects:
+            for pellet in objects:
+                # Draw if distance between pellet and pacman is smaller than R = 2*SECTOR_SIZE
+                if math.sqrt((pellet.coord[0] - pacman.coord[0]) ** 2 + (
+                        pellet.coord[1] - pacman.coord[1]) ** 2) <= radius:
+                    near_objects.append(pellet)
+
+        return near_objects
+
+    def _redraw_all_mapobjects(self, entities_list, show_hitboxes=True):
+        pellets, mega_pellets, walls, floors, cherry, pacmans, ghosts = entities_list
+
+        self._draw_mapobjects(walls, show_hitboxes=show_hitboxes)
+        self._draw_mapobjects(floors, show_hitboxes=show_hitboxes)
+        self._draw_mapobjects(pellets, show_hitboxes=show_hitboxes)
+        self._draw_mapobjects(mega_pellets, show_hitboxes=show_hitboxes)
+        self._draw_mapobjects(cherry, show_hitboxes=show_hitboxes)
+
+    def restart(self):
+        self.initial_map_render = True
+
+    def render(self, entities_list, elapsed_time, showgrid=False, show_hitboxes=True,
+               render_mode=RenderModes.RedrawAll):
+        """entities_list: (pellets, mega_pellets, walls, cherry, pacmans, ghosts)"""
 
         # Unpack entities_list
         self.prev_entites = entities_list
-        pellets, mega_pellets, walls, floors, cherry, pacman, ghosts = entities_list
-        #prev_pellets, prev_mega_pellets, prev_walls, prev_cherry, prev_pacman, prev_ghosts = self.prev_entites TODO
+        pellets, mega_pellets, walls, floors, cherry, pacmans, ghosts = entities_list
+        prev_pellets, prev_mega_pellets, prev_walls, prev_floors, prev_cherry, prev_pacmans, prev_ghosts = self.prev_entites
 
         # Draw background
         for element in self.bg_elements:
@@ -311,21 +345,33 @@ class Renderer(object):
         # This variable is needed for proper animation speed independent of FPS
         self.time_elapsed_from_prev_animation_frame += elapsed_time
 
-        # Draw mapobjects
-        if self.first_map_render:
-            self._draw_mapobjects(walls, show_hitboxes=show_hitboxes)
-            self._draw_mapobjects(floors, show_hitboxes=show_hitboxes)
-            # TODO
-            self.first_map_render = True
-        self._draw_mapobjects(pellets, show_hitboxes=show_hitboxes)
-        self._draw_mapobjects(mega_pellets, show_hitboxes=show_hitboxes)
-        self._draw_mapobjects(cherry, show_hitboxes=show_hitboxes)
+        if render_mode == RenderModes.RedrawAll:
+            self._redraw_all_mapobjects(entities_list, show_hitboxes)
+
+        elif render_mode == RenderModes.PartialRedraw_A:
+            # Draw all mapobjects if map has been just changed
+            if self.initial_map_render:
+                self._redraw_all_mapobjects(entities_list, show_hitboxes)
+                self.initial_map_render = False
+            # Else only redraw objects in given radius
+            else:
+                radius = 2 * Constants.SECTOR_SIZE
+
+                # Redraw all when pacman teleports (because of low/inconsistent tickrate or pacman's death
+                for pacman, prev_pacman in zip(pacmans, prev_pacmans):
+                    if distance(pacman.coord, prev_pacman.coord) >= radius:
+                        self._redraw_all_mapobjects(entities_list, show_hitboxes)
+
+                self._draw_mapobjects(self._get_near_objects(pacmans + ghosts, floors, radius), show_hitboxes)
+                self._draw_mapobjects(self._get_near_objects(pacmans + ghosts, pellets, radius), show_hitboxes)
+                self._draw_mapobjects(self._get_near_objects(pacmans + ghosts, mega_pellets, radius), show_hitboxes)
+                self._draw_mapobjects(self._get_near_objects(pacmans + ghosts, cherry, radius), show_hitboxes)
 
         # Draw creatures
-        self._draw_pacmans(pacman, show_hitboxes=show_hitboxes)
+        self._draw_pacmans(pacmans, show_hitboxes=show_hitboxes)
         self._draw_ghosts(ghosts, show_hitboxes=show_hitboxes)
 
-        # self._draw_text(pacman[0])
+        # self._draw_text(pacmans[0])
         # pygame.display.set_caption("Elapsed time: " + str(elapsed_time))
 
         # Draw covers
@@ -333,7 +379,7 @@ class Renderer(object):
             self.window.blit(cover[0], (cover[1], cover[2]))
 
         # Draw GUI
-        self.lives_icons.set_n(pacman[0].lives)
+        self.lives_icons.set_n(pacmans[0].lives)
         # ...
         self._init_gui_elements_list()
         for element in self.gui_elements:
@@ -357,8 +403,8 @@ class Renderer(object):
             if show_hitboxes:
                 self._show_hitbox(obj)
 
-    def _draw_pacmans(self, pacman, show_hitboxes=False):
-        for pac in pacman:
+    def _draw_pacmans(self, pacmans, show_hitboxes=False):
+        for pac in pacmans:
             if pac.is_alive is True and pac.direction == "left":
                 if pac.animation_count >= 4:
                     pac.animation_count = 0

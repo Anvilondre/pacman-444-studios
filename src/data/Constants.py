@@ -131,7 +131,7 @@ pacman_animations_paths = {"move_left": ["../res/animations/pacman/move_left/0.p
 
 GHOST_MAPOBJECT_HITBOX_PATH = "../res/hitbox/ghost_mapobject.png"
 GHOST_CREATURE_HITBOX_PATH = "../res/hitbox/ghost_creature.png"
-pinky_animations_paths = {"move_left": ["../res/animations/red/move_left/0.png",
+RED_ANIMATIONS_PATHS = {"move_left": ["../res/animations/red/move_left/0.png",
                                         "../res/animations/red/move_left/1.png"],
                           "move_up": ["../res/animations/red/move_up/0.png",
                                       "../res/animations/red/move_up/1.png"],
@@ -143,6 +143,33 @@ pinky_animations_paths = {"move_left": ["../res/animations/red/move_left/0.png",
                                    "../res/animations/red/dead/1.png",
                                    "../res/animations/red/dead/2.png",
                                    "../res/animations/red/dead/3.png"]}
+
+GREEN_ANIMATIONS_PATHS = {"move_left": ["../res/animations/green/move_left/0.png",
+                                        "../res/animations/green/move_left/1.png"],
+                          "move_up": ["../res/animations/green/move_up/0.png",
+                                      "../res/animations/green/move_up/1.png"],
+                          "move_right": ["../res/animations/green/move_right/0.png",
+                                         "../res/animations/green/move_right/1.png"],
+                          "move_down": ["../res/animations/green/move_down/0.png",
+                                        "../res/animations/green/move_down/1.png"],
+                          "dead": ["../res/animations/green/dead/0.png",
+                                   "../res/animations/green/dead/1.png",
+                                   "../res/animations/green/dead/2.png",
+                                   "../res/animations/green/dead/3.png"]}
+
+BLUE_ANIMATIONS_PATHS = {"move_left": ["../res/animations/blue/move_left/0.png",
+                                        "../res/animations/blue/move_left/1.png"],
+                          "move_up": ["../res/animations/blue/move_up/0.png",
+                                      "../res/animations/blue/move_up/1.png"],
+                          "move_right": ["../res/animations/blue/move_right/0.png",
+                                         "../res/animations/blue/move_right/1.png"],
+                          "move_down": ["../res/animations/blue/move_down/0.png",
+                                        "../res/animations/blue/move_down/1.png"],
+                          "dead": ["../res/animations/blue/dead/0.png",
+                                   "../res/animations/blue/dead/1.png",
+                                   "../res/animations/blue/dead/2.png",
+                                   "../res/animations/blue/dead/3.png"]}
+
 
 # Wall
 WALL_HITBOX_PATH = "../res/hitbox/wall.png"

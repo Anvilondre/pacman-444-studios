@@ -5,6 +5,8 @@ import math
 import pygame
 
 from src.data import Constants
+from src.data.Levels import Level
+
 
 def distance(a, b):
     try:
@@ -263,15 +265,16 @@ class Renderer(object):
                              (self.gamescreen_surf_x + self.gamescreen_surf_width,
                               x * self.gamescreen_cell_size + self.gamescreen_surf_y))
 
-    def _draw_text(self, pacman):
+    def _draw_text(self, pacman, current_level):
         # TODO OPTIMIZE
-        font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH, 28)
+        font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH, int(self.canvas_height*Constants.FONT_SIZE_RATIO))
         score_text = font.render("Score: " + str(pacman.score), 1, Constants.FONT_COLOR)
         place = score_text.get_rect(topleft=(self.gamescreen_surf_x, self.top_bar_height/2))
         self.window.blit(score_text, place)
 
-        level_text = font.render("Level: " + "LEVEL_PLACEHOLDER", 1, Constants.FONT_COLOR)
-        place = level_text.get_rect(topleft=(self.gamescreen_surf_x + self.top_bar_width/1.5,
+        level_text = font.render("Level: " + current_level.level_name, 1, Constants.FONT_COLOR)
+        place = level_text.get_rect(topleft=(self.gamescreen_surf_x + self.gamescreen_surf_width
+                                             - level_text.get_rect().width,
                                              self.top_bar_height/2))
         self.window.blit(level_text, place)
 
@@ -342,8 +345,8 @@ class Renderer(object):
     def restart(self):
         self.initial_map_render = True
 
-    def render(self, entities_list: [], elapsed_time, showgrid=False, show_hitboxes=True,
-               render_mode=RenderModes.RedrawAll):
+    def render(self, entities_list: [], current_level: Level, elapsed_time: float, showgrid: bool=False, show_hitboxes: bool=True,
+               render_mode: RenderModes=RenderModes.RedrawAll):
         """entities_list: (pellets, mega_pellets, walls, cherry, pacmans, ghosts)"""
 
         # Unpack entities_list
@@ -364,10 +367,12 @@ class Renderer(object):
             self._redraw_all_mapobjects(entities_list, show_hitboxes)
 
         elif render_mode == RenderModes.PartialRedraw_A:
+
             # Draw all mapobjects if map has been just changed
             if self.initial_map_render:
                 self._redraw_all_mapobjects(entities_list, show_hitboxes)
                 self.initial_map_render = False
+
             # Else only redraw objects in given radius
             else:
                 radius = 2 * Constants.SECTOR_SIZE
@@ -402,7 +407,8 @@ class Renderer(object):
 
         # Draw GUI
         self.lives_icons.set_n(pacmans[0].lives)
-        self._draw_text(pacmans[0])
+        self._draw_text(pacmans[0], current_level)
+
         # ...
         self._init_gui_elements_list()
         for element in self.gui_elements:

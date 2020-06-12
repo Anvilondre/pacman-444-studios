@@ -113,7 +113,7 @@ class Controller:
 
     def init_renderer(self):
         pygame.init()
-        self.renderer = Renderer((0, 0), is_fullscreen=False)
+        self.renderer = Renderer((0, 0), is_fullscreen=True)
 
     def init_debugger(self):
         self.ticktime_debugger = TickTimeDebugger(mode=Modes.Store)
@@ -352,6 +352,7 @@ class Controller:
         for ghost in self.ghosts:
             (ghost.x, ghost.y) = ghost.initial_location
             ghost.form = forms[random.randint(0, 2)]
+            ghost.is_alive = True
         self.renderer.restart()
 
     def resolve_ghost_direction(self, ghost, pacman_coord, used_sectors=[], used_val=0):
@@ -460,7 +461,7 @@ class Controller:
         if self.desired_render_tick_time > DESIRED_RENDER_TICK_TIME:
             start_time = time.time()
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
-                                  [], [self.pacman], self.ghosts],
+                                  [], [self.pacman], self.ghosts], self.current_level,
                                  tick_time, showgrid=False, show_hitboxes=False,
                                  render_mode=RenderModes.PartialRedraw_A)
             end_time = time.time()

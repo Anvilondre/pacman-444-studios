@@ -1,3 +1,4 @@
+import copy
 import enum
 import math
 
@@ -6,7 +7,10 @@ import pygame
 from src.data import Constants
 
 def distance(a, b):
-    return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+    try:
+        return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+    except:
+        raise Exception("a: "+str(a)+"; b: "+str(b))
 
 class RenderModes(enum.Enum):
     RedrawAll = 0  # Redraws every single object every tick
@@ -118,7 +122,7 @@ class Renderer(object):
             (self.gamescreen_boundbox_surf_width, self.gamescreen_boundbox_surf_height))
         self.gamescreen_boundbox_surf_x = self.canvas_width / 2 - self.gamescreen_boundbox_surf.get_width() / 2
         self.gamescreen_boundbox_surf_y = self.canvas_height / 2 - self.gamescreen_boundbox_surf.get_height() / 2
-        self.gamescreen_boundbox_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
+        self.gamescreen_boundbox_surf.fill((0, 255, 0))
 
     def _init_gamescreen(self, map_dimensions):
         self.gamescreen_cell_size = int(Constants.GAMESCREEN_CELL_SIZE_RATIO * self.canvas_width)
@@ -168,8 +172,8 @@ class Renderer(object):
         self.lives_bar_surf_height = int(self.bottom_bar_height)
         self.lives_bar_surf = pygame.Surface((self.lives_bar_surf_width, self.lives_bar_surf_height))
         self.lives_bar_surf_x = Constants.BOTTOM_BAR_X_RATIO * self.canvas_width
-        self.lives_bar_surf_y = Constants.BOTTOM_BAR_Y_RATIO * self.canvas_height
-        self.lives_bar_surf.fill((203, 124, 30))
+        self.lives_bar_surf_y = self.canvas_height - self.bottom_bar_height
+        #self.lives_bar_surf.fill((203, 124, 30))
         self.lives_icons = LineOfIconsWidget(pygame.Rect(self.lives_bar_surf_x, self.lives_bar_surf_y,
                                                          self.lives_bar_surf_width, self.lives_bar_surf_height),
                                              icon_path=Constants.LIVES_ICON_PATH,
@@ -201,7 +205,7 @@ class Renderer(object):
 
         self.up_teleport_cover_surf = pygame.Surface((self.gamescreen_boundbox_surf_width, self.gamescreen_surf_y))
         self.up_teleport_cover_surf_x = 0
-        self.up_teleport_cover_surf_y = self.gamescreen_surf_y - self.gamescreen_cell_size
+        self.up_teleport_cover_surf_y = 0
         self.up_teleport_cover_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
 
         self.right_teleport_cover_surf = pygame.Surface((self.gamescreen_boundbox_surf_width -
@@ -210,19 +214,20 @@ class Renderer(object):
         self.right_teleport_cover_surf_x = self.gamescreen_surf_x + self.gamescreen_surf_width
         self.right_teleport_cover_surf_y = self.gamescreen_surf_y
         self.right_teleport_cover_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
-
-        self.down_teleport_cover_surf = pygame.Surface((self.gamescreen_boundbox_surf_width, self.gamescreen_cell_size))
+        self.down_teleport_cover_surf = pygame.Surface((self.gamescreen_boundbox_surf_width,
+                                                        self.canvas_height -
+                                                        (self.gamescreen_surf_y + self.gamescreen_surf_height)))
         self.down_teleport_cover_surf_x = 0
         self.down_teleport_cover_surf_y = self.gamescreen_surf_y + self.gamescreen_surf_height
         self.down_teleport_cover_surf.fill(Constants.SCREEN_BACKGROUND_COLOR)
 
     def _init_bg_elements_list(self):
-        """Creates a list of all background elements and their absolute positions on the canvas"""
+        """Creates a list of filled background surfaces and their absolute positions on the canvas"""
         self.bg_elements = []
 
         #self.bg_elements.append([self.background_surf, self.background_surf_x, self.background_surf_y])
-        # self.bg_elements.append([self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
-        # self.bg_elements.append([self.gamescreen_surf, self.gamescreen_surf_x, self.gamescreen_surf_y])
+        #self.bg_elements.append([self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
+        #self.bg_elements.append([self.gamescreen_surf, self.gamescreen_surf_x, self.gamescreen_surf_y])
 
     def _init_gui_elements_list(self):
         """Creates a list of all gui elements and their absolute positions on the canvas"""
@@ -235,7 +240,7 @@ class Renderer(object):
             self.gui_elements.append(icon)
 
     def _init_teleport_covers_list(self):
-        """Creates a list of all covers and their absolute positions on the canvas"""
+        """Creates a list of all teleport covers and their absolute positions on the canvas"""
         self.covers = []
 
         self.covers.append(
@@ -259,11 +264,16 @@ class Renderer(object):
                               x * self.gamescreen_cell_size + self.gamescreen_surf_y))
 
     def _draw_text(self, pacman):
-        # TODO
-        font = pygame.font.SysFont('Comic Sans MS', 30)
-        text = font.render("Score: " + str(pacman.score), 1, (255, 255, 255))
-        place = text.get_rect(topleft=(self.lives_bar_surf_x, 0))
-        self.window.blit(text, place)
+        # TODO OPTIMIZE
+        font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH, 28)
+        score_text = font.render("Score: " + str(pacman.score), 1, Constants.FONT_COLOR)
+        place = score_text.get_rect(topleft=(self.gamescreen_surf_x, self.top_bar_height/2))
+        self.window.blit(score_text, place)
+
+        level_text = font.render("Level: " + "LEVEL_PLACEHOLDER", 1, Constants.FONT_COLOR)
+        place = level_text.get_rect(topleft=(self.gamescreen_surf_x + self.top_bar_width/1.5,
+                                             self.top_bar_height/2))
+        self.window.blit(level_text, place)
 
     def _mapscreen_coords_to_gamescreen_coords(self, coords):
         x = coords[0] * self.gamescreen_surf_width / self.map_size[0] + self.gamescreen_surf_x
@@ -307,19 +317,20 @@ class Renderer(object):
         temp.set_alpha(Constants.HITBOX_OPACITY)
         self.window.blit(temp, (x, y))
 
-    def _get_near_objects(self, center_objects, objects, radius=2 * Constants.SECTOR_SIZE):
+    def _get_near_objects(self, center_objects_coords, objects, radius=2 * Constants.SECTOR_SIZE):
+        """Returns a list of objects in radius <= given radius around center_objects_coords list of coordinates (x,y)"""
+
         near_objects = []
 
-        for pacman in center_objects:
-            for pellet in objects:
+        for center_object_coord in center_objects_coords:
+            for object in objects:
                 # Draw if distance between pellet and pacman is smaller than R = 2*SECTOR_SIZE
-                if math.sqrt((pellet.coord[0] - pacman.coord[0]) ** 2 + (
-                        pellet.coord[1] - pacman.coord[1]) ** 2) <= radius:
-                    near_objects.append(pellet)
+                if distance(object.coord, center_object_coord) <= radius:
+                    near_objects.append(object)
 
         return near_objects
 
-    def _redraw_all_mapobjects(self, entities_list, show_hitboxes=True):
+    def _redraw_all_mapobjects(self, entities_list, show_hitboxes=False):
         pellets, mega_pellets, walls, floors, cherry, pacmans, ghosts = entities_list
 
         self._draw_mapobjects(walls, show_hitboxes=show_hitboxes)
@@ -331,14 +342,16 @@ class Renderer(object):
     def restart(self):
         self.initial_map_render = True
 
-    def render(self, entities_list, elapsed_time, showgrid=False, show_hitboxes=True,
+    def render(self, entities_list: [], elapsed_time, showgrid=False, show_hitboxes=True,
                render_mode=RenderModes.RedrawAll):
         """entities_list: (pellets, mega_pellets, walls, cherry, pacmans, ghosts)"""
 
         # Unpack entities_list
-        self.prev_entites = entities_list
         pellets, mega_pellets, walls, floors, cherry, pacmans, ghosts = entities_list
-        prev_pellets, prev_mega_pellets, prev_walls, prev_floors, prev_cherry, prev_pacmans, prev_ghosts = self.prev_entites
+
+        if self.initial_map_render:
+            self.prev_pacmans_coords = [pacman.coord for pacman in pacmans]
+            self.prev_ghosts_coords = [ghost.coord for ghost in ghosts]
 
         # Draw background
         for element in self.bg_elements:
@@ -359,34 +372,37 @@ class Renderer(object):
             else:
                 radius = 2 * Constants.SECTOR_SIZE
 
+                def _draw_mapobjects_around_coords(coords):
+                    self._draw_mapobjects(self._get_near_objects(coords, floors, radius), show_hitboxes)
+                    self._draw_mapobjects(self._get_near_objects(coords, pellets, radius), show_hitboxes)
+                    self._draw_mapobjects(self._get_near_objects(coords, mega_pellets, radius), show_hitboxes)
+                    self._draw_mapobjects(self._get_near_objects(coords, cherry, radius), show_hitboxes)
+
                 # Redraw all when pacman teleports (because of low/inconsistent tickrate or pacman's death)
-                for pacman, prev_pacman in zip(pacmans, prev_pacmans):
-                    if distance(pacman.coord, prev_pacman.coord) >= radius:
-                        self._redraw_all_mapobjects(entities_list, show_hitboxes)
+                for pacman, prev_pacman_coord in zip(pacmans, self.prev_pacmans_coords):
+                    if distance(pacman.coord, prev_pacman_coord) >= radius:
+                        _draw_mapobjects_around_coords([prev_pacman_coord])
+
                 # Redraw all when ghost teleports (because of low/inconsistent tickrate)
-                for ghost, prev_ghost in zip(ghosts, prev_ghosts):
-                    if distance(ghost.coord, prev_ghost.coord) >= radius:
-                        self._redraw_all_mapobjects(entities_list, show_hitboxes)
+                for ghost, prev_ghost_coord in zip(ghosts, self.prev_ghosts_coords):
+                    if distance(ghost.coord, prev_ghost_coord) >= radius:
+                        _draw_mapobjects_around_coords([prev_ghost_coord])
 
-
-                self._draw_mapobjects(self._get_near_objects(pacmans + ghosts, floors, radius), show_hitboxes)
-                self._draw_mapobjects(self._get_near_objects(pacmans + ghosts, pellets, radius), show_hitboxes)
-                self._draw_mapobjects(self._get_near_objects(pacmans + ghosts, mega_pellets, radius), show_hitboxes)
-                self._draw_mapobjects(self._get_near_objects(pacmans + ghosts, cherry, radius), show_hitboxes)
+                _draw_mapobjects_around_coords([creature.coord for creature in (pacmans + ghosts)])
 
         # Draw creatures
         self._draw_pacmans(pacmans, show_hitboxes=show_hitboxes)
         self._draw_ghosts(ghosts, show_hitboxes=show_hitboxes)
 
-        # self._draw_text(pacmans[0])
         # pygame.display.set_caption("Elapsed time: " + str(elapsed_time))
 
         # Draw covers
         for cover in self.covers:
-            self.window.blit(cover[0], (cover[1], cover[2]))
+           self.window.blit(cover[0], (cover[1], cover[2]))
 
         # Draw GUI
         self.lives_icons.set_n(pacmans[0].lives)
+        self._draw_text(pacmans[0])
         # ...
         self._init_gui_elements_list()
         for element in self.gui_elements:
@@ -398,6 +414,12 @@ class Renderer(object):
 
         if self.time_elapsed_from_prev_animation_frame >= Constants.ANIMATION_PERIOD:
             self.time_elapsed_from_prev_animation_frame = 0
+
+        if not self.initial_map_render:
+            # Update prev entities list
+            #self.prev_entites = entities_list.copy()
+            self.prev_pacmans_coords = [pacman.coord for pacman in pacmans]
+            self.prev_ghosts_coords = [ghost.coord for ghost in ghosts]
 
         pygame.display.update()
 

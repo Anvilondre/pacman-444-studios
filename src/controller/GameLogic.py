@@ -363,8 +363,9 @@ class Controller:
             if hardcore:
                 used_sectors = []
                 for ghost in self.ghosts:
-                    used_sectors.extend(
-                        self.resolve_ghost_direction(ghost, pacman_coord, used_sectors, 4))  # Hardcore mode
+                    path = self.resolve_ghost_direction(ghost, pacman_coord, used_sectors, 4)
+                    if path is not None:
+                        used_sectors.extend(path)
             else:
                 for ghost in self.ghosts:
                     self.resolve_ghost_direction(ghost, pacman_coord)

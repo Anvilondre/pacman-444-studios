@@ -46,7 +46,9 @@ class Level(ABC):
 
 
 class Level1(Level):
-
+    PACMAN_PX_PER_SECOND = 36 * 5
+    PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
+    GHOST_PX_PER_SECOND = 36 * 5
     pacman_velocity = 6
     pacman_boost = 20
     pacman_cooldown = 10
@@ -64,7 +66,7 @@ class Level1(Level):
                      "####.###.#.###.####",
                      "####.#.......#.####",
                      "####.#.## ##.#.####",
-                     ".......#$$$#.......",
+                     ".......#  $#.......",
                      "####.#.#####.#.####",
                      "####.#.......#.####",
                      "####.#.#####.#.####",
@@ -77,7 +79,9 @@ class Level1(Level):
 
 
 class Level2(Level):
-
+    PACMAN_PX_PER_SECOND = 36 * 5
+    PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
+    GHOST_PX_PER_SECOND = 36 * 5
     pacman_velocity = 6
     pacman_boost = 6
     pacman_cooldown = 12
@@ -107,7 +111,9 @@ class Level2(Level):
                      "######### #########"])
 
 class Level3(Level):
-
+    PACMAN_PX_PER_SECOND = 36 * 5
+    PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
+    GHOST_PX_PER_SECOND = 36 * 5
     pacman_velocity = 8
     pacman_boost = 3
     pacman_cooldown = 15

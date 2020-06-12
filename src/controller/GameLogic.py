@@ -1,18 +1,21 @@
-import sys
-
+import copy
 import random
+import sys
+import time
+from itertools import cycle
+from threading import Timer
+
 import pygame
 from pygame.constants import K_F1
 from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
+
 from src.controller.Abilities import SpeedAbility, TransformAbility
+from src.controller.GhostsAI import PathFinder
+from src.data import Constants
 from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
-    PACMAN_PX_PER_SECOND, GHOST_PX_PER_SECOND, GLOBAL_TICK_RATE, PACMAN_BOOST_PX_PER_SECOND, forms
+    GLOBAL_TICK_RATE, forms, pacman_mana
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
-from src.controller.GhostsAI import PathFinder
-from threading import Timer
-from itertools import cycle
-import time
 from src.view.Renderer import Renderer, RenderModes
 
 
@@ -21,7 +24,6 @@ def get_sector_coord(x, y):
 
 
 def revive_ghost(ghost):
-
     if (ghost.x, ghost.y) == ghost.initial_location:
         ghost.is_alive = True
 
@@ -86,9 +88,11 @@ class Controller:
             self.render_update_exec_time = \
             self.counter_physics_tick_time = 0
         self.tick_time = \
-            self.map_width = \
-            self.map_height = \
-            self.counter_ai_tick_time = 0
+        self.map_width = \
+        self.map_height = \
+        self.copy_pellets = \
+        self.copy_mega_pellets = \
+        self.counter_ai_tick_time = 0
         self.desired_render_tick_time = 0
         self.initial_setup()
 
@@ -120,11 +124,13 @@ class Controller:
         self.mega_pellets = self.current_level.level_map.mega_pellets
         self.map_width = self.current_level.level_map.width * SECTOR_SIZE
         self.map_height = self.current_level.level_map.height * SECTOR_SIZE
+        self.copy_pellets = copy.copy(self.pellets)
+        self.copy_mega_pellets = copy.copy(self.mega_pellets)
 
     def init_pacman(self):
         self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord,
                              self.current_level.level_map.pacman_initial_coord,
-                             SECTOR_SIZE, SECTOR_SIZE, self.current_level.pacman_velocity)
+                             SECTOR_SIZE, SECTOR_SIZE, int(self.current_level.PACMAN_PX_PER_SECOND * self.tick_time))
         self.ability_is_ready = True
 
     def init_ghosts(self):
@@ -132,7 +138,8 @@ class Controller:
         self.ghosts = []
         for ghost_coord in self.current_level.level_map.ghosts_initial_coords:
             self.ghosts.append(
-                Ghost(*ghost_coord, ghost_coord, SECTOR_SIZE, SECTOR_SIZE, self.current_level.ghosts_velocity))
+                Ghost(*ghost_coord, ghost_coord, SECTOR_SIZE, SECTOR_SIZE, int(self.current_level.GHOST_PX_PER_SECOND *
+                                                                               self.tick_time)))
 
     def init_abilities(self):
         self.speed_ability = SpeedAbility(self.pacman, self.current_level.speed_ability_duration,
@@ -162,18 +169,14 @@ class Controller:
                 elif event.key == K_F1:
                     self.ticktime_debugger.save_as_image()
 
-                    #try:
-                    #except Exception:
-                    #    print("Can't save ticktime image.")
-
                 elif event.key == K_1 and self.pacman.mana > 0 and self.ability_is_ready:
                     if self.tick_time > DESIRED_PHYSICS_TICK_TIME:
                         boost_tick_time = self.tick_time
                     else:
                         boost_tick_time = DESIRED_PHYSICS_TICK_TIME
 
-                    pacman_vel = boost_tick_time * PACMAN_PX_PER_SECOND
-                    pacman_boost = boost_tick_time * PACMAN_BOOST_PX_PER_SECOND
+                    pacman_vel = boost_tick_time * self.current_level.PACMAN_PX_PER_SECOND
+                    pacman_boost = boost_tick_time * self.current_level.PACMAN_BOOST_PX_PER_SECOND
                     self.speed_ability.run(pacman_vel, pacman_boost)
                     self.set_cooldown_timer()
 
@@ -313,7 +316,7 @@ class Controller:
         if not self.pacman.is_alive:
             self.revive_pacman()
         if not self.speed_ability.is_active:
-            self.pacman.velocity = int(PACMAN_PX_PER_SECOND * counter_physics_tick_time)
+            self.pacman.velocity = int(self.current_level.PACMAN_PX_PER_SECOND * counter_physics_tick_time)
         # print("pacman: " + str(self.pacman.velocity))
         self.move_creature(self.pacman)
         self.check_pacman_ghost_collision()
@@ -327,14 +330,23 @@ class Controller:
 
     def map_restart(self):
         """ Restart current map """
-        self.parse_level()
-        self.init_pacman()
-        self.init_ghosts()
+        self.pellets = copy.copy(self.copy_pellets)
+        self.mega_pellets = copy.copy(self.copy_mega_pellets)
+        (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
+        self.pacman.direction = 'left'
+        self.pacman.mana = pacman_mana
+        self.pacman.form = forms[random.randint(0, 2)]
+        self.pacman.score = Constants.pacman_score
+        self.pacman.lives = Constants.pacman_lives
+        self.pacman.ghosts_eaten = 0
         self.init_abilities()
+        for ghost in self.ghosts:
+            (ghost.x, ghost.y) = ghost.initial_location
+            ghost.form = forms[random.randint(0, 2)]
         self.renderer.restart()
 
     def resolve_ghost_direction(self, ghost, pacman_coord, used_sectors=[], used_val=0):
-        ghost_coord = get_sector_coord(ghost.x + ghost.width / 2, ghost.y + ghost.height / 2)
+        ghost_coord = get_sector_coord(ghost.x + SECTOR_SIZE / 2, ghost.y + SECTOR_SIZE / 2)
         ghost_init_coord = get_sector_coord(ghost.initial_location[0] + ghost.width / 2, ghost.initial_location[1] +
                                             ghost.width / 2)
         if not ghost.is_alive:
@@ -342,13 +354,10 @@ class Controller:
                 ghost.form = forms[random.randint(0, 2)]
                 ghost.is_alive = True
                 ghost.is_chasing = True
-
         if ghost.is_chasing and self.pacman.is_alive:
             path = self.path_finder.get_path(ghost_coord, pacman_coord, used_sectors, used_val)
             ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, path)
         else:
-            ghost_init_coord = get_sector_coord(ghost.initial_location[0] + ghost.width/2, ghost.initial_location[1] +
-                                                ghost.width/2)
             path = self.path_finder.get_path(ghost_coord, ghost_init_coord)
             ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, path)
 
@@ -376,7 +385,7 @@ class Controller:
 
     def move_ghosts(self, counter_physics_tick_time):
         for ghost in self.ghosts:
-            ghost.velocity = int(GHOST_PX_PER_SECOND * counter_physics_tick_time)
+            ghost.velocity = int(self.current_level.GHOST_PX_PER_SECOND * counter_physics_tick_time)
             # print("GHOST: " + str(ghost.velocity))
             self.move_creature(ghost)
 
@@ -385,7 +394,7 @@ class Controller:
             if pygame.sprite.collide_mask(self.pacman.creature_hitbox, ghost.creature_hitbox):
                 if self.pacman.form == ghost.form:
                     ghost_died(ghost)
-                else:
+                elif ghost.is_alive:
                     self.pacman_die()
 
     def check_pellet_collision(self):  # TODO: Change hitbox
@@ -428,14 +437,14 @@ class Controller:
             self.counter_physics_tick_time = 0
             end_time = time.time()
             self.physics_update_exec_time = end_time - start_time
-            self.time_convert(self.physics_update_exec_time)
+            # self.time_convert(self.physics_update_exec_time)
 
     def time_convert(self, sec):
         mins = sec // 60
         sec = sec % 60
         hours = mins // 60
         mins = mins % 60
-        # print("Time Lapsed = {0}:{1}:{2}".format(int(hours), int(mins), sec))
+        print("Time Lapsed = {0}:{1}:{2}".format(int(hours), int(mins), sec))
 
     def render_update(self, tick_time):
         self.desired_render_tick_time += tick_time
@@ -443,8 +452,8 @@ class Controller:
             start_time = time.time()
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
                                   [], [self.pacman], self.ghosts],
-                                  tick_time, showgrid=False, show_hitboxes=False,
-                                  render_mode=RenderModes.PartialRedraw_A)
+                                 tick_time, showgrid=False, show_hitboxes=False,
+                                 render_mode=RenderModes.PartialRedraw_A)
             end_time = time.time()
             self.render_update_exec_time = end_time - start_time
 
@@ -461,7 +470,7 @@ class Controller:
 
             self.handle_events()
             self.physics_update(self.tick_time)
-            self.update_ghosts(self.tick_time, hardcore=True)
+            self.update_ghosts(self.tick_time, hardcore=False)
             self.update_level()
 
             self.render_update(self.tick_time)

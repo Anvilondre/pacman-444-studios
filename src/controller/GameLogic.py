@@ -342,6 +342,7 @@ class Controller:
         self.mega_pellets = copy.copy(self.copy_mega_pellets)
         (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
         self.pacman.direction = 'left'
+        self.pacman.preferred_direction = 'left'
         self.pacman.mana = pacman_mana
         self.pacman.form = forms[random.randint(0, 2)]
         self.pacman.score = Constants.pacman_score

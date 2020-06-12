@@ -9,13 +9,13 @@ class Map:
         self.height = len(string_map)
         self.dims = (self.width, self.height)
         self.pellets = \
-        self.mega_pellets = \
-        self.walls = \
-        self.floors = \
-        self.hash_map = \
-        self.pacman_initial_coord = \
-        self.ghosts_initial_coords = \
-        self.linked_list = None
+            self.mega_pellets = \
+            self.walls = \
+            self.floors = \
+            self.hash_map = \
+            self.pacman_initial_coord = \
+            self.ghosts_initial_coords = \
+            self.linked_list = None
 
     def pre_process(self):
         pellets = []
@@ -61,8 +61,25 @@ class Map:
                 if ch != '#':
                     floors.append(Floor(coord))
 
-                if ch != '#' and x != 0 and x != self.width - 1 and y != 0 and y != self.height:
-                    neighbors = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+                if ch != '#':
+                    if x == 0:
+                        neighbors = [(self.width - 1, y), (x + 1, y)]
+
+                    elif x == self.width - 1:
+                        neighbors = [(x - 1, y), (0, y)]
+
+                    else:
+                        neighbors = [(x - 1, y), (x + 1, y)]
+
+                    if y == 0:
+                        neighbors.extend([(x, self.height - 1), (x, y + 1)])
+
+                    elif y == self.height:
+                        neighbors.extend([(x, y - 1), (x, 0)])
+
+                    else:
+                        neighbors.extend([(x, y - 1), (x, y + 1)])
+
                     nbr = []
                     for item in neighbors:
 

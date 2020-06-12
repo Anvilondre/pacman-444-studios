@@ -62,20 +62,25 @@ class Map:
                     floors.append(Floor(coord))
 
                 if ch != '#':
+
                     if x == 0:
                         neighbors = [(self.width - 1, y), (x + 1, y)]
+                        linked_list[(x - 1, y)] = [(x, y), (self.width - 1, y)]
 
                     elif x == self.width - 1:
                         neighbors = [(x - 1, y), (0, y)]
+                        linked_list[(x + 1, y)] = [(x, y), (0, y)]
 
                     else:
                         neighbors = [(x - 1, y), (x + 1, y)]
 
                     if y == 0:
                         neighbors.extend([(x, self.height - 1), (x, y + 1)])
+                        linked_list[(x, y - 1)] = [(x, y), (x, self.height - 1)]
 
-                    elif y == self.height:
+                    elif y == self.height - 1:
                         neighbors.extend([(x, y - 1), (x, 0)])
+                        linked_list[(x, y + 1)] = [(x, y), (x, 0)]
 
                     else:
                         neighbors.extend([(x, y - 1), (x, y + 1)])

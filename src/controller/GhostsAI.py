@@ -64,15 +64,12 @@ class PathFinder:
 
         start_node = Node(start, None)
         goal_node = Node(end, None)
-
         open_nodes.append(start_node)
 
         while len(open_nodes) > 0:
 
             open_nodes.sort()  # Sort nodes by cost
-            #print(open_nodes)
             current_node = open_nodes.pop(0)  # Node with the lowest cost
-
             closed_nodes.append(current_node)
 
             if current_node == goal_node:
@@ -86,7 +83,6 @@ class PathFinder:
             for item in self.hash_map[current_node.position]:
 
                 neighbor = Node(item, current_node)
-
                 # Skip closed neighbors
                 if neighbor in closed_nodes:
                     continue

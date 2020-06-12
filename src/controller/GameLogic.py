@@ -6,7 +6,7 @@ from itertools import cycle
 from threading import Timer
 
 import pygame
-from pygame.constants import K_F1
+from pygame.constants import K_F1, K_SPACE
 from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
 
 from src.controller.Abilities import SpeedAbility, TransformAbility
@@ -70,6 +70,7 @@ class Controller:
     def __init__(self, levels):
         self.levels = cycle(levels)
         self.game_over = \
+            self.is_playing = \
             self.window = \
             self.current_level = \
             self.walls = \
@@ -88,11 +89,11 @@ class Controller:
             self.render_update_exec_time = \
             self.counter_physics_tick_time = 0
         self.tick_time = \
-        self.map_width = \
-        self.map_height = \
-        self.copy_pellets = \
-        self.copy_mega_pellets = \
-        self.counter_ai_tick_time = 0
+            self.map_width = \
+            self.map_height = \
+            self.copy_pellets = \
+            self.copy_mega_pellets = \
+            self.counter_ai_tick_time = 0
         self.desired_render_tick_time = 0
         self.initial_setup()
 
@@ -100,6 +101,9 @@ class Controller:
         self.game_over = False
         self.init_renderer()
         self.init_debugger()
+        self.load_level()
+
+    def load_level(self):
         self.init_level()
         self.renderer.set_map_dimensions(self.current_level.level_map.dims)
         self.parse_level()
@@ -186,6 +190,8 @@ class Controller:
                         self.set_cooldown_timer()
                     elif self.transform_ability.is_active:
                         self.transform_ability.changeForm()
+                elif event.key == K_SPACE:
+                    self.is_playing = False
 
     def set_cooldown_timer(self):
         self.ability_is_ready = False
@@ -326,7 +332,9 @@ class Controller:
     def update_level(self):
         """ Jumps to the next level if all pellets are picked """
         if not self.pellets and not self.mega_pellets:
-            self.initial_setup()
+            self.load_level()
+            self.renderer.restart()
+            self.is_playing = False
 
     def map_restart(self):
         """ Restart current map """
@@ -421,7 +429,7 @@ class Controller:
             (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
         else:
             self.map_restart()
-
+            self.is_playing = False
         self.deactivate_active_ability()
 
     def physics_update(self, tick_time):
@@ -458,6 +466,7 @@ class Controller:
             self.render_update_exec_time = end_time - start_time
 
     def run(self):
+        self.is_playing = True
         clock = pygame.time.Clock()
         self.ticktime_debugger.run()
         run = True
@@ -465,17 +474,27 @@ class Controller:
             miliseconds = clock.tick(GLOBAL_TICK_RATE)
             self.tick_time = miliseconds / 1000.0  # seconds
 
-            if self.tick_time > 0.1:
-                self.tick_time = 1 / GLOBAL_TICK_RATE
+            if self.is_playing:
+                if self.tick_time > 0.1:
+                    self.tick_time = 1 / GLOBAL_TICK_RATE
 
-            self.handle_events()
-            self.physics_update(self.tick_time)
-            self.update_ghosts(self.tick_time, hardcore=False)
-            self.update_level()
+                self.handle_events()
+                self.physics_update(self.tick_time)
+                self.update_ghosts(self.tick_time, hardcore=False)
+                self.update_level()
 
-            self.render_update(self.tick_time)
+                self.render_update(self.tick_time)
 
-            self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time,
-                                          self.render_update_exec_time, self.tick_time)
+                self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time,
+                                              self.render_update_exec_time, self.tick_time)
+            else:
+                for event in pygame.event.get():
+                    if event.type == QUIT:
+                        pygame.quit()
+                        sys.exit()
+
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == K_SPACE:
+                            self.is_playing = True
 
         pygame.quit()

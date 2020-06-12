@@ -3,6 +3,10 @@ from abc import ABC, abstractmethod
 
 
 class Level(ABC):
+    @property
+    @abstractmethod
+    def level_name(self):
+        pass
 
     @property
     @abstractmethod
@@ -46,6 +50,7 @@ class Level(ABC):
 
 
 class Level1(Level):
+    level_name = "1"
     PACMAN_PX_PER_SECOND = 36 * 5
     PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
     GHOST_PX_PER_SECOND = 36 * 5
@@ -79,6 +84,7 @@ class Level1(Level):
 
 
 class Level2(Level):
+    level_name = "2"
     PACMAN_PX_PER_SECOND = 36 * 5
     PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
     GHOST_PX_PER_SECOND = 36 * 5
@@ -111,6 +117,7 @@ class Level2(Level):
                      "######### #########"])
 
 class Level3(Level):
+    level_name = "3"
     PACMAN_PX_PER_SECOND = 36 * 5
     PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
     GHOST_PX_PER_SECOND = 36 * 5

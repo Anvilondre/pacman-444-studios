@@ -55,8 +55,8 @@ LIVES_BAR_Y_RATIO = BOTTOM_BAR_Y_RATIO
 
 ABILITIES_BAR_X_RATIO = BOTTOM_BAR_X_RATIO
 ABILITIES_BAR_Y_RATIO = BOTTOM_BAR_Y_RATIO
-FRUITS_BAR_X_RATIO = 470 / 1920
-FRUITS_BAR_Y_RATIO = 1030 / 1920
+MANA_BAR_X_RATIO = 470 / 1920
+MANA_BAR_Y_RATIO = 1030 / 1920
 
 # GameLogic
 DESIRED_PHYSICS_TICK_TIME = 0.016
@@ -71,9 +71,10 @@ GLOBAL_TICK_RATE = 60
 # Game
 
 SECTOR_SIZE = 36
-LIVES_BAR_WIDTH = 350 / 1000
-ABILITIES_BAR_WIDTH = 450 / 1000
-FRUITS_BAR_WIDTH = 200 / 1000
+# 5:9:5
+LIVES_BAR_WIDTH = 5 / 19
+ABILITIES_BAR_WIDTH = 9 / 19
+MANA_BAR_WIDTH = 5 / 19
 
 GAMESCREEN_BOUNDBOX_SURF_WIDTH_RATIO = 1920 / 1920  # TODO: Add explanation
 GAMESCREEN_BOUNDBOX_SURF_HEIGHT_RATIO = 900 / 1080
@@ -246,7 +247,16 @@ FLOOR_HITBOX_PATH = "../res/hitbox/floor.png"
 FLOOR_TEXTURE_PATH = "../res/textures/floor.png"
 
 # Icons
-LIVES_ICON_PATH = "../res/icons/life_icon.png"
+LIVES_ICON_ANIMATIONS_PATH = {"default": ["../res/icons/lives/default/0.png"]}
+BOOST_ICON_ANIMATIONS_PATH = {"default": ["../res/icons/boost/default/0.png"],
+                              "active": ["../res/icons/boost/active/0.png"],
+                              "disabled": ["../res/icons/boost/disabled/0.png"],
+                              "pushed": ["../res/icons/boost/pushed/0.png"]}
+MORPH_ICON_ANIMATIONS_PATH = {"default": ["../res/icons/morph/default/0.png"],
+                              "active": ["../res/icons/morph/active/0.png"],
+                              "disabled": ["../res/icons/morph/disabled/0.png"],
+                              "pushed": ["../res/icons/morph/pushed/0.png"]}
+MANA_ICON_ANIMATIONS_PATH = {"default": ["../res/icons/mana/default/0.png"]}
 
 # Debugger
 DEFAULT_GRAPH_SAVEPATH = "debug/graphs/ticktime.png"

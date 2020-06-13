@@ -13,7 +13,7 @@ from src.controller.Abilities import SpeedAbility, TransformAbility
 from src.controller.GhostsAI import PathFinder
 from src.data import Constants
 from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
-    GLOBAL_TICK_RATE, forms, pacman_mana
+    GLOBAL_TICK_RATE, forms, pacman_mana, ANIMATION_PERIOD
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
 from src.view.Renderer import Renderer, RenderModes
@@ -83,6 +83,7 @@ class Controller:
             self.transform_ability = \
             self.ability_timer = \
             self.ability_is_ready = \
+            self.is_map_restart = \
             self.renderer = None
         self.ghost_update_exec_time = \
             self.physics_update_exec_time = \
@@ -94,7 +95,7 @@ class Controller:
             self.copy_pellets = \
             self.copy_mega_pellets = \
             self.counter_ai_tick_time = 0
-        self.desired_render_tick_time = 0
+        self.counter_render_tick_time = 0
         self.initial_setup()
 
     def initial_setup(self):
@@ -174,6 +175,7 @@ class Controller:
                     self.ticktime_debugger.save_as_image()
 
                 elif event.key == K_1 and self.pacman.mana > 0 and self.ability_is_ready:
+                    self.pacman.mana -= 1
                     if self.tick_time > DESIRED_PHYSICS_TICK_TIME:
                         boost_tick_time = self.tick_time
                     else:
@@ -186,6 +188,7 @@ class Controller:
 
                 elif event.key == K_2:
                     if self.pacman.mana > 0 and self.ability_is_ready:
+                        self.pacman.mana -= 1
                         self.transform_ability.run()  # call set_cooldown_timer()
                         self.set_cooldown_timer()
                     elif self.transform_ability.is_active:
@@ -319,11 +322,8 @@ class Controller:
             return False
 
     def update_pacman(self, counter_physics_tick_time):
-        if not self.pacman.is_alive:
-            self.revive_pacman()
         if not self.speed_ability.is_active:
             self.pacman.velocity = int(self.current_level.PACMAN_PX_PER_SECOND * counter_physics_tick_time)
-        # print("pacman: " + str(self.pacman.velocity))
         self.move_creature(self.pacman)
         self.check_pacman_ghost_collision()
         self.check_pellet_collision()
@@ -338,6 +338,7 @@ class Controller:
 
     def map_restart(self):
         """ Restart current map """
+        self.is_map_restart = True
         self.pellets = copy.copy(self.copy_pellets)
         self.mega_pellets = copy.copy(self.copy_mega_pellets)
         (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
@@ -353,7 +354,7 @@ class Controller:
             (ghost.x, ghost.y) = ghost.initial_location
             ghost.form = forms[random.randint(0, 2)]
             ghost.is_alive = True
-        self.renderer.restart()
+        self.is_playing = False
 
     def resolve_ghost_direction(self, ghost, pacman_coord, used_sectors=[], used_val=0):
         ghost_coord = get_sector_coord(ghost.x + SECTOR_SIZE / 2, ghost.y + SECTOR_SIZE / 2)
@@ -364,6 +365,7 @@ class Controller:
                 ghost.form = forms[random.randint(0, 2)]
                 ghost.is_alive = True
                 ghost.is_chasing = True
+
         if ghost.is_chasing and self.pacman.is_alive:
             path = self.path_finder.get_path(ghost_coord, pacman_coord, used_sectors, used_val)
             ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, path)
@@ -425,29 +427,34 @@ class Controller:
         (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
 
     def pacman_die(self):  # TODO: Animations
-        if self.pacman.lives > 1:
-            self.pacman.lives -= 1
-            self.pacman.is_alive = False
-            (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
-        else:
-            self.map_restart()
-            self.is_playing = False
+        if self.pacman.is_alive:
+            if self.pacman.lives > 1:
+                self.pacman.lives -= 1
+                self.revive_pacman()
+            else:
+                self.pacman.lives -= 1
+                self.pacman.animation_count = 0
+                self.pacman.is_alive = False
+
         self.deactivate_active_ability()
 
     def physics_update(self, tick_time):
-        if tick_time >= DESIRED_PHYSICS_TICK_TIME:
-            self.counter_physics_tick_time = tick_time
-        else:
-            self.counter_physics_tick_time += tick_time
+        if self.pacman.is_alive:
+            if tick_time >= DESIRED_PHYSICS_TICK_TIME:
+                self.counter_physics_tick_time = tick_time
+            else:
+                self.counter_physics_tick_time += tick_time
 
-        if self.counter_physics_tick_time >= DESIRED_PHYSICS_TICK_TIME:
-            start_time = time.time()
-            self.update_pacman(self.counter_physics_tick_time)
-            self.move_ghosts(self.counter_physics_tick_time)
-            self.counter_physics_tick_time = 0
-            end_time = time.time()
-            self.physics_update_exec_time = end_time - start_time
-            # self.time_convert(self.physics_update_exec_time)
+            if self.counter_physics_tick_time >= DESIRED_PHYSICS_TICK_TIME:
+                start_time = time.time()
+                self.update_pacman(self.counter_physics_tick_time)
+                self.move_ghosts(self.counter_physics_tick_time)
+                self.counter_physics_tick_time = 0
+                end_time = time.time()
+                self.physics_update_exec_time = end_time - start_time
+        elif self.pacman.animation_count >= 8:
+            self.pacman.is_alive = True
+            self.map_restart()
 
     def time_convert(self, sec):
         mins = sec // 60
@@ -457,14 +464,15 @@ class Controller:
         print("Time Lapsed = {0}:{1}:{2}".format(int(hours), int(mins), sec))
 
     def render_update(self, tick_time):
-        self.desired_render_tick_time += tick_time
-        if self.desired_render_tick_time > DESIRED_RENDER_TICK_TIME:
+        self.counter_render_tick_time += tick_time
+        if self.counter_render_tick_time > DESIRED_RENDER_TICK_TIME:
             start_time = time.time()
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
                                   [], [self.pacman], self.ghosts], self.current_level,
-                                 tick_time, showgrid=False, show_hitboxes=False,
+                                 self.counter_render_tick_time, showgrid=False, show_hitboxes=False,
                                  render_mode=RenderModes.PartialRedraw_A)
             end_time = time.time()
+            self.counter_render_tick_time = 0
             self.render_update_exec_time = end_time - start_time
 
     def run(self):
@@ -482,10 +490,11 @@ class Controller:
 
                 self.handle_events()
                 self.physics_update(self.tick_time)
-                self.update_ghosts(self.tick_time, hardcore=False)
+                if self.pacman.is_alive:
+                    self.update_ghosts(self.tick_time, hardcore=False)
                 self.update_level()
-
-                self.render_update(self.tick_time)
+                if not self.is_map_restart:
+                    self.render_update(self.tick_time)
 
                 self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time,
                                               self.render_update_exec_time, self.tick_time)
@@ -498,5 +507,8 @@ class Controller:
                     if event.type == pygame.KEYDOWN:
                         if event.key == K_SPACE:
                             self.is_playing = True
+                            if self.is_map_restart:
+                                self.is_map_restart = False
+                                self.renderer.restart()
 
         pygame.quit()

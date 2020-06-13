@@ -256,25 +256,25 @@ class Controller:
 
         if creature.direction == 'right':
             change_direction_coord = creature.x - creature.x % SECTOR_SIZE + SECTOR_SIZE
-            if creature.x + px_delay >= change_direction_coord:
+            if creature.x + px_delay >= change_direction_coord or creature.x - px_delay >= change_direction_coord:
                 change_direction_coords = (change_direction_coord, creature.y)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
         elif creature.direction == 'left':
             change_direction_coord = creature.x - creature.x % SECTOR_SIZE
-            if creature.x - px_delay <= change_direction_coord:
+            if creature.x - px_delay <= change_direction_coord or creature.x + px_delay <= change_direction_coord:
                 change_direction_coords = (change_direction_coord, creature.y)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
         elif creature.direction == 'up':
             change_direction_coord = creature.y - creature.y % SECTOR_SIZE
-            if creature.y - px_delay <= change_direction_coord:
+            if creature.y - px_delay <= change_direction_coord or creature.y + px_delay <= change_direction_coord:
                 change_direction_coords = (creature.x, change_direction_coord)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
         elif creature.direction == 'down':
             change_direction_coord = creature.y - creature.y % SECTOR_SIZE + SECTOR_SIZE
-            if creature.y + px_delay >= change_direction_coord:
+            if creature.y + px_delay >= change_direction_coord or creature.y - px_delay >= change_direction_coord:
                 change_direction_coords = (creature.x, change_direction_coord)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
@@ -408,7 +408,8 @@ class Controller:
         for ghost in self.ghosts:
             if pygame.sprite.collide_mask(self.pacman.creature_hitbox, ghost.creature_hitbox):
                 if self.pacman.form == ghost.form:
-                    ghost_died(ghost)
+                    if ghost.is_alive:
+                        ghost_died(ghost)
                 elif ghost.is_alive:
                     self.pacman_die()
 
@@ -452,14 +453,14 @@ class Controller:
                 start_time = time.time()
                 self.update_pacman(self.counter_physics_tick_time)
                 self.move_ghosts(self.counter_physics_tick_time)
-                if not self.is_map_restart:
-                    self.render_update(self.counter_physics_tick_time)
+                self.render_update(self.counter_physics_tick_time)
                 self.counter_physics_tick_time = 0
                 end_time = time.time()
                 self.physics_update_exec_time = end_time - start_time
         else:
             self.render_update(self.tick_time)
             if self.pacman.animation_count >= 8:
+                self.render_update(self.tick_time)
                 self.pacman.is_alive = True
                 self.map_restart()
 
@@ -492,10 +493,12 @@ class Controller:
                     self.tick_time = 1 / GLOBAL_TICK_RATE
 
                 self.handle_events()
-                self.physics_update(self.tick_time)
-                if self.pacman.is_alive:
-                    self.update_ghosts(self.tick_time, hardcore=False)
-                self.update_level()
+                if not self.is_map_restart:
+                    self.physics_update(self.tick_time)
+                    if self.pacman.is_alive:
+                        self.update_ghosts(self.tick_time, hardcore=False)
+                    self.update_level()
+
                 self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time,
                                               self.render_update_exec_time, self.tick_time)
             else:

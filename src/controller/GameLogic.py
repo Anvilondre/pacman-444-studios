@@ -12,8 +12,8 @@ from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
 from src.controller.Abilities import SpeedAbility, TransformAbility
 from src.controller.GhostsAI import PathFinder
 from src.data import Constants
-from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
-    GLOBAL_TICK_RATE, forms, pacman_mana, ANIMATION_PERIOD
+from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, GLOBAL_TICK_RATE, forms, \
+    pacman_mana
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
 from src.view.Renderer import Renderer, RenderModes
@@ -34,6 +34,7 @@ def ghost_died(ghost):  # TODO: Animations
 
 
 def move_creature_direction(creature, direction, vel=None):
+    """ Move creature in given direction at its velocity."""
     if vel is None:
         vel = creature.velocity
 
@@ -70,32 +71,31 @@ class Controller:
     def __init__(self, levels):
         self.levels = cycle(levels)
         self.game_over = \
-            self.is_playing = \
-            self.window = \
-            self.current_level = \
-            self.walls = \
-            self.pellets = \
-            self.mega_pellets = \
-            self.pacman = \
-            self.path_finder = \
-            self.ghosts = \
-            self.speed_ability = \
-            self.transform_ability = \
-            self.ability_timer = \
-            self.ability_is_ready = \
-            self.is_map_restart = \
-            self.renderer = None
+        self.is_playing = \
+        self.window = \
+        self.current_level = \
+        self.walls = \
+        self.pellets = \
+        self.mega_pellets = \
+        self.pacman = \
+        self.path_finder = \
+        self.ghosts = \
+        self.speed_ability = \
+        self.transform_ability = \
+        self.ability_timer = \
+        self.ability_is_ready = \
+        self.is_map_restart = \
+        self.renderer = None
         self.ghost_update_exec_time = \
-            self.physics_update_exec_time = \
-            self.render_update_exec_time = \
-            self.counter_physics_tick_time = 0
+        self.physics_update_exec_time = \
+        self.render_update_exec_time = \
+        self.counter_physics_tick_time = 0
         self.tick_time = \
-            self.map_width = \
-            self.map_height = \
-            self.copy_pellets = \
-            self.copy_mega_pellets = \
-            self.counter_ai_tick_time = 0
-        self.counter_render_tick_time = 0
+        self.map_width = \
+        self.map_height = \
+        self.copy_pellets = \
+        self.copy_mega_pellets = \
+        self.counter_ai_tick_time = 0
         self.initial_setup()
 
     def initial_setup(self):
@@ -114,7 +114,7 @@ class Controller:
 
     def init_renderer(self):
         pygame.init()
-        self.renderer = Renderer((0, 0), is_fullscreen=True)
+        self.renderer = Renderer((0, 0), is_fullscreen=False)
 
     def init_debugger(self):
         self.ticktime_debugger = TickTimeDebugger(mode=Modes.Store)
@@ -207,7 +207,6 @@ class Controller:
     def deactivate_active_ability(self):
         if self.ability_timer is not None and self.ability_timer.is_alive:
             self.ability_is_ready = True
-
             if self.transform_ability.is_active:
                 self.transform_ability.deactivate()
 
@@ -224,6 +223,7 @@ class Controller:
             return False
 
     def get_collided_wall(self, creature):
+        """ Return wall with which was collision"""
         for wall in self.walls:
             if pygame.sprite.collide_mask(creature.mapobject_hitbox, wall.hitbox):
                 return wall
@@ -256,25 +256,25 @@ class Controller:
 
         if creature.direction == 'right':
             change_direction_coord = creature.x - creature.x % SECTOR_SIZE + SECTOR_SIZE
-            if creature.x + px_delay >= change_direction_coord or creature.x - px_delay >= change_direction_coord:
+            if creature.x + px_delay >= change_direction_coord:
                 change_direction_coords = (change_direction_coord, creature.y)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
         elif creature.direction == 'left':
             change_direction_coord = creature.x - creature.x % SECTOR_SIZE
-            if creature.x - px_delay <= change_direction_coord or creature.x + px_delay <= change_direction_coord:
+            if creature.x - px_delay <= change_direction_coord:
                 change_direction_coords = (change_direction_coord, creature.y)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
         elif creature.direction == 'up':
             change_direction_coord = creature.y - creature.y % SECTOR_SIZE
-            if creature.y - px_delay <= change_direction_coord or creature.y + px_delay <= change_direction_coord:
+            if creature.y - px_delay <= change_direction_coord:
                 change_direction_coords = (creature.x, change_direction_coord)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
         elif creature.direction == 'down':
             change_direction_coord = creature.y - creature.y % SECTOR_SIZE + SECTOR_SIZE
-            if creature.y + px_delay >= change_direction_coord or creature.y - px_delay >= change_direction_coord:
+            if creature.y + px_delay >= change_direction_coord:
                 change_direction_coords = (creature.x, change_direction_coord)
                 self.check_change_direction(creature, direction, change_direction_coords, creature_coords)
 
@@ -295,6 +295,7 @@ class Controller:
             return False
 
     def check_change_direction(self, creature, direction, change_direction_coords, creature_coords):
+        """ Check collision with wall if direction will be changed """
         (creature.x, creature.y) = change_direction_coords
         move_creature_direction(creature, direction, creature.width / 2)
         if not self.collides_wall(creature):
@@ -334,6 +335,7 @@ class Controller:
         if not self.pellets and not self.mega_pellets:
             self.load_level()
             self.renderer.restart()
+            self.render_update(self.tick_time)
             self.is_playing = False
 
     def map_restart(self):
@@ -350,10 +352,11 @@ class Controller:
         self.pacman.lives = Constants.pacman_lives
         self.pacman.ghosts_eaten = 0
         self.init_abilities()
-        for ghost in self.ghosts:
-            (ghost.x, ghost.y) = ghost.initial_location
-            ghost.form = forms[random.randint(0, 2)]
-            ghost.is_alive = True
+        self.ghosts = []
+        for ghost_coord in self.current_level.level_map.ghosts_initial_coords:
+            self.ghosts.append(
+                Ghost(*ghost_coord, ghost_coord, SECTOR_SIZE, SECTOR_SIZE, int(self.current_level.GHOST_PX_PER_SECOND *
+                                                                               self.tick_time)))
         self.is_playing = False
 
     def resolve_ghost_direction(self, ghost, pacman_coord, used_sectors=[], used_val=0):
@@ -449,12 +452,16 @@ class Controller:
                 start_time = time.time()
                 self.update_pacman(self.counter_physics_tick_time)
                 self.move_ghosts(self.counter_physics_tick_time)
+                if not self.is_map_restart:
+                    self.render_update(self.counter_physics_tick_time)
                 self.counter_physics_tick_time = 0
                 end_time = time.time()
                 self.physics_update_exec_time = end_time - start_time
-        elif self.pacman.animation_count >= 8:
-            self.pacman.is_alive = True
-            self.map_restart()
+        else:
+            self.render_update(self.tick_time)
+            if self.pacman.animation_count >= 8:
+                self.pacman.is_alive = True
+                self.map_restart()
 
     def time_convert(self, sec):
         mins = sec // 60
@@ -464,16 +471,13 @@ class Controller:
         print("Time Lapsed = {0}:{1}:{2}".format(int(hours), int(mins), sec))
 
     def render_update(self, tick_time):
-        self.counter_render_tick_time += tick_time
-        if self.counter_render_tick_time > DESIRED_RENDER_TICK_TIME:
-            start_time = time.time()
-            self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
-                                  [], [self.pacman], self.ghosts], self.current_level,
-                                 self.counter_render_tick_time, showgrid=False, show_hitboxes=False,
-                                 render_mode=RenderModes.PartialRedraw_A)
-            end_time = time.time()
-            self.counter_render_tick_time = 0
-            self.render_update_exec_time = end_time - start_time
+        start_time = time.time()
+        self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
+                              [], [self.pacman], self.ghosts], self.current_level,
+                             tick_time, showgrid=False, show_hitboxes=False,
+                             render_mode=RenderModes.PartialRedraw_A)
+        end_time = time.time()
+        self.render_update_exec_time = end_time - start_time
 
     def run(self):
         self.is_playing = True
@@ -483,9 +487,8 @@ class Controller:
         while run:
             miliseconds = clock.tick(GLOBAL_TICK_RATE)
             self.tick_time = miliseconds / 1000.0  # seconds
-
             if self.is_playing:
-                if self.tick_time > 0.1:
+                if self.tick_time > 0.1:  # If the game freezes, set the default value to tick.time
                     self.tick_time = 1 / GLOBAL_TICK_RATE
 
                 self.handle_events()
@@ -493,9 +496,6 @@ class Controller:
                 if self.pacman.is_alive:
                     self.update_ghosts(self.tick_time, hardcore=False)
                 self.update_level()
-                if not self.is_map_restart:
-                    self.render_update(self.tick_time)
-
                 self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time,
                                               self.render_update_exec_time, self.tick_time)
             else:

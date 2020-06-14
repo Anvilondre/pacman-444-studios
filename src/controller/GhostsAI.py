@@ -1,6 +1,3 @@
-from src.model.MapObjects import Wall
-
-
 class Node:
     def __init__(self, position: (), parent: ()):
         self.position = position
@@ -29,8 +26,8 @@ class Node:
 
 class PathFinder:
 
-    def __init__(self, hash_map):
-        self.hash_map = hash_map
+    def __init__(self, linked_list):
+        self.linked_list = linked_list
 
     def get_direction(self, start, path):
         """" Returns direction of the first move """
@@ -80,7 +77,7 @@ class PathFinder:
 
                 return path[::-1]  # Return reversed path
 
-            for item in self.hash_map[current_node.position]:
+            for item in self.linked_list[current_node.position]:
 
                 neighbor = Node(item, current_node)
                 # Skip closed neighbors

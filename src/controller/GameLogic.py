@@ -12,11 +12,26 @@ from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
 from src.controller.Abilities import SpeedAbility, TransformAbility
 from src.controller.GhostsAI import PathFinder
 from src.data import Constants
-from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, GLOBAL_TICK_RATE, forms, \
-    pacman_mana
+from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
+    GLOBAL_TICK_RATE, forms, pacman_mana, ANIMATION_PERIOD
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
 from src.view.Renderer import Renderer, RenderModes
+
+
+def calculate_L1(point1, point2):
+    return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
+
+
+def get_closed_mp(pellets, ghost_coord):
+    closest = pellets[0]
+    closest_val = calculate_L1(ghost_coord, pellets[0].coord)
+    for pel in pellets[1::]:
+        val = calculate_L1(ghost_coord, pel.coord)
+        if val < closest_val:
+            closest = pel
+            closest_val = val
+    return closest
 
 
 def get_sector_coord(x, y):
@@ -34,7 +49,6 @@ def ghost_died(ghost):  # TODO: Animations
 
 
 def move_creature_direction(creature, direction, vel=None):
-    """ Move creature in given direction at its velocity."""
     if vel is None:
         vel = creature.velocity
 
@@ -71,31 +85,32 @@ class Controller:
     def __init__(self, levels):
         self.levels = cycle(levels)
         self.game_over = \
-        self.is_playing = \
-        self.window = \
-        self.current_level = \
-        self.walls = \
-        self.pellets = \
-        self.mega_pellets = \
-        self.pacman = \
-        self.path_finder = \
-        self.ghosts = \
-        self.speed_ability = \
-        self.transform_ability = \
-        self.ability_timer = \
-        self.ability_is_ready = \
-        self.is_map_restart = \
-        self.renderer = None
+            self.is_playing = \
+            self.window = \
+            self.current_level = \
+            self.walls = \
+            self.pellets = \
+            self.mega_pellets = \
+            self.pacman = \
+            self.path_finder = \
+            self.ghosts = \
+            self.speed_ability = \
+            self.transform_ability = \
+            self.ability_timer = \
+            self.ability_is_ready = \
+            self.is_map_restart = \
+            self.renderer = None
         self.ghost_update_exec_time = \
-        self.physics_update_exec_time = \
-        self.render_update_exec_time = \
-        self.counter_physics_tick_time = 0
-        self.tick_time = \
-        self.map_width = \
-        self.map_height = \
-        self.copy_pellets = \
-        self.copy_mega_pellets = \
-        self.counter_ai_tick_time = 0
+            self.physics_update_exec_time = \
+            self.render_update_exec_time = \
+            self.counter_physics_tick_time = \
+            self.tick_time = \
+            self.map_width = \
+            self.map_height = \
+            self.copy_pellets = \
+            self.copy_mega_pellets = \
+            self.counter_ai_tick_time = \
+            self.counter_render_tick_time = 0
         self.initial_setup()
 
     def initial_setup(self):
@@ -207,6 +222,7 @@ class Controller:
     def deactivate_active_ability(self):
         if self.ability_timer is not None and self.ability_timer.is_alive:
             self.ability_is_ready = True
+
             if self.transform_ability.is_active:
                 self.transform_ability.deactivate()
 
@@ -223,7 +239,6 @@ class Controller:
             return False
 
     def get_collided_wall(self, creature):
-        """ Return wall with which was collision"""
         for wall in self.walls:
             if pygame.sprite.collide_mask(creature.mapobject_hitbox, wall.hitbox):
                 return wall
@@ -295,7 +310,6 @@ class Controller:
             return False
 
     def check_change_direction(self, creature, direction, change_direction_coords, creature_coords):
-        """ Check collision with wall if direction will be changed """
         (creature.x, creature.y) = change_direction_coords
         move_creature_direction(creature, direction, creature.width / 2)
         if not self.collides_wall(creature):
@@ -335,7 +349,6 @@ class Controller:
         if not self.pellets and not self.mega_pellets:
             self.load_level()
             self.renderer.restart()
-            self.render_update(self.tick_time)
             self.is_playing = False
 
     def map_restart(self):
@@ -352,11 +365,10 @@ class Controller:
         self.pacman.lives = Constants.pacman_lives
         self.pacman.ghosts_eaten = 0
         self.init_abilities()
-        self.ghosts = []
-        for ghost_coord in self.current_level.level_map.ghosts_initial_coords:
-            self.ghosts.append(
-                Ghost(*ghost_coord, ghost_coord, SECTOR_SIZE, SECTOR_SIZE, int(self.current_level.GHOST_PX_PER_SECOND *
-                                                                               self.tick_time)))
+        for ghost in self.ghosts:
+            (ghost.x, ghost.y) = ghost.initial_location
+            ghost.form = forms[random.randint(0, 2)]
+            ghost.is_alive = True
         self.is_playing = False
 
     def resolve_ghost_direction(self, ghost, pacman_coord, used_sectors=[], used_val=0):
@@ -365,11 +377,11 @@ class Controller:
                                             ghost.width / 2)
         if not ghost.is_alive:
             if ghost_coord == ghost_init_coord:
-                ghost.form = forms[random.randint(0, 2)]
+                ghost.form = random.choice(forms)
                 ghost.is_alive = True
-                ghost.is_chasing = True
+                # ghost.is_chasing = True
 
-        if ghost.is_chasing and self.pacman.is_alive:
+        if ghost.is_alive and self.pacman.is_alive:
             path = self.path_finder.get_path(ghost_coord, pacman_coord, used_sectors, used_val)
             ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, path)
         else:
@@ -378,21 +390,33 @@ class Controller:
 
         return path
 
+    def pacman_in_radius(self, ghost, radius=4):
+        return calculate_L1(self.pacman.coord, ghost.coord) < radius * SECTOR_SIZE
+
     def update_ghosts(self, tick_time, hardcore=True):
         self.counter_ai_tick_time += tick_time
         if self.counter_ai_tick_time > DESIRED_AI_TICK_TIME:
             start_time = time.time()
             pacman_coord = get_sector_coord(self.pacman.x + self.pacman.width / 2,
                                             self.pacman.y + self.pacman.height / 2)
-            if hardcore:
-                used_sectors = []
-                for ghost in self.ghosts:
-                    path = self.resolve_ghost_direction(ghost, pacman_coord, used_sectors, 4)
-                    if path is not None:
-                        used_sectors.extend(path)
-            else:
-                for ghost in self.ghosts:
-                    self.resolve_ghost_direction(ghost, pacman_coord)
+
+            m_pellets = self.mega_pellets.copy()
+
+            used_sectors = []
+
+            for ghost in self.ghosts:
+                ghost.is_chasing = self.pacman_in_radius(ghost)
+                if ghost.is_chasing or not m_pellets:
+                    target = pacman_coord
+                else:
+                    optimal_pellet = get_closed_mp(m_pellets, ghost.coord)
+                    m_pellets.remove(optimal_pellet)
+                    target = get_sector_coord(*optimal_pellet.coord)
+
+                path = self.resolve_ghost_direction(ghost, target, used_sectors, 4)  # Hardcore heuristics
+                if hardcore and path is not None:
+                    used_sectors.extend(path)
+
             end_time = time.time()
             self.ghost_update_exec_time = end_time - start_time
             # self.time_convert(self.ghost_update_exec_time)
@@ -408,8 +432,7 @@ class Controller:
         for ghost in self.ghosts:
             if pygame.sprite.collide_mask(self.pacman.creature_hitbox, ghost.creature_hitbox):
                 if self.pacman.form == ghost.form:
-                    if ghost.is_alive:
-                        ghost_died(ghost)
+                    ghost_died(ghost)
                 elif ghost.is_alive:
                     self.pacman_die()
 
@@ -453,16 +476,12 @@ class Controller:
                 start_time = time.time()
                 self.update_pacman(self.counter_physics_tick_time)
                 self.move_ghosts(self.counter_physics_tick_time)
-                self.render_update(self.counter_physics_tick_time)
                 self.counter_physics_tick_time = 0
                 end_time = time.time()
                 self.physics_update_exec_time = end_time - start_time
-        else:
-            self.render_update(self.tick_time)
-            if self.pacman.animation_count >= 8:
-                self.render_update(self.tick_time)
-                self.pacman.is_alive = True
-                self.map_restart()
+        elif self.pacman.animation_count >= 8:
+            self.pacman.is_alive = True
+            self.map_restart()
 
     def time_convert(self, sec):
         mins = sec // 60
@@ -472,13 +491,16 @@ class Controller:
         print("Time Lapsed = {0}:{1}:{2}".format(int(hours), int(mins), sec))
 
     def render_update(self, tick_time):
-        start_time = time.time()
-        self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
-                              [], [self.pacman], self.ghosts], self.current_level,
-                             tick_time, showgrid=False, show_hitboxes=False,
-                             render_mode=RenderModes.PartialRedraw_A)
-        end_time = time.time()
-        self.render_update_exec_time = end_time - start_time
+        self.counter_render_tick_time += tick_time
+        if self.counter_render_tick_time > DESIRED_RENDER_TICK_TIME:
+            start_time = time.time()
+            self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
+                                  [], [self.pacman], self.ghosts], self.current_level,
+                                 self.counter_render_tick_time, showgrid=False, show_hitboxes=False,
+                                 render_mode=RenderModes.PartialRedraw_A)
+            end_time = time.time()
+            self.counter_render_tick_time = 0
+            self.render_update_exec_time = end_time - start_time
 
     def run(self):
         self.is_playing = True
@@ -488,16 +510,18 @@ class Controller:
         while run:
             miliseconds = clock.tick(GLOBAL_TICK_RATE)
             self.tick_time = miliseconds / 1000.0  # seconds
+
             if self.is_playing:
-                if self.tick_time > 0.1:  # If the game freezes, set the default value to tick.time
+                if self.tick_time > 0.1:
                     self.tick_time = 1 / GLOBAL_TICK_RATE
 
                 self.handle_events()
+                self.physics_update(self.tick_time)
+                if self.pacman.is_alive:
+                    self.update_ghosts(self.tick_time, hardcore=False)
+                self.update_level()
                 if not self.is_map_restart:
-                    self.physics_update(self.tick_time)
-                    if self.pacman.is_alive:
-                        self.update_ghosts(self.tick_time, hardcore=False)
-                    self.update_level()
+                    self.render_update(self.tick_time)
 
                 self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time,
                                               self.render_update_exec_time, self.tick_time)

@@ -13,6 +13,7 @@ from src.controller.GhostsAI import PathFinder
 from src.data import Constants
 from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
     GLOBAL_TICK_RATE, forms, pacman_mana
+from src.data.Levels import Level5
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
 from src.view.Renderer import Renderer, RenderModes
@@ -117,6 +118,10 @@ class Controller:
         self.game_over = False
         self.init_renderer()
         self.init_debugger()
+        #self.current_level = next(self.levels)
+        #self.current_level = next(self.levels)
+        #self.current_level = next(self.levels)
+        #self.current_level = next(self.levels)
         self.load_level()
 
     def load_level(self):
@@ -136,10 +141,6 @@ class Controller:
 
     def init_level(self):
         self.current_level = next(self.levels)
-        # self.current_level = next(self.levels)
-        # self.current_level = next(self.levels)
-        # self.current_level = next(self.levels)
-        # self.current_level = next(self.levels)
 
     def parse_level(self):
         self.current_level.level_map.pre_process()
@@ -352,7 +353,11 @@ class Controller:
     def update_level(self):
         """ Jumps to the next level if all pellets are picked """
         if not self.pellets and not self.mega_pellets:
-            self.player_score = self.pacman.score
+            if self.current_level.level_name == Level5.level_name:
+                self.player_score = 0
+                #self.renderer.render_label("ZARAHOVANO", "Great job! Would you like to play again?", bg_full_opacity=True)
+            else:
+                self.player_score = self.pacman.score
             self.load_level()
             self.renderer.restart()
             self.is_playing = False
@@ -558,9 +563,11 @@ class Controller:
 
     def run(self):
         self.is_playing = False
+
         self.render_update(1 / GLOBAL_TICK_RATE)
         self.renderer.render_label("WELCOME", "Press \"F\" to start The Game.", bg_full_opacity=False)
         self.renderer.restart()
+
         clock = pygame.time.Clock()
         self.ticktime_debugger.run()
         run = True

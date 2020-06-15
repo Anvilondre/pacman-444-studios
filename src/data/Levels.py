@@ -50,7 +50,7 @@ class Level(ABC):
 
 
 class Level1(Level):
-    level_name = "1"
+    level_name = "1. Boringly easy"
     PACMAN_PX_PER_SECOND = 36 * 5
     PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
     GHOST_PX_PER_SECOND = 36 * 5
@@ -59,6 +59,39 @@ class Level1(Level):
     pacman_cooldown = 10
     speed_ability_duration = 5
     transform_ability_duration = 5
+    ghosts_velocity = 6
+
+    level_map = Map(["####.#########.####",
+                     "#........#........#",
+                     "#.##.###.#.###.##.#",
+                     "#..o...........o..#",
+                     "#.##.#.#####.#.##.#",
+                     "#....#...#...#....#",
+                     "####.###.#.###.####",
+                     "####.#.......#.####",
+                     "####.#.## ##.#.####",
+                     ".......# $ #.......",
+                     "####.#.#####.#.####",
+                     "####.#.......#.####",
+                     "####.#.#####.#.####",
+                     "...#.....@.....#...",
+                     "##.#.#.#####.#.#.##",
+                     "#.o..#...#...#.o..#",
+                     "#.##.###.#.###.##.#",
+                     "#.................#",
+                     "####.#########.####"])
+
+
+class Level2(Level):
+    level_name = "2. Wow, two?"
+    PACMAN_PX_PER_SECOND = 36 * 5
+    PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
+    GHOST_PX_PER_SECOND = 36 * 5
+    pacman_velocity = 6
+    pacman_boost = 20
+    pacman_cooldown = 10
+    speed_ability_duration = 4
+    transform_ability_duration = 4
     ghosts_velocity = 6
 
     level_map = Map(["##############.####",
@@ -70,32 +103,31 @@ class Level1(Level):
                      "####.###.#.###.####",
                      "####.#.......#.####",
                      "####.#.## ##.#.####",
-                     ".......#$.$#.......",
+                     ".......#$ $#.......",
                      "####.#.#####.#.####",
                      "####.#.......#.####",
                      "####.#.#####.#.####",
                      "...#.....@.....#...",
                      "##.#.#.#####.#.#.##",
                      "#.o..#...#...#.o..#",
-                     "#.######.#.###.##.#",
+                     "#.##.###.#.###.##.#",
                      "#.................#",
                      "##############.####"])
 
-
-class Level2(Level):
-    level_name = "2"
-    PACMAN_PX_PER_SECOND = 36 * 5
+class Level3(Level):
+    level_name = "3. In the middle"
+    PACMAN_PX_PER_SECOND = 36 * 6
     PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
-    GHOST_PX_PER_SECOND = 36 * 5
+    GHOST_PX_PER_SECOND = 36 * 6
     pacman_velocity = 6
-    pacman_boost = 6
-    pacman_cooldown = 12
-    speed_ability_duration = 5
-    transform_ability_duration = 5
-    ghosts_velocity = 5
+    pacman_boost = 20
+    pacman_cooldown = 10
+    speed_ability_duration = 3
+    transform_ability_duration = 3
+    ghosts_velocity = 6
 
-    level_map = Map(["######### #########",
-                     "#........ ........#",
+    level_map = Map(["###################",
+                     "#........#........#",
                      "#.##.###.#.###.##.#",
                      "#..o...........o..#",
                      "#.##.#.#####.#.##.#",
@@ -103,30 +135,31 @@ class Level2(Level):
                      "####.###.#.###.####",
                      "####.#.......#.####",
                      "####.#.## ##.#.####",
-                     ".......#$$$#.......",
+                     ".......#$ $#.......",
                      "####.#.#####.#.####",
                      "####.#.......#.####",
                      "####.#.#####.#.####",
-                     "#..#.....@.....#..#",
+                     "...#.....@.....#...",
                      "##.#.#.#####.#.#.##",
                      "#.o..#...#...#.o..#",
-                     "#.######.#.######.#",
+                     "#.##.###.#.###.##.#",
                      "#.................#",
-                     "######### #########"])
+                     "###################"])
 
-class Level3(Level):
-    level_name = "3"
-    PACMAN_PX_PER_SECOND = 36 * 5
+
+class Level4(Level):
+    level_name = "4. Trolley"
+    PACMAN_PX_PER_SECOND = 36 * 7
     PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
-    GHOST_PX_PER_SECOND = 36 * 5
-    pacman_velocity = 8
-    pacman_boost = 3
-    pacman_cooldown = 15
-    speed_ability_duration = 5
-    transform_ability_duration = 5
-    ghosts_velocity = 7
+    GHOST_PX_PER_SECOND = 36 * 7
+    pacman_velocity = 6
+    pacman_boost = 20
+    pacman_cooldown = 10
+    speed_ability_duration = 2.5
+    transform_ability_duration = 2.5
+    ghosts_velocity = 6
 
-    level_map = Map(["#############.#####",
+    level_map = Map(["###################",
                      "#........#........#",
                      "#.##.###.#.###.##.#",
                      "#..o...........o..#",
@@ -139,11 +172,41 @@ class Level3(Level):
                      "####.#.#####.#.####",
                      "####.#.......#.####",
                      "####.#.#####.#.####",
+                     "...#.....@.....#...",
+                     "##.#.#.#####.#.#.##",
+                     "#.o..#...#...#.o..#",
+                     "#.##.###.#.###.##.#",
+                     "#.................#",
+                     "###################"])
+
+class Level5(Level):
+    level_name = "5. Final boss!"
+    PACMAN_PX_PER_SECOND = 36 * 8
+    PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
+    GHOST_PX_PER_SECOND = 36 * 8
+    pacman_velocity = 6
+    pacman_boost = 20
+    pacman_cooldown = 10
+    speed_ability_duration = 2
+    transform_ability_duration = 2
+    ghosts_velocity = 6
+
+    level_map = Map(["###################",
                      "#........#........#",
                      "#.##.###.#.###.##.#",
+                     "#..o...........o..#",
+                     "#.##.#.#####.#.##.#",
+                     "#....#...#...#....#",
+                     "####.###.#.###.####",
+                     "####.#.......#.####",
+                     "####.#.## ##.#.####",
+                     "#......#$$$#......#",
+                     "####.#.#####.#.####",
+                     "####.#.......#.####",
+                     "####.#.#####.#.####",
                      "#..#.....@.....#..#",
                      "##.#.#.#####.#.#.##",
                      "#.o..#...#...#.o..#",
-                     "#.######.#.######.#",
+                     "#.##.###.#.###.##.#",
                      "#.................#",
-                     "#############.#####"])
+                     "###################"])

@@ -135,6 +135,10 @@ class Controller:
 
     def init_level(self):
         self.current_level = next(self.levels)
+        #self.current_level = next(self.levels)
+        #self.current_level = next(self.levels)
+        #self.current_level = next(self.levels)
+        #self.current_level = next(self.levels)
 
     def parse_level(self):
         self.current_level.level_map.pre_process()
@@ -434,7 +438,7 @@ class Controller:
                 if len(self.ghosts) >= len(self.mega_pellets) and target is None:
                     target = get_sector_coord(*self.get_random_coord(self.ghosts[i].coord, SECTOR_SIZE * 12))
 
-                if self.pacman_in_radius(self.ghosts[i], radius=4):
+                if self.pacman_in_radius(self.ghosts[i], radius=5):
                     target = pacman_coord
 
                 if i >= len(self.mega_pellets) and target is None:

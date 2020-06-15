@@ -1,3 +1,6 @@
+from src.model.MapObjects import Wall
+
+
 class Node:
     def __init__(self, position: (), parent: ()):
         self.position = position
@@ -26,8 +29,8 @@ class Node:
 
 class PathFinder:
 
-    def __init__(self, linked_list):
-        self.linked_list = linked_list
+    def __init__(self, hash_map):
+        self.hash_map = hash_map
 
     def get_direction(self, start, path):
         """" Returns direction of the first move """
@@ -61,12 +64,15 @@ class PathFinder:
 
         start_node = Node(start, None)
         goal_node = Node(end, None)
+
         open_nodes.append(start_node)
 
         while len(open_nodes) > 0:
 
             open_nodes.sort()  # Sort nodes by cost
+
             current_node = open_nodes.pop(0)  # Node with the lowest cost
+
             closed_nodes.append(current_node)
 
             if current_node == goal_node:
@@ -77,16 +83,26 @@ class PathFinder:
 
                 return path[::-1]  # Return reversed path
 
-            for item in self.linked_list[current_node.position]:
+            (x, y) = current_node.position  # Current x and y
+            neighbors = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+
+            for item in neighbors:
+
+                map_value = self.hash_map.get(item)
+
+                # Skip walls
+                if isinstance(map_value, Wall):
+                    continue
 
                 neighbor = Node(item, current_node)
+
                 # Skip closed neighbors
                 if neighbor in closed_nodes:
                     continue
 
                 ''' Calculating heuristics (L1 norm) '''
 
-                # Distance from neighbor to start node
+                # Distance from neighbor to goal node
                 neighbor.g = abs(neighbor.position[0] - start_node.position[0]) + abs(
                     neighbor.position[1] - start_node.position[1])
 

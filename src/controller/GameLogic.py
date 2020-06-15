@@ -13,7 +13,7 @@ from src.controller.Abilities import SpeedAbility, TransformAbility
 from src.controller.GhostsAI import PathFinder
 from src.data import Constants
 from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
-    GLOBAL_TICK_RATE, forms, pacman_mana, ANIMATION_PERIOD
+    GLOBAL_TICK_RATE, forms, pacman_mana
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
 from src.view.Renderer import Renderer, RenderModes
@@ -43,7 +43,7 @@ def revive_ghost(ghost):
         ghost.is_alive = True
 
 
-def ghost_died(ghost):  # TODO: Animations
+def ghost_died(ghost):
     ghost.is_alive = False
 
 
@@ -157,7 +157,7 @@ class Controller:
         self.ability_is_ready = True
 
     def init_ghosts(self):
-        self.path_finder = PathFinder(self.current_level.level_map.linked_list)
+        self.path_finder = PathFinder(self.current_level.level_map.hash_map)
         self.ghosts = []
         for ghost_coord in self.current_level.level_map.ghosts_initial_coords:
             self.ghosts.append(
@@ -408,8 +408,6 @@ class Controller:
             self.mega_pellets_counter += 1
             checked_mp.patrolled = True
             return checked_mp
-            if len(self.mega_pellets) > self.mega_pellets_counter + 1:
-                self.mega_pellets_counter += 1
 
     def update_ghosts(self, tick_time, hardcore=True):
         self.counter_ai_tick_time += tick_time
@@ -421,25 +419,27 @@ class Controller:
 
             for i in range(len(self.ghosts)):
                 target = self.ghosts[i].target_coord
-                if get_sector_coord(self.ghosts[i].x + SECTOR_SIZE/2, self.ghosts[i].y + SECTOR_SIZE/2) == self.ghosts[i].target_coord:
-                    self.ghosts[i].target_coord = None
 
-                if self.pacman_in_radius(self.ghosts[i], 6):
+                if get_sector_coord(self.ghosts[i].x + SECTOR_SIZE/2, self.ghosts[i].y + SECTOR_SIZE/2) == target:
+                    target = None
+
+                if self.pacman_in_radius(self.ghosts[i], radius=4):
                     target = pacman_coord
 
-                if i >= len(self.mega_pellets) and self.ghosts[i].target_coord is None:
+                if i >= len(self.mega_pellets) and target is None:
                     target = get_sector_coord(*self.get_random_coord(self.ghosts[i].coord, SECTOR_SIZE * 12))
+
                 else:
-                    if self.ghosts[i].target_coord is None and self.ghosts[i].target_coord != pacman_coord:
+                    if target is None:
                         optimal_pellet = self.mp_finder()
                         target = get_sector_coord(*optimal_pellet.coord)
 
-                target_coord = (target[0] * SECTOR_SIZE, target[1] * SECTOR_SIZE)
-                if self.is_off_map(target_coord):
-                    target = get_sector_coord(*self.get_random_coord(self.ghosts[i].coord, SECTOR_SIZE * 12))
                 self.ghosts[i].target_coord = target
 
                 path = self.resolve_ghost_direction(self.ghosts[i], target, used_sectors, 4)  # Hardcore heuristics
+
+                if path is None:
+                    print(get_sector_coord(self.ghosts[i].x + SECTOR_SIZE / 2, self.ghosts[i].y + SECTOR_SIZE / 2), target)
                 if hardcore and path is not None:
                     used_sectors.extend(path)
             end_time = time.time()
@@ -451,7 +451,7 @@ class Controller:
             ghost.velocity = int(self.current_level.GHOST_PX_PER_SECOND * counter_physics_tick_time)
             self.move_creature(ghost)
 
-    def check_pacman_ghost_collision(self):  # TODO: Change hitbox
+    def check_pacman_ghost_collision(self):
         for ghost in self.ghosts:
             if pygame.sprite.collide_mask(self.pacman.creature_hitbox, ghost.creature_hitbox):
                 if self.pacman.form == ghost.form:
@@ -459,7 +459,7 @@ class Controller:
                 elif ghost.is_alive:
                     self.pacman_die()
 
-    def check_pellet_collision(self):  # TODO: Change hitbox
+    def check_pellet_collision(self):
         for pellet in self.pellets:
             if pygame.sprite.collide_mask(self.pacman.mapobject_hitbox, pellet.hitbox):
                 self.pacman.score += pellet.value
@@ -476,7 +476,7 @@ class Controller:
         self.pacman.is_alive = True
         (self.pacman.x, self.pacman.y) = self.current_level.level_map.pacman_initial_coord
 
-    def pacman_die(self):  # TODO: Animations
+    def pacman_die(self):
         if self.pacman.is_alive:
             if self.pacman.lives > 1:
                 self.pacman.lives -= 1

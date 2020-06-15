@@ -6,8 +6,7 @@ from src.data import Constants
 from src.data.Constants import PELLET_VALUE
 
 
-# window = pygame.display.set_mode((200, 200))
-class MapObject():
+class MapObject:
 
     def __init__(self, coord, width, height, hitbox_path, texture):
         self.coord = coord

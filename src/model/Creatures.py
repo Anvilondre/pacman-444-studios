@@ -2,12 +2,13 @@ import os
 import pygame
 import random
 from src.data import Constants
+from src.view.ResourceManager import ResourceManager
 
 
 class Creature(object):
 
     def __init__(self, x, y, initial_location, width, height, velocity, direction, form,
-                 mapobject_hitbox_path, creature_hitbox_path, animations):
+                 mapobject_hitbox, creature_hitbox, animations):
         self.initial_location = initial_location
         self.width = width
         self.height = height
@@ -15,8 +16,8 @@ class Creature(object):
         self.direction = direction
         self.preferred_direction = self.direction
         self.form = form
-        self.mapobject_hitbox = self.create_hitbox_of(mapobject_hitbox_path)
-        self.creature_hitbox = self.create_hitbox_of(creature_hitbox_path)
+        self.mapobject_hitbox = mapobject_hitbox #ResourceManager.create_hitbox_of(mapobject_hitbox_path, (self.width, self.height))
+        self.creature_hitbox = creature_hitbox #ResourceManager.create_hitbox_of(creature_hitbox_path, (self.width, self.height))
         self._x = 0
         self._y = 0
         self.x = x
@@ -56,11 +57,6 @@ class Creature(object):
             # Update creature's x coordinate
             self._x = value
             return
-        #TODO
-        # if value < 0:
-        #     raise ValueError("X cannot be assigned to negative value:", value)
-        # if not isinstance(value, int) and not isinstance(value, float):
-        #     raise TypeError("X cannot be assigned to non-numeric object:", type(value), value)
 
     @property
     def y(self):
@@ -79,11 +75,6 @@ class Creature(object):
             # Update creature's y coordinate
             self._y = value
             return
-        #TODO
-        # if value < 0:
-        #     raise ValueError("Y cannot be assigned to negative value: ", value)
-        # if not isinstance(value, int) and not isinstance(value, float):
-        #     raise TypeError("Y cannot be assigned to non-numeric object:", type(value), value)
 
     @property
     def coord(self):
@@ -95,9 +86,6 @@ class Creature(object):
             self._x = value[0]
             self._y = value[1]
             return
-
-        if value[0] < 0 or value[1] < 0:
-            raise ValueError("coord cannot be assigned to tuple with negative coordinate(s):", value)
 
     @property
     def initial_location(self):
@@ -186,7 +174,8 @@ class Creature(object):
             self._preferred_direction = value
             return
         # if value not in Constants.directions:
-        #     raise ValueError("preferred_direction can only take these values: " + Constants.directions.__str__() + "\nInstead, it took:",value)
+        #     raise ValueError("preferred_direction can only take these values: " +
+        #                      Constants.directions.__str__() + "\nInstead, it took:",value)
         # if not isinstance(value, str):
         #     raise TypeError("preferred_direction cannot be assigned to non-str object:", type(value), value)
 
@@ -231,61 +220,13 @@ class Creature(object):
         if not isinstance(value, pygame.sprite.Sprite):
             raise TypeError("creature_hitbox cannot be assigned to non-sprite object: ", type(value), value)
 
-    def create_hitbox_of(self, path, x=0, y=0):
-        """Returns sprite with mask created from given image"""
-
-        if os.path.exists(path):
-            img = pygame.image.load(path)
-            img = pygame.transform.scale(img, (self.width, self.height))
-
-            # Create sprite that has creature's size
-            sprite = pygame.sprite.Sprite()
-            sprite.surface = pygame.Surface((self.width, self.height))
-
-            # Make image transparent
-            sprite.image = img.convert_alpha()
-
-            # Get mask out of the image
-            sprite.mask = pygame.mask.from_surface(sprite.image)
-            sprite.rect = sprite.image.get_rect()
-
-            # Move sprite to the creature's position
-            sprite.rect.move_ip(x, y)
-
-            return sprite
-        else:
-            raise ValueError("Wrong path. Path does not exist.")
-
     @property
     def animations(self):
         return self._animations
 
     @animations.setter
-    def animations(self, animations_paths: dict):
-
-        if animations_paths and isinstance(animations_paths, dict):
-            animations = dict()
-
-            for animation_type, animation_paths_list in animations_paths.items():
-
-                # Create list of images which are located at given path (at animations_paths)
-                animation_images_list = []
-                for path in animation_paths_list:
-                    img = pygame.image.load(path)
-                    img = pygame.transform.scale(img, (self.width, self.height))
-                    img = img.convert_alpha()
-                    animation_images_list.append(img)
-
-                # Insert this list at corresponding key (animation type)
-                animations[animation_type] = animation_images_list
-
-            self._animations = animations
-            return
-
-        if not animations_paths:
-            raise ValueError("Animations cannot be assigned to None:", animations_paths)
-        if not isinstance(animations_paths, dict):
-            raise TypeError("Animations cannot be assigned to non-dict object:", type(animations_paths), animations_paths)
+    def animations(self, animations: dict):
+        self._animations = animations
 
     def __str__(self):
         return "x: " + str(self.x) + "; y: " + str(self.y) + "; initial_location: " + str(self.initial_location) + \
@@ -298,14 +239,26 @@ class Creature(object):
 
 class PacMan(Creature):
     def __init__(self, x, y, initial_location, width, height, velocity, direction="left", form="random",
-                 mapobject_hitbox=Constants.PACMAN_MAPOBJECT_HITBOX_PATH,
-                 creature_hitbox=Constants.PACMAN_CREATURE_HITBOX_PATH,
-                 animations=Constants.PACMAN_RED_ANIMATIONS_PATHS,
+                 mapobject_hitbox=None, creature_hitbox=None, animations=None,
                  cooldown=5, mana=Constants.pacman_mana,
                  score=Constants.pacman_score, lives=Constants.pacman_lives, ghosts_eaten=0):
+
+        # FIXME Messy workaround. Width and height and form could have wrong values
+
+        if mapobject_hitbox is None:
+            mapobject_hitbox = ResourceManager.get_hitbox_of(Constants.PACMAN_MAPOBJECT_HITBOX_PATH, (width, height))
+
+        if creature_hitbox is None:
+            creature_hitbox = ResourceManager.get_hitbox_of(Constants.PACMAN_CREATURE_HITBOX_PATH, (width, height))
+
+        form = Constants.forms[random.randint(0, 2)] if form == "random" else form
+
+        if animations is None:
+            animations = ResourceManager.get_animations_for(self, form)
+
         super().__init__(x, y, initial_location, width, height, velocity, direction,
-                         Constants.forms[random.randint(0, 2)] if form == "random" else form,
-                         mapobject_hitbox, creature_hitbox, animations)
+                         form, mapobject_hitbox, creature_hitbox, animations)
+
         self.form = self.form
         self.cooldown = cooldown
         self.mana = mana
@@ -391,13 +344,15 @@ class PacMan(Creature):
     def form(self, value: str):
         if value in Constants.forms and isinstance(value, str):
             self._form = value
-            if value == "red":
-                self.animations = Constants.PACMAN_RED_ANIMATIONS_PATHS
-            elif value == "green":
-                self.animations = Constants.PACMAN_GREEN_ANIMATIONS_PATHS
-            elif value == "blue":
-                self.animations = Constants.PACMAN_BLUE_ANIMATIONS_PATHS
+            self.animations = ResourceManager.get_animations_for(self, value)
             return
+
+    def copy(self):
+        """Returns a shallow copy of PacMan object. Use with caution!!!!!"""
+        return PacMan(self.x, self.y, self.initial_location, self.width, self.height,
+                      self.velocity, self.direction, self.form, ResourceManager.copy_sprite(self.mapobject_hitbox),
+                      ResourceManager.copy_sprite(self.creature_hitbox), self.animations, self.cooldown,
+                      self.mana, self.score, self.lives, self.ghosts_eaten)
 
     def __str__(self):
         return super().__str__() + \
@@ -409,13 +364,24 @@ class PacMan(Creature):
 class Ghost(Creature):
 
     def __init__(self, x, y, initial_location, width, height, velocity, direction="up", form="random",
-                 mapobject_hitbox=Constants.GHOST_MAPOBJECT_HITBOX_PATH,
-                 creature_hitbox=Constants.GHOST_CREATURE_HITBOX_PATH,
-                 animations=Constants.GHOST_RED_ANIMATIONS_PATHS,
+                 mapobject_hitbox=None, creature_hitbox=None, animations=None,
                  is_chasing=Constants.ghost_is_chasing):
+
+        # FIXME Messy workaround. Width and height could have wrong values
+
+        if mapobject_hitbox is None:
+            mapobject_hitbox = ResourceManager.get_hitbox_of(Constants.GHOST_MAPOBJECT_HITBOX_PATH, (width, height))
+
+        form = Constants.forms[random.randint(0, 2)] if form == "random" else form
+
+        if creature_hitbox is None:
+            creature_hitbox = ResourceManager.get_hitbox_of(Constants.GHOST_CREATURE_HITBOX_PATH, (width, height))
+
+        if animations is None:
+            animations = ResourceManager.get_animations_for(self, form)
+
         super().__init__(x, y, initial_location, width, height, velocity, direction,
-                         Constants.forms[random.randint(0, 2)] if form == "random" else form,
-                         mapobject_hitbox, creature_hitbox, animations)
+                         form, mapobject_hitbox, creature_hitbox, animations)
         self.is_chasing = is_chasing
         self.form = self.form
 
@@ -452,13 +418,14 @@ class Ghost(Creature):
     def form(self, value: str):
         if value in Constants.forms and isinstance(value, str):
             self._form = value
-            if value == "red":
-                self.animations = Constants.GHOST_RED_ANIMATIONS_PATHS
-            elif value == "green":
-                self.animations = Constants.GHOST_GREEN_ANIMATIONS_PATHS
-            elif value == "blue":
-                self.animations = Constants.GHOST_BLUE_ANIMATIONS_PATHS
+            self.animations = ResourceManager.get_animations_for(self, value)
             return
+
+    def copy(self):
+        """Returns a shallow copy of Ghost object. Use with caution!!!!!"""
+        return Ghost(self.x, self.y, self.initial_location, self.width, self.height,
+                     self.velocity, self.direction, self.form, ResourceManager.copy_sprite(self.mapobject_hitbox),
+                     ResourceManager.copy_sprite(self.creature_hitbox), self.animations, self.is_chasing)
 
     def __str__(self):
         return super().__str__() + "is_chasing: " + str(self.is_chasing)

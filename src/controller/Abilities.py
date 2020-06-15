@@ -1,22 +1,20 @@
 from abc import ABC, abstractmethod
-from threading import Timer
 
 
 class Ability(ABC):
 
     @abstractmethod
-    def __init__(self, pacman, duration):
-        self.pacman = pacman
-        self.duration = duration
+    def __init__(self, duration):
+        self.duration = duration  # sec
+        self.is_active = False
+        self.elapsed_time_counter = 0
 
-    @property
-    def duration_timer(self):
-        return Timer(self.duration, self.deactivate)
-
-    @abstractmethod
-    def run(self):
-        self.activate()
-        self.duration_timer.start()
+    def update(self, elapsed_time):
+        if self.is_active:
+            self.elapsed_time_counter += elapsed_time
+        if self.elapsed_time_counter > self.duration:
+            self.deactivate()
+            self.elapsed_time_counter = 0
 
     @abstractmethod
     def deactivate(self):
@@ -31,14 +29,19 @@ class SpeedAbility(Ability):
     """ Speeds pacman up while ability is active """
 
     def __init__(self, pacman, duration, pacman_vel, pacman_boost):
+        self.pacman = pacman
         self.pacman_velocity = pacman_vel
         self.pacman_boost = pacman_boost
         self.is_active = False
-        super().__init__(pacman, duration)
+        self.elapsed_time_counter = 0
+        super().__init__(duration)
 
-    def run(self, pacman_vel, pacman_boost):
-        self.activate(pacman_vel, pacman_boost)
-        self.duration_timer.start()
+    def update(self, elapsed_time):
+        if self.is_active:
+            self.elapsed_time_counter += elapsed_time
+        if self.elapsed_time_counter > self.duration:
+            self.deactivate()
+            self.elapsed_time_counter = 0
 
     def activate(self, pacman_vel, pacman_boost):
         self.pacman_velocity = pacman_vel
@@ -55,14 +58,20 @@ class TransformAbility(Ability):
     """ Lets player freely cycle through forms while ability is active """
 
     def __init__(self, pacman, duration, ghosts, ghost_velocity, ghost_slowdown):
+        self.pacman = pacman
         self.ghosts = ghosts
         self.ghost_velocity = ghost_velocity
         self.ghost_slowdown = ghost_slowdown
         self.is_active = False
-        super().__init__(pacman, duration)
+        self.elapsed_time_counter = 0
+        super().__init__(duration)
 
-    def run(self):
-        super().run()
+    def update(self, elapsed_time):
+        if self.is_active:
+            self.elapsed_time_counter += elapsed_time
+        if self.elapsed_time_counter > self.duration:
+            self.deactivate()
+            self.elapsed_time_counter = 0
 
     def activate(self):
         self.is_active = True
@@ -79,11 +88,40 @@ class TransformAbility(Ability):
         # Hardcoded
 
         if self.is_active:
-            if self.pacman.form == 'red':
-                self.pacman.form = 'green'
+            if self.pacman.form == 'Red':
+                self.pacman.form = 'Green'
 
-            elif self.pacman.form == 'green':
-                self.pacman.form = 'blue'
+            elif self.pacman.form == 'Green':
+                self.pacman.form = 'Blue'
 
             else:
-                self.pacman.form = 'red'
+                self.pacman.form = 'Red'
+
+
+class IterativeTimer():
+
+    def __init__(self, pacman, duration):
+        self.pacman = pacman
+        self.ghosts = ghosts
+        self.ghost_velocity = ghost_velocity
+        self.ghost_slowdown = ghost_slowdown
+        self.is_active = False
+        self.elapsed_time_counter = 0
+        super().__init__(duration)
+
+    def update(self, elapsed_time):
+        if self.is_active:
+            self.elapsed_time_counter += elapsed_time
+        if self.elapsed_time_counter > self.duration:
+            self.deactivate()
+            self.elapsed_time_counter = 0
+
+    def activate(self):
+        self.is_active = True
+        for ghost in self.ghosts:
+            ghost.velocity -= self.ghost_slowdown
+
+    def deactivate(self):
+        self.is_active = False
+        for ghost in self.ghosts:
+            ghost.velocity = self.ghost_velocity

@@ -17,6 +17,7 @@ from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSIC
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
 from src.view.Renderer import Renderer, RenderModes
+from src.view.ResourceManager import ResourceManager
 
 
 def get_sector_coord(x, y):
@@ -29,7 +30,6 @@ def revive_ghost(ghost):
 
 
 def ghost_died(ghost):  # TODO: Animations
-    # print("GHOST DIE")
     ghost.is_alive = False
 
 
@@ -135,7 +135,8 @@ class Controller:
     def init_pacman(self):
         self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord,
                              self.current_level.level_map.pacman_initial_coord,
-                             SECTOR_SIZE, SECTOR_SIZE, int(self.current_level.PACMAN_PX_PER_SECOND * self.tick_time))
+                             SECTOR_SIZE, SECTOR_SIZE, int(self.current_level.PACMAN_PX_PER_SECOND * self.tick_time),
+                             cooldown=self.current_level.pacman_cooldown)
         self.ability_is_ready = True
 
     def init_ghosts(self):
@@ -183,13 +184,13 @@ class Controller:
 
                     pacman_vel = boost_tick_time * self.current_level.PACMAN_PX_PER_SECOND
                     pacman_boost = boost_tick_time * self.current_level.PACMAN_BOOST_PX_PER_SECOND
-                    self.speed_ability.run(pacman_vel, pacman_boost)
+                    self.speed_ability.activate(pacman_vel, pacman_boost)
                     self.set_cooldown_timer()
 
                 elif event.key == K_2:
                     if self.pacman.mana > 0 and self.ability_is_ready:
                         self.pacman.mana -= 1
-                        self.transform_ability.run()  # call set_cooldown_timer()
+                        self.transform_ability.activate()  # call set_cooldown_timer()
                         self.set_cooldown_timer()
                     elif self.transform_ability.is_active:
                         self.transform_ability.changeForm()
@@ -198,7 +199,7 @@ class Controller:
 
     def set_cooldown_timer(self):
         self.ability_is_ready = False
-        self.ability_timer = Timer(self.current_level.pacman_cooldown, self.set_ability_ready)  # run timer for cooldown
+        self.ability_timer = Timer(self.pacman.cooldown, self.set_ability_ready)  # run timer for cooldown
         self.ability_timer.start()
 
     def set_ability_ready(self):
@@ -350,6 +351,7 @@ class Controller:
         self.pacman.form = forms[random.randint(0, 2)]
         self.pacman.score = Constants.pacman_score
         self.pacman.lives = Constants.pacman_lives
+        self.pacman.cooldown = self.current_level.pacman_cooldown
         self.pacman.ghosts_eaten = 0
         self.init_abilities()
         self.ghosts = []
@@ -401,7 +403,6 @@ class Controller:
     def move_ghosts(self, counter_physics_tick_time):
         for ghost in self.ghosts:
             ghost.velocity = int(self.current_level.GHOST_PX_PER_SECOND * counter_physics_tick_time)
-            # print("GHOST: " + str(ghost.velocity))
             self.move_creature(ghost)
 
     def check_pacman_ghost_collision(self):  # TODO: Change hitbox
@@ -473,11 +474,15 @@ class Controller:
     def render_update(self, tick_time):
         start_time = time.time()
         self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
-                              [], [self.pacman], self.ghosts], self.current_level,
-                             tick_time, showgrid=False, show_hitboxes=False,
+                              [], [self.pacman], self.ghosts], [self.speed_ability, self.transform_ability],
+                             self.current_level, tick_time, showgrid=False, show_hitboxes=False,
                              render_mode=RenderModes.PartialRedraw_A)
         end_time = time.time()
         self.render_update_exec_time = end_time - start_time
+
+    def abilities_update(self, tick_time):
+        self.speed_ability.update(tick_time)
+        self.transform_ability.update(tick_time)
 
     def run(self):
         self.is_playing = True
@@ -488,7 +493,7 @@ class Controller:
             miliseconds = clock.tick(GLOBAL_TICK_RATE)
             self.tick_time = miliseconds / 1000.0  # seconds
             if self.is_playing:
-                if self.tick_time > 0.1:  # If the game freezes, set the default value to tick.time
+                if self.tick_time > 1:  # If the game freezes, set the default value to tick.time
                     self.tick_time = 1 / GLOBAL_TICK_RATE
 
                 self.handle_events()
@@ -496,6 +501,7 @@ class Controller:
                 if self.pacman.is_alive:
                     self.update_ghosts(self.tick_time, hardcore=False)
                 self.update_level()
+                self.abilities_update(self.tick_time)
                 self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time,
                                               self.render_update_exec_time, self.tick_time)
             else:

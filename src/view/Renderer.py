@@ -1,19 +1,19 @@
-
 import enum
-import itertools
 import math
 
 import pygame
 
 from src.data import Constants
 from src.data.Levels import Level
+from src.view.ResourceManager import ResourceManager
+from src.view.Widgets import IconsPack, Icon, AbilityIconPack
 
 
 def distance(a, b):
     try:
         return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
     except:
-        raise Exception("a: "+str(a)+"; b: "+str(b))
+        raise Exception("a: " + str(a) + "; b: " + str(b))
 
 
 def _get_near_objects(center_objects_coords, objects, radius=2 * Constants.SECTOR_SIZE):
@@ -30,256 +30,9 @@ def _get_near_objects(center_objects_coords, objects, radius=2 * Constants.SECTO
     return near_objects
 
 
-class ResourceManager(object):
-    # TODO IMPLEMENT
-    animations = dict()
-    """{"%animation_owner%": {"%animation_name%": %animation_dict%:, "%animation_name%": %animation_dict%, ...}}"""
-
-    def get_animations_from(animations_paths_dict, icon_size):
-
-        if animations_paths_dict and isinstance(animations_paths_dict, dict):
-            animations = dict()
-
-            for animation_type, animation_paths_list in animations_paths_dict.items():
-
-                # Create list of images which are located at given path (at animations_paths)
-                animation_images_list = []
-                for path in animation_paths_list:
-                    animation_images_list.append(ResourceManager.get_image_from(path, icon_size))
-
-                # Insert this list at corresponding key (animation type)
-                animations[animation_type] = animation_images_list
-
-            return animations
-
-    def get_image_from(icon_path, icon_size):
-        img = pygame.image.load(icon_path)
-        img = pygame.transform.scale(img, (icon_size, icon_size))
-        img = img.convert_alpha()
-        return img
-
-
 class RenderModes(enum.Enum):
     RedrawAll = 0  # Redraws every single object every tick
     PartialRedraw_A = 1  # Redraws all objects (excluding walls) in given radius
-
-
-class Icon(object):
-    """This class represents an icon. It supports animations."""
-    def __init__(self, icon_animations, x=0, y=0, icon_state="default"):
-        self.x = x
-        self.y = y
-        self.animations = icon_animations
-        self.icon_size = self.animations["default"][0].get_rect().width
-        self.current_state = icon_state
-        self.icon_states = list(self.animations.keys())
-        self._counter_upper_limit = len(self.animations[self.current_state]) - 1
-        self.counter = 0
-
-    @property
-    def counter(self):
-        return self._counter
-
-    @counter.setter
-    def counter(self, value):
-        if 0 <= value <= self._counter_upper_limit:
-            self._counter = value
-        else:
-            self._counter = 0
-
-    @property
-    def icon_size(self):
-        return self._icon_size
-
-    @icon_size.setter
-    def icon_size(self, value):
-        if value > 0:
-            self.rescale_animations(int(value))
-            self._icon_size = int(value)
-        else:
-            raise ValueError("Cannot assign icon_size to " + str(value))
-
-    @property
-    def current_state(self):
-        return self._icon_state
-
-    @current_state.setter
-    def current_state(self, value):
-        if value in self.animations.keys():
-            self._icon_state = value
-            self._counter_cycle = itertools.cycle([0, self.animations[self.current_state]])
-        else:
-            raise ValueError("Cannot assign icon_state to " + str(value) +
-                             ". Unable to find appropriate animation type amongst these: " +
-                             str(self.icon_states))
-
-    def rescale_animations(self, size):
-        for key, animation in zip(self.animations.keys(), self.animations.values()):
-            for frame_i in range(len(animation)):
-                self.animations[key][frame_i] = pygame.transform.scale(self.animations[key][frame_i], (size, size))
-
-    def copy(self):
-        copy_icon = Icon(self.animations)
-        copy_icon.x = self.x
-        copy_icon.y = self.y
-        copy_icon.icon_size = self.icon_size
-        copy_icon.current_state = self.current_state #TODO: COPY
-        copy_icon.icon_states = self.icon_states #TODO: COPY
-        copy_icon._counter_upper_limit = self._counter_upper_limit
-        copy_icon.counter = self.counter
-
-        return copy_icon
-
-
-class LineOfIconsWidget(object):
-
-    class Align(enum.Enum):
-        Left = 0
-        Center = 1
-        Right = 2
-
-    class Order(enum.Enum):
-        PopRightAppendRight = 0
-        PopLeftAppendLeft = 2
-
-    def __init__(self, boundrect, box_size: int = 87,
-                 align=Align.Left, pop_append_order=Order.PopRightAppendRight):
-        self.icons = []  # list of Icon
-        self.boundrect = boundrect  # icons bounding rect
-        self._n = 0  # number of icons
-        self.box_size = box_size  # size of box containing single image, px
-        self.icons_size = int(box_size)
-        self.align = align
-        self.pop_append_order = pop_append_order
-
-    @property
-    def align(self):
-        return self._align
-
-    @align.setter
-    def align(self, value):
-        if value in self.Align:
-            self._align = value
-            self._rearrange()
-
-    def _rearrange(self):
-        if self.icons:
-            delta = 0
-
-            if self.align == self.Align.Left:
-                delta = self.boundrect.x - min(icon.x for icon in self.icons)
-
-            elif self.align == self.Align.Center:
-                # We need to match middle of line of boxes and middle of boundrect
-                delta = (self.boundrect.x + self.boundrect.width/2) - (self.icons[0].x + (self._n * self.box_size)/2)
-
-            elif self.align == self.Align.Right:
-                delta = (self.boundrect.x + self.boundrect.width) - (max(icon.x for icon in self.icons) + self.box_size)
-
-            for icon in self.icons:
-                icon.x += delta
-
-    def duplicate(self, n, duplicated_icon: Icon = "duplicate last"):
-        """This method sets number of images in a line.
-        If n > N, where N is a number of icons already placed in a line, it appends given image n-N times.
-        If n < N, where N is a number of icons already placed in a line, it pops given image N-n times.
-        If no image was given, it duplicates last image in a line."""
-
-        while self._n > n:
-            self.pop()
-
-        while self._n < n:
-            if duplicated_icon == "duplicate last":
-                # Append last icon in the list
-                if self._n >= 1:
-                    self.append(self.icons[-1].copy())
-                else:
-                    raise ValueError("Cannot duplicate 0 icons")
-            else:
-                self.append(duplicated_icon.copy())
-
-    def append(self, icon: Icon):
-        """This method appends given Icon to the line and places after the last one.
-        It resizes icons properly if they get bigger than boundrect."""
-
-        icon.y = self.boundrect.y + (self.boundrect.height - self.icons_size)/2
-
-        if self.align == self.Align.Left:
-
-            if self.pop_append_order == self.Order.PopRightAppendRight:
-                if self._n == 0:
-                    icon.x = self.boundrect.x
-                else:
-                    icon.x = max(icon.x for icon in self.icons) + self.box_size
-                self.icons.append(icon)
-                self._n += 1
-
-            elif self.pop_append_order == self.Order.PopLeftAppendLeft:
-                if self._n == 0:
-                    icon.x = self.boundrect.x
-                else:
-                    icon.x = min(icon.x for icon in self.icons) - self.box_size
-                self.icons.insert(0, icon)
-                self._n += 1
-
-        elif self.align == self.Align.Center:
-
-            if self.pop_append_order == self.Order.PopRightAppendRight:
-                if self._n == 0:
-                    icon.x = self.boundrect.x
-                else:
-                    icon.x = max(icon.x for icon in self.icons) + self.box_size
-                self.icons.append(icon)
-                self._n += 1
-
-            elif self.pop_append_order == self.Order.PopLeftAppendLeft:
-                if self._n == 0:
-                    icon.x = self.boundrect.x
-                else:
-                    icon.x = min(icon.x for icon in self.icons) - self.box_size
-                self.icons.insert(0, icon)
-                self._n += 1
-
-        elif self.align == self.Align.Right:
-            if self.pop_append_order == self.Order.PopRightAppendRight:
-                if self._n == 0:
-                    icon.x = self.boundrect.x + self.boundrect.width - self.box_size
-                else:
-                    icon.x = max(icon.x for icon in self.icons) + self.box_size
-                self.icons.append(icon)
-                self._n += 1
-
-            elif self.pop_append_order == self.Order.PopLeftAppendLeft:
-                if self._n == 0:
-                    icon.x = self.boundrect.x + self.boundrect.width - self.box_size
-                else:
-                    icon.x = min(icon.x for icon in self.icons) - self.box_size
-                self.icons.insert(0, icon)
-                self._n += 1
-
-        self._rearrange()
-
-        # TODO: buggy when n > 10
-        # If icons width is greater than width of boundrect..
-        icons_width = self._n * self.box_size
-        if icons_width > self.boundrect.width:
-            # ..then make every icon smaller and change its x position
-            correction_ratio = self.boundrect.width / icons_width
-            self.icons_size = int(self.icons_size * correction_ratio)
-            self.box_size = int(self.box_size * correction_ratio)
-            for i, icon in enumerate(self.icons):
-                icon.rescale_animations(self.icons_size)
-                icon.x = self.boundrect.x + i * self.box_size
-                icon.y = self.boundrect.y + (self.boundrect.height - self.icons_size) / 4
-
-    def pop(self):
-        """This method pops last Icon in a line. It doesn't change size of Icons left"""
-        if self._n > 0:
-            self._n -= 1
-            if self.pop_append_order == self.Order.PopRightAppendRight:
-                self.icons.pop()
-            elif self.pop_append_order == self.Order.PopLeftAppendLeft:
-                self.icons.pop(0)
 
 
 class Renderer(object):
@@ -289,7 +42,6 @@ class Renderer(object):
                  windowed_screen_height=Constants.WINDOWED_SCREEN_HEIGHT):
 
         self.initial_map_render = True
-
         self.map_dimensions = map_dimensions  # cells
         self.map_size = [map_dimensions[0] * Constants.SECTOR_SIZE, map_dimensions[1] * Constants.SECTOR_SIZE, ]  # px
         self.animation_period = Constants.ANIMATION_PERIOD  # seconds
@@ -304,6 +56,9 @@ class Renderer(object):
         # Get actual window size
         self.canvas_width = pygame.display.get_surface().get_width()
         self.canvas_height = pygame.display.get_surface().get_height()
+
+        # Init Resource Manager
+        ResourceManager.load_resources()
 
         # Init GUI and all required surfaces
         self._init_boundsurfs()
@@ -360,7 +115,6 @@ class Renderer(object):
         """Rescale gamescreen if it's bigger than gamescreen bounds"""
         if self.gamescreen_surf_width > self.gamescreen_boundbox_surf_width and \
                 self.gamescreen_surf_height > self.gamescreen_boundbox_surf_height:
-
             self.gamescreen_cell_size = int(
                 self.gamescreen_cell_size * min(self.gamescreen_boundbox_surf_width / self.gamescreen_surf_width,
                                                 self.gamescreen_boundbox_surf_height / self.gamescreen_surf_height))
@@ -387,10 +141,10 @@ class Renderer(object):
     def _init_guisurfs(self):
         self.top_bar_width = Constants.TOP_BAR_WIDTH_RATIO * self.canvas_width
         self.top_bar_height = Constants.TOP_BAR_HEIGHT_RATIO * self.canvas_height
-        self.bottom_bar_width = self.gamescreen_surf_width #Constants.BOTTOM_BAR_WIDTH_RATIO * self.canvas_width
+        self.bottom_bar_width = self.gamescreen_surf_width  # Constants.BOTTOM_BAR_WIDTH_RATIO * self.canvas_width
         self.bottom_bar_height = Constants.BOTTOM_BAR_HEIGHT_RATIO * self.canvas_height
-        self.bottom_bar_x = self.canvas_width/2 - self.bottom_bar_width/2
-        self.bottom_bar_y = self.gamescreen_surf_y + self.gamescreen_surf_height + self.gamescreen_cell_size/4
+        self.bottom_bar_x = self.canvas_width / 2 - self.bottom_bar_width / 2
+        self.bottom_bar_y = self.gamescreen_surf_y + self.gamescreen_surf_height + self.gamescreen_cell_size / 4
 
         self.lives_bar_surf_width = int(Constants.LIVES_BAR_WIDTH * self.bottom_bar_width)
         self.lives_bar_surf_height = int(self.bottom_bar_height)
@@ -417,32 +171,28 @@ class Renderer(object):
         # Lives Icons
         boundrect = pygame.Rect(self.lives_bar_surf_x, self.lives_bar_surf_y,
                                 self.lives_bar_surf_width, self.lives_bar_surf_height)
-        self.lives_icons = LineOfIconsWidget(boundrect, box_size=self.gamescreen_cell_size)
+        self.lives_icons = IconsPack(boundrect, box_size=self.gamescreen_cell_size)
 
-        animations = ResourceManager.get_animations_from(Constants.LIVES_ICON_ANIMATIONS_PATH, icon_size=int(self.gamescreen_cell_size))
-        self.lives_icons.append(Icon(animations))
+        self.Lives_icon = Icon("Lives", animations_dims=(int(self.gamescreen_cell_size), int(self.gamescreen_cell_size)))
+        self.lives_icons.append(self.Lives_icon)
 
         # Abilities Icons
+        size_mult = 1.25
         boundrect = pygame.Rect(self.abilities_bar_surf_x, self.abilities_bar_surf_y,
                                 self.abilities_bar_surf_width, self.abilities_bar_surf_height)
-        self.abilities_icons = LineOfIconsWidget(boundrect, box_size=int(self.gamescreen_cell_size*1.25), # TODO: CONSTANT
-                                                 align=LineOfIconsWidget.Align.Center)
-
-        animations = ResourceManager.get_animations_from(Constants.BOOST_ICON_ANIMATIONS_PATH, icon_size=int(self.gamescreen_cell_size*1.25))
-        self.abilities_icons.append(Icon(animations))
-
-        animations = ResourceManager.get_animations_from(Constants.MORPH_ICON_ANIMATIONS_PATH, icon_size=int(self.gamescreen_cell_size*1.25))
-        self.abilities_icons.append(Icon(animations))
+        self.abilities_widget = AbilityIconPack(boundrect, box_size=int(self.gamescreen_cell_size * size_mult),
+                                                align=IconsPack.Align.Center)
 
         # Mana Icons
         boundrect = pygame.Rect(self.mana_bar_surf_x, self.mana_bar_surf_y,
                                 self.mana_bar_surf_width, self.mana_bar_surf_height)
-        self.mana_icons = LineOfIconsWidget(boundrect, box_size=self.gamescreen_cell_size,
-                                            align=LineOfIconsWidget.Align.Right,
-                                            pop_append_order=LineOfIconsWidget.Order.PopLeftAppendLeft)
+        self.mana_icons = IconsPack(boundrect, box_size=self.gamescreen_cell_size,
+                                    align=IconsPack.Align.Right,
+                                    pop_append_order=IconsPack.Order.PopLeftAppendLeft)
 
-        animations = ResourceManager.get_animations_from(Constants.MANA_ICON_ANIMATIONS_PATH, icon_size=int(self.gamescreen_cell_size))
-        self.mana_icons.append(Icon(animations))
+        self.mana_icon = Icon("Mana", animations_dims=(int(self.gamescreen_cell_size),
+                                                       int(self.gamescreen_cell_size)))
+        self.mana_icons.append(self.mana_icon)
 
     def _init_teleport_covers(self):
         self.left_teleport_cover_surf = pygame.Surface((self.gamescreen_surf_x, self.gamescreen_surf_height))
@@ -472,9 +222,9 @@ class Renderer(object):
         """Creates a list of filled background surfaces and their absolute positions on the canvas"""
         self.boundsurfs = []
 
-        #self.bg_elements.append([self.background_surf, self.background_surf_x, self.background_surf_y])
-        #self.boundsurfs.append([self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
-        #self.bg_elements.append([self.gamescreen_surf, self.gamescreen_surf_x, self.gamescreen_surf_y])
+        # self.bg_elements.append([self.background_surf, self.background_surf_x, self.background_surf_y])
+        # self.boundsurfs.append([self.gamescreen_boundbox_surf, self.gamescreen_boundbox_surf_x, self.gamescreen_boundbox_surf_y])
+        # self.bg_elements.append([self.gamescreen_surf, self.gamescreen_surf_x, self.gamescreen_surf_y])
 
     def _init_gui_list(self):
         """Creates a list of all gui elements and their absolute positions on the canvas"""
@@ -484,10 +234,9 @@ class Renderer(object):
         self.guisurfs.append([self.abilities_bar_surf, self.abilities_bar_surf_x, self.abilities_bar_surf_y])
         self.guisurfs.append([self.mana_bar_surf, self.mana_bar_surf_x, self.mana_bar_surf_y])
 
-        self.icon_lines = []
-        self.icon_lines.append(self.lives_icons)
-        self.icon_lines.append(self.abilities_icons)
-        self.icon_lines.append(self.mana_icons)
+        self.icon_packs = []
+        self.icon_packs.append(self.lives_icons)
+        self.icon_packs.append(self.mana_icons)
 
     def _init_teleport_covers_list(self):
         """Creates a list of all teleport covers and their absolute positions on the canvas"""
@@ -515,15 +264,15 @@ class Renderer(object):
 
     def _draw_text(self, pacman, current_level):
         # TODO OPTIMIZE
-        font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH, int(self.canvas_height*Constants.FONT_SIZE_RATIO))
+        font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH, int(self.canvas_height * Constants.FONT_SIZE_RATIO))
         score_text = font.render("Score: " + str(pacman.score), 1, Constants.FONT_COLOR)
-        place = score_text.get_rect(topleft=(self.gamescreen_surf_x, self.top_bar_height/2))
+        place = score_text.get_rect(topleft=(self.gamescreen_surf_x, self.top_bar_height / 2))
         self.window.blit(score_text, place)
 
         level_text = font.render("Level: " + current_level.level_name, 1, Constants.FONT_COLOR)
         place = level_text.get_rect(topleft=(self.gamescreen_surf_x + self.gamescreen_surf_width
                                              - level_text.get_rect().width,
-                                             self.top_bar_height/2))
+                                             self.top_bar_height / 2))
         self.window.blit(level_text, place)
 
     def _mapscreen_coords_to_gamescreen_coords(self, coords):
@@ -580,16 +329,19 @@ class Renderer(object):
     def restart(self):
         self.initial_map_render = True
 
-    def render(self, entities_list: [], current_level: Level, elapsed_time: float, showgrid: bool=False, show_hitboxes: bool=True,
-               render_mode: RenderModes=RenderModes.RedrawAll):
-        """entities_list: (pellets, mega_pellets, walls, cherry, pacmans, ghosts)"""
+    def render(self, entities_list: [], abilities_list: [], current_level: Level,
+               elapsed_time: float,
+               showgrid: bool = False, show_hitboxes: bool = True,
+               render_mode: RenderModes = RenderModes.RedrawAll):
+        """entities_list: (pellets, mega_pellets, walls, floors, cherry, pacmans, ghosts)"""
 
         # Unpack entities_list
         pellets, mega_pellets, walls, floors, cherry, pacmans, ghosts = entities_list
 
         if self.initial_map_render:
-            self.prev_pacmans_coords = [pacman.coord for pacman in pacmans]
-            self.prev_ghosts_coords = [ghost.coord for ghost in ghosts]
+            self.prev_pacmans = [pacman.copy() for pacman in pacmans]
+            self.prev_ghosts = [ghost.copy() for ghost in ghosts]
+            self.prev_abilities_status = [ability.is_active for ability in abilities_list]
 
         # This variable is needed for proper animation speed independent of FPS
         self.time_elapsed_from_prev_animation_frame += elapsed_time
@@ -614,14 +366,14 @@ class Renderer(object):
                     self._draw_mapobjects(_get_near_objects(coords, cherry, radius), show_hitboxes)
 
                 # Redraw all when pacman teleports (because of low/inconsistent tickrate or pacman's death)
-                for pacman, prev_pacman_coord in zip(pacmans, self.prev_pacmans_coords):
-                    if distance(pacman.coord, prev_pacman_coord) >= radius:
-                        _draw_mapobjects_around_coords([prev_pacman_coord])
+                for pacman, prev_pacman in zip(pacmans, self.prev_pacmans):
+                    if distance(pacman.coord, prev_pacman.coord) >= radius:
+                        _draw_mapobjects_around_coords([prev_pacman.coord])
 
                 # Redraw all when ghost teleports (because of low/inconsistent tickrate)
-                for ghost, prev_ghost_coord in zip(ghosts, self.prev_ghosts_coords):
-                    if distance(ghost.coord, prev_ghost_coord) >= radius:
-                        _draw_mapobjects_around_coords([prev_ghost_coord])
+                for ghost, prev_ghost in zip(ghosts, self.prev_ghosts):
+                    if distance(ghost.coord, prev_ghost.coord) >= radius:
+                        _draw_mapobjects_around_coords([prev_ghost.coord])
 
                 _draw_mapobjects_around_coords([creature.coord for creature in (pacmans + ghosts)])
 
@@ -629,37 +381,32 @@ class Renderer(object):
         self._draw_pacmans(pacmans, show_hitboxes=show_hitboxes)
         self._draw_ghosts(ghosts, show_hitboxes=show_hitboxes)
 
-        # pygame.display.set_caption("Elapsed time: " + str(elapsed_time))
-
         # Draw covers
         for cover in self.covers:
-           self.window.blit(cover[0], (cover[1], cover[2]))
+            self.window.blit(cover[0], (cover[1], cover[2]))
 
         # Draw boundsurfs
         for surf in self.boundsurfs:
             self.window.blit(surf[0], (surf[1], surf[2]))
 
         # Draw GUI
-        # TODO STORE ANIMATIONS IN RESOURCE MANAGER
-        animations = ResourceManager.get_animations_from(Constants.LIVES_ICON_ANIMATIONS_PATH, icon_size=int(self.gamescreen_cell_size))
-        self.lives_icons.duplicate(pacmans[0].lives, duplicated_icon=Icon(animations))
-
-        # TODO STORE ANIMATIONS IN RESOURCE MANAGER
-        animations = ResourceManager.get_animations_from(Constants.MANA_ICON_ANIMATIONS_PATH, icon_size=int(self.gamescreen_cell_size))
-        self.mana_icons.duplicate(pacmans[0].mana, duplicated_icon=Icon(animations))
+        self.lives_icons.duplicate(pacmans[0].lives,
+                                   duplicated_icon=Icon("Lives", animations_dims=(int(self.gamescreen_cell_size),
+                                                                                  int(self.gamescreen_cell_size))))
+        self.mana_icons.duplicate(pacmans[0].mana,
+                                  duplicated_icon=Icon("Mana", animations_dims=(int(self.gamescreen_cell_size),
+                                                                                int(self.gamescreen_cell_size))))
         self._draw_text(pacmans[0], current_level)
 
-        # ...
-        #self._init_gui_list()
-        for element in self.guisurfs:
-            pass
-            #self.window.blit(element[0], (element[1], element[2]))
+        # Draw Icons
+        for icon_pack in self.icon_packs:
+            for icon in icon_pack.icons:
+                icon.draw(self.window)
 
-        for icon_line in self.icon_lines:
-            for icon in icon_line.icons:
-                self.window.blit(icon.animations[icon.current_state][icon.counter],
-                                 (icon.x, icon.y))
-                icon.counter += 1
+        self.abilities_widget.update(pacmans[0], abilities_list, self.prev_pacmans[0], self.prev_abilities_status,
+                                     elapsed_time)
+        self.abilities_widget.draw(self.window)
+
         # Draw Grid
         if showgrid:
             self._draw_grid()
@@ -669,9 +416,9 @@ class Renderer(object):
 
         if not self.initial_map_render:
             # Update prev entities list
-            #self.prev_entites = entities_list.copy()
-            self.prev_pacmans_coords = [pacman.coord for pacman in pacmans]
-            self.prev_ghosts_coords = [ghost.coord for ghost in ghosts]
+            self.prev_pacmans = [pacman.copy() for pacman in pacmans]
+            self.prev_ghosts = [ghost.copy() for ghost in ghosts]
+            self.prev_abilities_status = [ability.is_active for ability in abilities_list]
 
         pygame.display.update()
 

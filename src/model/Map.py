@@ -1,4 +1,4 @@
-from src.model.MapObjects import Wall, Pellet, MegaPellet, Cherry, Floor
+from src.model.MapObjects import Wall, Pellet, MegaPellet, Floor
 from src.data.Constants import SECTOR_SIZE
 
 
@@ -43,10 +43,6 @@ class Map:
                     obj = MegaPellet(coord)
                     mega_pellets.append(obj)
 
-                elif ch == '+':
-                    obj = Cherry(coord)
-                    # TODO
-
                 elif ch == '@':
                     obj = None
                     pacman_initial_coord = coord
@@ -65,7 +61,7 @@ class Map:
 
                     if x == 0:
                         neighbors = [(self.width - 1, y), (x + 1, y)]
-                        linked_list[(x - 1, y)] = [(x, y), (self.width - 1, y)]
+                        linked_list[(x - 1, y)] = [(x, y), (self.width, y)]
 
                     elif x == self.width - 1:
                         neighbors = [(x - 1, y), (0, y)]
@@ -76,10 +72,10 @@ class Map:
 
                     if y == 0:
                         neighbors.extend([(x, self.height - 1), (x, y + 1)])
-                        linked_list[(x, y - 1)] = [(x, y), (x, self.height - 1)]
+                        linked_list[(x, y - 1)] = [(x, y), (x, self.height)]
 
                     elif y == self.height - 1:
-                        neighbors.extend([(x, y - 1), (x, 0)])
+                        neighbors = [(x, y - 1), (x, 0)]
                         linked_list[(x, y + 1)] = [(x, y), (x, 0)]
 
                     else:

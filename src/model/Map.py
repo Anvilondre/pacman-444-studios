@@ -1,4 +1,4 @@
-from src.model.MapObjects import Wall, Pellet, MegaPellet, Cherry
+from src.model.MapObjects import Wall, Pellet, MegaPellet, Cherry, Floor
 from src.data.Constants import SECTOR_SIZE
 
 
@@ -7,18 +7,23 @@ class Map:
         self.string_map = string_map
         self.width = len(string_map[0])
         self.height = len(string_map)
-        self.pellets, \
-        self.mega_pellets, \
-        self.walls, \
-        self.hash_map, \
-        self.pacman_initial_coord, \
-        self.ghosts_initial_coords = self.pre_process()
+        self.dims = (self.width, self.height)
+        self.pellets = \
+            self.mega_pellets = \
+            self.walls = \
+            self.floors = \
+            self.hash_map = \
+            self.pacman_initial_coord = \
+            self.ghosts_initial_coords = \
+            self.linked_list = None
 
     def pre_process(self):
         pellets = []
         mega_pellets = []
         walls = []
+        floors = []
         hash_map = {}
+        linked_list = {}
         pacman_initial_coord = (0, 0)
         ghosts_initial_coords = []
         for x in range(self.width):
@@ -53,9 +58,55 @@ class Map:
                 else:
                     obj = None
 
+                if ch != '#':
+                    floors.append(Floor(coord))
+
+                if ch != '#':
+
+                    if x == 0:
+                        neighbors = [(self.width - 1, y), (x + 1, y)]
+                        linked_list[(x - 1, y)] = [(x, y), (self.width - 1, y)]
+
+                    elif x == self.width - 1:
+                        neighbors = [(x - 1, y), (0, y)]
+                        linked_list[(x + 1, y)] = [(x, y), (0, y)]
+
+                    else:
+                        neighbors = [(x - 1, y), (x + 1, y)]
+
+                    if y == 0:
+                        neighbors.extend([(x, self.height - 1), (x, y + 1)])
+                        linked_list[(x, y - 1)] = [(x, y), (x, self.height - 1)]
+
+                    elif y == self.height - 1:
+                        neighbors.extend([(x, y - 1), (x, 0)])
+                        linked_list[(x, y + 1)] = [(x, y), (x, 0)]
+
+                    else:
+                        neighbors.extend([(x, y - 1), (x, y + 1)])
+
+                    nbr = []
+                    for item in neighbors:
+
+                        map_value = self.string_map[item[1]][item[0]]
+
+                        # Skip walls
+                        if map_value != "#":
+                            nbr.append(item)
+
+                    linked_list[str_coord] = nbr
+
                 hash_map[str_coord] = obj
 
-        return pellets, mega_pellets, walls, hash_map, pacman_initial_coord, ghosts_initial_coords
+        self.hash_map = hash_map
+        self.pellets = pellets
+        self.mega_pellets = mega_pellets
+        self.walls = walls
+        self.floors = floors
+        self.hash_map = hash_map
+        self.pacman_initial_coord = pacman_initial_coord
+        self.ghosts_initial_coords = ghosts_initial_coords
+        self.linked_list = linked_list
 
     def get_object_from_coord(self, x, y):
         return self.hash_map[(x, y)]

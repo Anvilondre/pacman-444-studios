@@ -3,6 +3,10 @@ from abc import ABC, abstractmethod
 
 
 class Level(ABC):
+    @property
+    @abstractmethod
+    def level_name(self):
+        pass
 
     @property
     @abstractmethod
@@ -46,16 +50,19 @@ class Level(ABC):
 
 
 class Level1(Level):
-
-    pacman_velocity = 5
-    pacman_boost = 3
+    level_name = "1"
+    PACMAN_PX_PER_SECOND = 36 * 5
+    PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
+    GHOST_PX_PER_SECOND = 36 * 5
+    pacman_velocity = 6
+    pacman_boost = 20
     pacman_cooldown = 10
     speed_ability_duration = 5
     transform_ability_duration = 5
-    ghosts_velocity = 4
-    ghosts_slowdown = 2
+    ghosts_velocity = 6
+    ghosts_slowdown = 0
 
-    level_map = Map(["###################",
+    level_map = Map(["##############.####",
                      "#........#........#",
                      "#.##.###.#.###.##.#",
                      "#..o...........o..#",
@@ -64,30 +71,33 @@ class Level1(Level):
                      "####.###.#.###.####",
                      "####.#.......#.####",
                      "####.#.## ##.#.####",
-                     "#......#$$$#......#",
+                     ".......#$$$#.......",
                      "####.#.#####.#.####",
                      "####.#.......#.####",
                      "####.#.#####.#.####",
-                     "#..#.....@.....#..#",
+                     "...#.....@.....#...",
                      "##.#.#.#####.#.#.##",
                      "#.o..#...#...#.o..#",
                      "#.######.#.######.#",
                      "#.................#",
-                     "###################"])
+                     "##############.####"])
 
 
 class Level2(Level):
-
+    level_name = "2"
+    PACMAN_PX_PER_SECOND = 36 * 5
+    PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
+    GHOST_PX_PER_SECOND = 36 * 5
     pacman_velocity = 6
-    pacman_boost = 3
+    pacman_boost = 6
     pacman_cooldown = 12
     speed_ability_duration = 5
     transform_ability_duration = 5
     ghosts_velocity = 5
     ghosts_slowdown = 2
 
-    level_map = Map(["###################",
-                     "#........#........#",
+    level_map = Map(["######### #########",
+                     "#........ ........#",
                      "#.##.###.#.###.##.#",
                      "#..o...........o..#",
                      "#.##.#.#####.#.##.#",
@@ -95,22 +105,22 @@ class Level2(Level):
                      "####.###.#.###.####",
                      "####.#.......#.####",
                      "####.#.## ##.#.####",
-                     "#......#$$$#......#",
+                     ".......#$$$#.......",
                      "####.#.#####.#.####",
                      "####.#.......#.####",
                      "####.#.#####.#.####",
-                     "#........#........#",
-                     "#.##.###.#.###.##.#",
                      "#..#.....@.....#..#",
                      "##.#.#.#####.#.#.##",
                      "#.o..#...#...#.o..#",
                      "#.######.#.######.#",
                      "#.................#",
-                     "###################"])
-
+                     "######### #########"])
 
 class Level3(Level):
-
+    level_name = "3"
+    PACMAN_PX_PER_SECOND = 36 * 5
+    PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
+    GHOST_PX_PER_SECOND = 36 * 5
     pacman_velocity = 8
     pacman_boost = 3
     pacman_cooldown = 15
@@ -119,7 +129,7 @@ class Level3(Level):
     ghosts_velocity = 7
     ghosts_slowdown = 3
 
-    level_map = Map(["###################",
+    level_map = Map(["#############.#####",
                      "#........#........#",
                      "#.##.###.#.###.##.#",
                      "#..o...........o..#",
@@ -139,4 +149,4 @@ class Level3(Level):
                      "#.o..#...#...#.o..#",
                      "#.######.#.######.#",
                      "#.................#",
-                     "###################"])
+                     "#############.#####"])

@@ -14,7 +14,6 @@ Structure:
         c) Ghost
 """
 
-
 ''' Creatures parameters '''
 
 # General
@@ -41,14 +40,14 @@ ghost_is_chasing = True
 
 # Window
 
-IS_FULLSCREEN = True
+IS_FULLSCREEN = False
 WINDOWED_SCREEN_WIDTH = 960
-WINDOWED_SCREEN_HEIGHT = 540
+WINDOWED_SCREEN_HEIGHT = 684
 TOP_BAR_HEIGHT_RATIO = 1 / 22
 TOP_BAR_WIDTH_RATIO = 1000 / 1920
-BOTTOM_BAR_HEIGHT_RATIO = 1 / 22
+BOTTOM_BAR_HEIGHT_RATIO = 1.25 / 22
 BOTTOM_BAR_WIDTH_RATIO = 1000 / 1920
-BOTTOM_BAR_X_RATIO = 470 / 1920
+BOTTOM_BAR_X_RATIO = 460 / 1920
 BOTTOM_BAR_Y_RATIO = 1030 / 1080
 
 LIVES_BAR_X_RATIO = BOTTOM_BAR_X_RATIO
@@ -56,78 +55,211 @@ LIVES_BAR_Y_RATIO = BOTTOM_BAR_Y_RATIO
 
 ABILITIES_BAR_X_RATIO = BOTTOM_BAR_X_RATIO
 ABILITIES_BAR_Y_RATIO = BOTTOM_BAR_Y_RATIO
-FRUITS_BAR_X_RATIO = 470 / 1920
-FRUITS_BAR_Y_RATIO = 1030 / 1920
+MANA_BAR_X_RATIO = 470 / 1920
+MANA_BAR_Y_RATIO = 1030 / 1920
+
+# GameLogic
+DESIRED_PHYSICS_TICK_TIME = 0.016
+DESIRED_AI_TICK_TIME = 0.2
+DESIRED_RENDER_TICK_TIME = 0.033
+PACMAN_PX_PER_SECOND = 36 * 5
+PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
+GHOST_PX_PER_SECOND = 36 * 5
+
+GLOBAL_TICK_RATE = 60
 
 # Game
 
 SECTOR_SIZE = 36
-LIVES_BAR_WIDTH = 350 / 1000
-ABILITIES_BAR_WIDTH = 450 / 1000
-FRUITS_BAR_WIDTH = 200 / 1000
+# 5:9:5
+LIVES_BAR_WIDTH = 5 / 19
+ABILITIES_BAR_WIDTH = 9 / 19
+MANA_BAR_WIDTH = 5 / 19
 
 GAMESCREEN_BOUNDBOX_SURF_WIDTH_RATIO = 1920 / 1920  # TODO: Add explanation
-GAMESCREEN_BOUNDBOX_SURF_HEIGHT_RATIO = 980 / 1080
-GAMESCREEN_CELL_SIZE_RATIO = 36 / 1920
+GAMESCREEN_BOUNDBOX_SURF_HEIGHT_RATIO = 900 / 1080
+GAMESCREEN_CELL_SIZE_RATIO = 36*2 / 1920
+GAMESCREEN_COLOR = ((42, 37, 105))
 
 # Animation
-ANIMATION_PERIOD = 0.1 # seconds
+ANIMATION_PERIOD = 0.1  # seconds
+
+# Debug
+HITBOX_OPACITY = 96
+HITBOX_COLOR = ((0, 255, 198))
+
+# TickTimeDebugger
+
+
 
 ''' All file paths '''
 
 # Game
 
-SCREEN_BACKGROUND_IMAGE = ...  # TODO: Add path
+SCREEN_BACKGROUND_COLOR = ((35, 24, 89))
+FONT_COLOR = (205, 245, 255)
+FONT_SIZE_RATIO = 28 / 684
 
 # PacMan
 
-pacman_hitbox_path = "../../res/hitbox/pacman.png"
-pacman_animations_paths = {"move_left": ["../../res/animations/pacman/move_left/0.png",
-                                         "../../res/animations/pacman/move_left/1.png",
-                                         "../../res/animations/pacman/move_left/2.png",
-                                         "../../res/animations/pacman/move_left/3.png"],
-                           "move_up": ["../../res/animations/pacman/move_up/0.png",
-                                       "../../res/animations/pacman/move_up/1.png",
-                                       "../../res/animations/pacman/move_up/2.png",
-                                       "../../res/animations/pacman/move_up/3.png"],
-                           "move_right": ["../../res/animations/pacman/move_right/0.png",
-                                          "../../res/animations/pacman/move_right/1.png",
-                                          "../../res/animations/pacman/move_right/2.png",
-                                          "../../res/animations/pacman/move_right/3.png"],
-                           "move_down": ["../../res/animations/pacman/move_down/0.png",
-                                         "../../res/animations/pacman/move_down/1.png",
-                                         "../../res/animations/pacman/move_down/2.png",
-                                         "../../res/animations/pacman/move_down/3.png"],
-                           "dead": ["../../res/animations/pacman/dead/0.png",
-                                    "../../res/animations/pacman/dead/1.png",
-                                    "../../res/animations/pacman/dead/2.png",
-                                    "../../res/animations/pacman/dead/3.png",
-                                    "../../res/animations/pacman/dead/4.png",
-                                    "../../res/animations/pacman/dead/5.png",
-                                    "../../res/animations/pacman/dead/6.png",
-                                    "../../res/animations/pacman/dead/7.png",
-                                    "../../res/animations/pacman/dead/8.png"]}
+PACMAN_MAPOBJECT_HITBOX_PATH = "../res/hitbox/pacman_mapobject.png"
+PACMAN_CREATURE_HITBOX_PATH = "../res/hitbox/pacman_creature.png"
+PACMAN_RED_ANIMATIONS_PATHS = {"move_left": ["../res/animations/pacman/red/move_left/0.png",
+                                         "../res/animations/pacman/red/move_left/1.png",
+                                         "../res/animations/pacman/red/move_left/2.png",
+                                         "../res/animations/pacman/red/move_left/3.png"],
+                           "move_up": ["../res/animations/pacman/red/move_up/0.png",
+                                       "../res/animations/pacman/red/move_up/1.png",
+                                       "../res/animations/pacman/red/move_up/2.png",
+                                       "../res/animations/pacman/red/move_up/3.png"],
+                           "move_right": ["../res/animations/pacman/red/move_right/0.png",
+                                          "../res/animations/pacman/red/move_right/1.png",
+                                          "../res/animations/pacman/red/move_right/2.png",
+                                          "../res/animations/pacman/red/move_right/3.png"],
+                               "move_down": ["../res/animations/pacman/red/move_down/0.png",
+                                         "../res/animations/pacman/red/move_down/1.png",
+                                         "../res/animations/pacman/red/move_down/2.png",
+                                         "../res/animations/pacman/red/move_down/3.png"],
+                               "dead": ["../res/animations/pacman/red/dead/0.png",
+                                    "../res/animations/pacman/red/dead/1.png",
+                                    "../res/animations/pacman/red/dead/2.png",
+                                    "../res/animations/pacman/red/dead/3.png",
+                                    "../res/animations/pacman/red/dead/4.png",
+                                    "../res/animations/pacman/red/dead/5.png",
+                                    "../res/animations/pacman/red/dead/6.png",
+                                    "../res/animations/pacman/red/dead/7.png",
+                                    "../res/animations/pacman/red/dead/8.png"]}
+
+PACMAN_GREEN_ANIMATIONS_PATHS = {"move_left": ["../res/animations/pacman/green/move_left/0.png",
+                                         "../res/animations/pacman/green/move_left/1.png",
+                                         "../res/animations/pacman/green/move_left/2.png",
+                                         "../res/animations/pacman/green/move_left/3.png"],
+                           "move_up": ["../res/animations/pacman/green/move_up/0.png",
+                                       "../res/animations/pacman/green/move_up/1.png",
+                                       "../res/animations/pacman/green/move_up/2.png",
+                                       "../res/animations/pacman/green/move_up/3.png"],
+                           "move_right": ["../res/animations/pacman/green/move_right/0.png",
+                                          "../res/animations/pacman/green/move_right/1.png",
+                                          "../res/animations/pacman/green/move_right/2.png",
+                                          "../res/animations/pacman/green/move_right/3.png"],
+                                 "move_down": ["../res/animations/pacman/green/move_down/0.png",
+                                         "../res/animations/pacman/green/move_down/1.png",
+                                         "../res/animations/pacman/green/move_down/2.png",
+                                         "../res/animations/pacman/green/move_down/3.png"],
+                                 "dead": ["../res/animations/pacman/green/dead/0.png",
+                                    "../res/animations/pacman/green/dead/1.png",
+                                    "../res/animations/pacman/green/dead/2.png",
+                                    "../res/animations/pacman/green/dead/3.png",
+                                    "../res/animations/pacman/green/dead/4.png",
+                                    "../res/animations/pacman/green/dead/5.png",
+                                    "../res/animations/pacman/green/dead/6.png",
+                                    "../res/animations/pacman/green/dead/7.png",
+                                    "../res/animations/pacman/green/dead/8.png"]}
+
+PACMAN_BLUE_ANIMATIONS_PATHS = {"move_left": ["../res/animations/pacman/blue/move_left/0.png",
+                                         "../res/animations/pacman/blue/move_left/1.png",
+                                         "../res/animations/pacman/blue/move_left/2.png",
+                                         "../res/animations/pacman/blue/move_left/3.png"],
+                           "move_up": ["../res/animations/pacman/blue/move_up/0.png",
+                                       "../res/animations/pacman/blue/move_up/1.png",
+                                       "../res/animations/pacman/blue/move_up/2.png",
+                                       "../res/animations/pacman/blue/move_up/3.png"],
+                           "move_right": ["../res/animations/pacman/blue/move_right/0.png",
+                                          "../res/animations/pacman/blue/move_right/1.png",
+                                          "../res/animations/pacman/blue/move_right/2.png",
+                                          "../res/animations/pacman/blue/move_right/3.png"],
+                                 "move_down": ["../res/animations/pacman/blue/move_down/0.png",
+                                         "../res/animations/pacman/blue/move_down/1.png",
+                                         "../res/animations/pacman/blue/move_down/2.png",
+                                         "../res/animations/pacman/blue/move_down/3.png"],
+                                 "dead": ["../res/animations/pacman/blue/dead/0.png",
+                                    "../res/animations/pacman/blue/dead/1.png",
+                                    "../res/animations/pacman/blue/dead/2.png",
+                                    "../res/animations/pacman/blue/dead/3.png",
+                                    "../res/animations/pacman/blue/dead/4.png",
+                                    "../res/animations/pacman/blue/dead/5.png",
+                                    "../res/animations/pacman/blue/dead/6.png",
+                                    "../res/animations/pacman/blue/dead/7.png",
+                                    "../res/animations/pacman/blue/dead/8.png"]}
+
 
 # Ghosts
 
-ghost_hitbox_path = "../../res/hitbox/ghost.png"
-pinky_animations_paths = {"move_left": ["../../res/animations/pinky/move_left/0.png",
-                                        "../../res/animations/pinky/move_left/1.png",
-                                        "../../res/animations/pinky/move_left/2.png",
-                                        "../../res/animations/pinky/move_left/3.png"],
-                          "move_up": ["../../res/animations/pinky/move_up/0.png",
-                                      "../../res/animations/pinky/move_up/1.png",
-                                      "../../res/animations/pinky/move_up/2.png",
-                                      "../../res/animations/pinky/move_up/3.png"],
-                          "move_right": ["../../res/animations/pinky/move_right/0.png",
-                                         "../../res/animations/pinky/move_right/1.png",
-                                         "../../res/animations/pinky/move_right/2.png",
-                                         "../../res/animations/pinky/move_right/3.png"],
-                          "move_down": ["../../res/animations/pinky/move_down/0.png",
-                                        "../../res/animations/pinky/move_down/1.png",
-                                        "../../res/animations/pinky/move_down/2.png",
-                                        "../../res/animations/pinky/move_down/3.png"],
-                          "dead": ["../../res/animations/pinky/dead/0.png",
-                                   "../../res/animations/pinky/dead/1.png",
-                                   "../../res/animations/pinky/dead/2.png",
-                                   "../../res/animations/pinky/dead/3.png"]}
+GHOST_MAPOBJECT_HITBOX_PATH = "../res/hitbox/ghost_mapobject.png"
+GHOST_CREATURE_HITBOX_PATH = "../res/hitbox/ghost_creature.png"
+GHOST_RED_ANIMATIONS_PATHS = {"move_left": ["../res/animations/ghost/red/move_left/0.png",
+                                        "../res/animations/ghost/red/move_left/1.png"],
+                          "move_up": ["../res/animations/ghost/red/move_up/0.png",
+                                      "../res/animations/ghost/red/move_up/1.png"],
+                          "move_right": ["../res/animations/ghost/red/move_right/0.png",
+                                         "../res/animations/ghost/red/move_right/1.png"],
+                          "move_down": ["../res/animations/ghost/red/move_down/0.png",
+                                        "../res/animations/ghost/red/move_down/1.png"],
+                          "dead": ["../res/animations/ghost/red/dead/0.png",
+                                   "../res/animations/ghost/red/dead/1.png",
+                                   "../res/animations/ghost/red/dead/2.png",
+                                   "../res/animations/ghost/red/dead/3.png"]}
+
+GHOST_GREEN_ANIMATIONS_PATHS = {"move_left": ["../res/animations/ghost/green/move_left/0.png",
+                                        "../res/animations/ghost/green/move_left/1.png"],
+                          "move_up": ["../res/animations/ghost/green/move_up/0.png",
+                                      "../res/animations/ghost/green/move_up/1.png"],
+                          "move_right": ["../res/animations/ghost/green/move_right/0.png",
+                                         "../res/animations/ghost/green/move_right/1.png"],
+                          "move_down": ["../res/animations/ghost/green/move_down/0.png",
+                                        "../res/animations/ghost/green/move_down/1.png"],
+                          "dead": ["../res/animations/ghost/green/dead/0.png",
+                                   "../res/animations/ghost/green/dead/1.png",
+                                   "../res/animations/ghost/green/dead/2.png",
+                                   "../res/animations/ghost/green/dead/3.png"]}
+
+GHOST_BLUE_ANIMATIONS_PATHS = {"move_left": ["../res/animations/ghost/blue/move_left/0.png",
+                                        "../res/animations/ghost/blue/move_left/1.png"],
+                          "move_up": ["../res/animations/ghost/blue/move_up/0.png",
+                                      "../res/animations/ghost/blue/move_up/1.png"],
+                          "move_right": ["../res/animations/ghost/blue/move_right/0.png",
+                                         "../res/animations/ghost/blue/move_right/1.png"],
+                          "move_down": ["../res/animations/ghost/blue/move_down/0.png",
+                                        "../res/animations/ghost/blue/move_down/1.png"],
+                          "dead": ["../res/animations/ghost/blue/dead/0.png",
+                                   "../res/animations/ghost/blue/dead/1.png",
+                                   "../res/animations/ghost/blue/dead/2.png",
+                                   "../res/animations/ghost/blue/dead/3.png"]}
+
+# Wall
+WALL_HITBOX_PATH = "../res/hitbox/wall.png"
+WALL_TEXTURE_PATH = "../res/textures/wall.png"
+
+# Cherry
+CHERRY_HITBOX_PATH = "../res/hitbox/wall.png"
+CHERRY_TEXTURE_PATH = "../res/textures/wall.png"
+
+# Pellet
+PELLET_HITBOX_PATH = "../res/hitbox/pellet.png"
+PELLET_TEXTURE_PATH = "../res/textures/pellet.png"
+
+# Mega pellet
+MEGAPELLET_HITBOX_PATH = "../res/hitbox/mega_pellet.png"
+MEGAPELLET_TEXTURE_PATH = "../res/textures/mega_pellet.png"
+
+# Floor
+FLOOR_HITBOX_PATH = "../res/hitbox/floor.png"
+FLOOR_TEXTURE_PATH = "../res/textures/floor.png"
+
+# Icons
+LIVES_ICON_ANIMATIONS_PATH = {"default": ["../res/icons/lives/default/0.png"]}
+BOOST_ICON_ANIMATIONS_PATH = {"default": ["../res/icons/boost/default/0.png"],
+                              "active": ["../res/icons/boost/active/0.png"],
+                              "disabled": ["../res/icons/boost/disabled/0.png"],
+                              "pushed": ["../res/icons/boost/pushed/0.png"]}
+MORPH_ICON_ANIMATIONS_PATH = {"default": ["../res/icons/morph/default/0.png"],
+                              "active": ["../res/icons/morph/active/0.png"],
+                              "disabled": ["../res/icons/morph/disabled/0.png"],
+                              "pushed": ["../res/icons/morph/pushed/0.png"]}
+MANA_ICON_ANIMATIONS_PATH = {"default": ["../res/icons/mana/default/0.png"]}
+
+# Debugger
+DEFAULT_GRAPH_SAVEPATH = "debug/graphs/ticktime.png"
+
+# Fonts
+FRANKLIN_FONT_PATH = "../res/fonts/orange kid.ttf"

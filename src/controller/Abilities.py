@@ -44,20 +44,17 @@ class SpeedAbility(Ability):
         self.pacman_velocity = pacman_vel
         self.pacman_boost = pacman_boost
         self.is_active = True
-        self.pacman.velocity = int(pacman_vel + pacman_boost)
+        self.pacman.velocity = pacman_vel + pacman_boost
 
     def deactivate(self):
         self.is_active = False
-        self.pacman.velocity = int(self.pacman_velocity)
+        self.pacman.velocity = self.pacman_velocity
 
 
 class TransformAbility(Ability):
     """ Lets player freely cycle through forms while ability is active """
 
-    def __init__(self, pacman, duration, ghosts, ghost_velocity, ghost_slowdown):
-        self.ghosts = ghosts
-        self.ghost_velocity = ghost_velocity
-        self.ghost_slowdown = ghost_slowdown
+    def __init__(self, pacman, duration):
         self.is_active = False
         super().__init__(pacman, duration)
 
@@ -66,13 +63,9 @@ class TransformAbility(Ability):
 
     def activate(self):
         self.is_active = True
-        for ghost in self.ghosts:
-            ghost.velocity -= self.ghost_slowdown
 
     def deactivate(self):
         self.is_active = False
-        for ghost in self.ghosts:
-            ghost.velocity = self.ghost_velocity
 
     def changeForm(self):
 

@@ -165,9 +165,7 @@ class Controller:
         self.speed_ability = SpeedAbility(self.pacman, self.current_level.speed_ability_duration,
                                           self.pacman.velocity, self.current_level.pacman_boost)
 
-        self.transform_ability = TransformAbility(self.pacman, self.current_level.speed_ability_duration, self.ghosts,
-                                                  self.current_level.ghosts_velocity,
-                                                  self.current_level.ghosts_slowdown)
+        self.transform_ability = TransformAbility(self.pacman, self.current_level.speed_ability_duration)
 
     def handle_events(self):
         """Get key input from player"""
@@ -198,7 +196,7 @@ class Controller:
 
                     pacman_vel = boost_tick_time * self.current_level.PACMAN_PX_PER_SECOND
                     pacman_boost = boost_tick_time * self.current_level.PACMAN_BOOST_PX_PER_SECOND
-                    self.speed_ability.run(pacman_vel, pacman_boost)
+                    self.speed_ability.run(int(pacman_vel), int(pacman_boost))
                     self.set_cooldown_timer()
 
                 elif event.key == K_2:

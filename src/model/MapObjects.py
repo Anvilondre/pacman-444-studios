@@ -6,8 +6,7 @@ from src.data import Constants
 from src.data.Constants import PELLET_VALUE
 
 
-# window = pygame.display.set_mode((200, 200))
-class MapObject():
+class MapObject:
 
     def __init__(self, coord, width, height, hitbox_path, texture):
         self.coord = coord
@@ -120,18 +119,6 @@ class MegaPellet(MapObject):
 
     def __str__(self):
         return "coord: " + str(self.coord) + "; type: MegaPellet"
-
-
-class Cherry(MapObject):
-
-    def __init__(self, coord, width=Constants.SECTOR_SIZE, height=Constants.SECTOR_SIZE,
-                 hitbox_path=Constants.CHERRY_HITBOX_PATH, texture=Constants.CHERRY_TEXTURE_PATH,
-                 value=PELLET_VALUE):
-        self.value = value
-        super().__init__(coord, width, height, hitbox_path, texture)
-
-    def __str__(self):
-        return "coord: " + str(self.coord) + "; type: Cherry"
 
 
 class Wall(MapObject):

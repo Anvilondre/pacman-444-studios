@@ -256,11 +256,25 @@ class Renderer(object):
                              (x * self.gamescreen_cell_size + self.gamescreen_surf_x, self.gamescreen_surf_y),
                              (x * self.gamescreen_cell_size + self.gamescreen_surf_x,
                               self.gamescreen_surf_y + self.gamescreen_surf_height))
+
+            font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH, 14)
+            text = font.render(str(x), 1, Constants.FONT_COLOR)
+            place = text.get_rect(topleft=(
+            x * self.gamescreen_cell_size + self.gamescreen_surf_x + self.gamescreen_cell_size / 2,
+            self.gamescreen_surf_y - self.gamescreen_cell_size / 2))
+            self.window.blit(text, place)
+
         for x in range(self.gamescreen_surf_height // self.gamescreen_cell_size + 1):
             pygame.draw.line(self.window, (255, 255, 255),
                              (self.gamescreen_surf_x, x * self.gamescreen_cell_size + self.gamescreen_surf_y),
                              (self.gamescreen_surf_x + self.gamescreen_surf_width,
                               x * self.gamescreen_cell_size + self.gamescreen_surf_y))
+
+            font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH, 14)
+            text = font.render(str(x), 1, Constants.FONT_COLOR)
+            place = text.get_rect(topleft=(self.gamescreen_surf_x - self.gamescreen_cell_size / 2,
+                                           x * self.gamescreen_cell_size + self.gamescreen_surf_y + self.gamescreen_cell_size / 4))
+            self.window.blit(text, place)
 
     def _draw_text(self, pacman, current_level):
         # TODO OPTIMIZE

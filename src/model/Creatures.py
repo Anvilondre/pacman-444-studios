@@ -380,11 +380,12 @@ class Ghost(Creature):
         if animations is None:
             animations = ResourceManager.get_animations_for(self, form)
 
+
         super().__init__(x, y, initial_location, width, height, velocity, direction,
                          form, mapobject_hitbox, creature_hitbox, animations)
         self.is_chasing = is_chasing
         self.form = self.form
-
+        self.target_coord = target_coord
     @property
     def is_chasing(self):
         return self._is_chasing

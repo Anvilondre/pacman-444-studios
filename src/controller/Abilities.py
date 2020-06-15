@@ -117,7 +117,6 @@ class TransformAbility(Ability):
 
 class IterativeTimer(object):
     """This class is an iterative single-threaded alternative for Timer class.
-
     - Call start() to start the timer. When time runs out cancel() method is automatically called.
       Thus, you can use this timer repeatedly.
     - Call update(elapsed_time) to update its internal clock. Elapsed time is time elapsed from

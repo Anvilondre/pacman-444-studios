@@ -16,8 +16,8 @@ class Creature(object):
         self.direction = direction
         self.preferred_direction = self.direction
         self.form = form
-        self.mapobject_hitbox = mapobject_hitbox #ResourceManager.create_hitbox_of(mapobject_hitbox_path, (self.width, self.height))
-        self.creature_hitbox = creature_hitbox #ResourceManager.create_hitbox_of(creature_hitbox_path, (self.width, self.height))
+        self.mapobject_hitbox = mapobject_hitbox  # ResourceManager.create_hitbox_of(mapobject_hitbox_path, (self.width, self.height))
+        self.creature_hitbox = creature_hitbox  # ResourceManager.create_hitbox_of(creature_hitbox_path, (self.width, self.height))
         self._x = 0
         self._y = 0
         self.x = x
@@ -160,7 +160,9 @@ class Creature(object):
             self._direction = value
             return
         if value not in Constants.directions:
-            raise ValueError("Direction can only take these values: " + Constants.directions.__str__() + "\nInstead, it took:", value)
+            raise ValueError(
+                "Direction can only take these values: " + Constants.directions.__str__() + "\nInstead, it took:",
+                value)
         if not isinstance(value, str):
             raise TypeError("Direction cannot be assigned to non-str object:", type(value), value)
 
@@ -190,7 +192,8 @@ class Creature(object):
             return
 
         if value not in Constants.forms:
-            raise ValueError("Form can only take these values: " + Constants.forms.__str__() + "\nInstead, it took:", value)
+            raise ValueError("Form can only take these values: " + Constants.forms.__str__() + "\nInstead, it took:",
+                             value)
         if not isinstance(value, str):
             raise TypeError("Form cannot be assigned to non-str object:", type(value), value)
 
@@ -365,7 +368,7 @@ class Ghost(Creature):
 
     def __init__(self, x, y, initial_location, width, height, velocity, direction="up", form="random",
                  mapobject_hitbox=None, creature_hitbox=None, animations=None,
-                 is_chasing=Constants.ghost_is_chasing, target_coord=None):
+                 is_chasing=Constants.ghost_is_chasing, target_coord=None, previous_target_coord=None):
 
         # FIXME Messy workaround. Width and height could have wrong values
 
@@ -380,12 +383,13 @@ class Ghost(Creature):
         if animations is None:
             animations = ResourceManager.get_animations_for(self, form)
 
-
         super().__init__(x, y, initial_location, width, height, velocity, direction,
                          form, mapobject_hitbox, creature_hitbox, animations)
         self.is_chasing = is_chasing
         self.form = self.form
         self.target_coord = target_coord
+        self.previous_target_coord = previous_target_coord
+
     @property
     def is_chasing(self):
         return self._is_chasing

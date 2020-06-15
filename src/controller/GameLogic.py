@@ -83,21 +83,21 @@ class Controller:
     def __init__(self, levels):
         self.levels = cycle(levels)
         self.game_over = \
-        self.is_playing = \
-        self.window = \
-        self.current_level = \
-        self.walls = \
-        self.pellets = \
-        self.mega_pellets = \
-        self.pacman = \
-        self.path_finder = \
-        self.ghosts = \
-        self.speed_ability = \
-        self.transform_ability = \
-        self.cooldown_timer = \
-        self.ability_is_ready = \
-        self.is_map_restart = \
-        self.renderer = None
+            self.is_playing = \
+            self.window = \
+            self.current_level = \
+            self.walls = \
+            self.pellets = \
+            self.mega_pellets = \
+            self.pacman = \
+            self.path_finder = \
+            self.ghosts = \
+            self.speed_ability = \
+            self.transform_ability = \
+            self.cooldown_timer = \
+            self.ability_is_ready = \
+            self.is_map_restart = \
+            self.renderer = None
         self.ghost_update_exec_time = \
             self.physics_update_exec_time = \
             self.render_update_exec_time = \
@@ -400,14 +400,22 @@ class Controller:
     def pacman_in_radius(self, ghost, radius=4):
         return calculate_L1(self.pacman.coord, ghost.coord) < radius * SECTOR_SIZE
 
-    def mp_finder(self):
+    def mp_finder(self, ghost):
         if len(self.mega_pellets) < self.mega_pellets_counter + 1:
             self.mega_pellets_counter = 0
         while True:
             checked_mp = self.mega_pellets[self.mega_pellets_counter]
-            self.mega_pellets_counter += 1
-            checked_mp.patrolled = True
-            return checked_mp
+            target = get_sector_coord(*checked_mp.coord)
+            if len(self.mega_pellets) <= 1:
+                return target
+            if not target == ghost.previous_target_coord or ghost.previous_target_coord is None:
+                checked_mp.patrolled = True
+                self.mega_pellets_counter += 1
+                return target
+            if len(self.mega_pellets) > self.mega_pellets_counter + 1:
+                self.mega_pellets_counter += 1
+            else:
+                self.mega_pellets_counter = 0
 
     def update_ghosts(self, tick_time, hardcore=True):
         self.counter_ai_tick_time += tick_time
@@ -420,8 +428,11 @@ class Controller:
             for i in range(len(self.ghosts)):
                 target = self.ghosts[i].target_coord
 
-                if get_sector_coord(self.ghosts[i].x + SECTOR_SIZE/2, self.ghosts[i].y + SECTOR_SIZE/2) == target:
+                if get_sector_coord(self.ghosts[i].x + SECTOR_SIZE / 2, self.ghosts[i].y + SECTOR_SIZE / 2) == target:
                     target = None
+
+                if len(self.ghosts) >= len(self.mega_pellets) and target is None:
+                    target = get_sector_coord(*self.get_random_coord(self.ghosts[i].coord, SECTOR_SIZE * 12))
 
                 if self.pacman_in_radius(self.ghosts[i], radius=4):
                     target = pacman_coord
@@ -431,15 +442,15 @@ class Controller:
 
                 else:
                     if target is None:
-                        optimal_pellet = self.mp_finder()
-                        target = get_sector_coord(*optimal_pellet.coord)
+                        target = self.mp_finder(self.ghosts[i])
 
                 self.ghosts[i].target_coord = target
-
+                self.ghosts[i].previous_target_coord = target
                 path = self.resolve_ghost_direction(self.ghosts[i], target, used_sectors, 4)  # Hardcore heuristics
 
                 if path is None:
-                    print(get_sector_coord(self.ghosts[i].x + SECTOR_SIZE / 2, self.ghosts[i].y + SECTOR_SIZE / 2), target)
+                    print(get_sector_coord(self.ghosts[i].x + SECTOR_SIZE / 2, self.ghosts[i].y + SECTOR_SIZE / 2),
+                          target)
                 if hardcore and path is not None:
                     used_sectors.extend(path)
             end_time = time.time()
@@ -520,10 +531,10 @@ class Controller:
         if self.counter_render_tick_time > DESIRED_RENDER_TICK_TIME:
             start_time = time.time()
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
-                             [], [self.pacman], self.ghosts],
-                             [self.speed_ability, self.transform_ability], self.cooldown_timer,
-                             self.current_level, tick_time, showgrid=False, show_hitboxes=False,
-                             render_mode=RenderModes.PartialRedraw_A)
+                                  [], [self.pacman], self.ghosts],
+                                 [self.speed_ability, self.transform_ability], self.cooldown_timer,
+                                 self.current_level, tick_time, showgrid=False, show_hitboxes=False,
+                                 render_mode=RenderModes.PartialRedraw_A)
             end_time = time.time()
             self.counter_render_tick_time = 0
             self.render_update_exec_time = end_time - start_time

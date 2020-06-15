@@ -109,6 +109,7 @@ class Controller:
             self.copy_mega_pellets = \
             self.counter_ai_tick_time = \
             self.mega_pellets_counter = 0
+        self.player_score = 0
         self.counter_render_tick_time = 0
         self.initial_setup()
 
@@ -135,10 +136,10 @@ class Controller:
 
     def init_level(self):
         self.current_level = next(self.levels)
-        #self.current_level = next(self.levels)
-        #self.current_level = next(self.levels)
-        #self.current_level = next(self.levels)
-        #self.current_level = next(self.levels)
+        # self.current_level = next(self.levels)
+        # self.current_level = next(self.levels)
+        # self.current_level = next(self.levels)
+        # self.current_level = next(self.levels)
 
     def parse_level(self):
         self.current_level.level_map.pre_process()
@@ -155,7 +156,7 @@ class Controller:
         self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord,
                              self.current_level.level_map.pacman_initial_coord,
                              SECTOR_SIZE, SECTOR_SIZE, int(self.current_level.PACMAN_PX_PER_SECOND * self.tick_time),
-                             cooldown=self.current_level.pacman_cooldown)
+                             cooldown=self.current_level.pacman_cooldown, score=self.player_score)
         self.ability_is_ready = True
 
     def init_ghosts(self):
@@ -351,6 +352,7 @@ class Controller:
     def update_level(self):
         """ Jumps to the next level if all pellets are picked """
         if not self.pellets and not self.mega_pellets:
+            self.player_score = self.pacman.score
             self.load_level()
             self.renderer.restart()
             self.is_playing = False
@@ -365,7 +367,7 @@ class Controller:
         self.pacman.preferred_direction = 'left'
         self.pacman.mana = pacman_mana
         self.pacman.form = forms[random.randint(0, 2)]
-        self.pacman.score = Constants.pacman_score
+        self.pacman.score = 0
         self.pacman.lives = Constants.pacman_lives
         self.pacman.cooldown = self.current_level.pacman_cooldown
         self.pacman.ghosts_eaten = 0
@@ -404,7 +406,7 @@ class Controller:
     def pacman_in_radius(self, ghost, radius=4):
         return calculate_L1(self.pacman.coord, ghost.coord) < radius * SECTOR_SIZE
 
-    def mp_finder(self, ghost):
+    def mp_finder(self, ghost):  # FIXME revision
         if len(self.mega_pellets) < self.mega_pellets_counter + 1:
             self.mega_pellets_counter = 0
         while True:
@@ -421,7 +423,7 @@ class Controller:
             else:
                 self.mega_pellets_counter = 0
 
-    def update_ghosts(self, tick_time, hardcore=True):
+    def update_ghosts(self, tick_time, hardcore=True):  # FIXME revision
         self.counter_ai_tick_time += tick_time
         if self.counter_ai_tick_time > DESIRED_AI_TICK_TIME:
             start_time = time.time()
@@ -468,8 +470,9 @@ class Controller:
 
     def check_pacman_ghost_collision(self):
         for ghost in self.ghosts:
-            if pygame.sprite.collide_mask(self.pacman.creature_hitbox, ghost.creature_hitbox):
+            if pygame.sprite.collide_mask(self.pacman.creature_hitbox, ghost.creature_hitbox) and ghost.is_alive:
                 if self.pacman.form == ghost.form:
+                    self.pacman.score += self.current_level.ghost_value
                     ghost_died(ghost)
                 elif ghost.is_alive:
                     self.pacman_die()
@@ -498,6 +501,7 @@ class Controller:
                 self.revive_pacman()
             else:
                 self.pacman.lives -= 1
+                self.player_score = 0
                 self.pacman.animation_count = 0
                 self.pacman.is_alive = False
 

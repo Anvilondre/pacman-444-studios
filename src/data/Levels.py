@@ -60,6 +60,7 @@ class Level1(Level):
     speed_ability_duration = 5
     transform_ability_duration = 5
     ghosts_velocity = 6
+    ghost_value = 100
 
     level_map = Map(["####.#########.####",
                      "#........#........#",
@@ -89,10 +90,12 @@ class Level2(Level):
     GHOST_PX_PER_SECOND = 36 * 5
     pacman_velocity = 6
     pacman_boost = 20
+    ghost_value = 200
     pacman_cooldown = 10
     speed_ability_duration = 4
     transform_ability_duration = 4
     ghosts_velocity = 6
+    ghost_value = 200
 
     level_map = Map(["##############.####",
                      "#........#........#",
@@ -114,6 +117,7 @@ class Level2(Level):
                      "#.................#",
                      "##############.####"])
 
+
 class Level3(Level):
     level_name = "3. In the middle"
     PACMAN_PX_PER_SECOND = 36 * 6
@@ -125,6 +129,7 @@ class Level3(Level):
     speed_ability_duration = 3
     transform_ability_duration = 3
     ghosts_velocity = 6
+    ghost_value = 300
 
     level_map = Map(["###################",
                      "#........#........#",
@@ -158,6 +163,7 @@ class Level4(Level):
     speed_ability_duration = 2.5
     transform_ability_duration = 2.5
     ghosts_velocity = 6
+    ghost_value = 400
 
     level_map = Map(["###################",
                      "#........#........#",
@@ -179,6 +185,7 @@ class Level4(Level):
                      "#.................#",
                      "###################"])
 
+
 class Level5(Level):
     level_name = "5. Final boss!"
     PACMAN_PX_PER_SECOND = 36 * 8
@@ -190,6 +197,7 @@ class Level5(Level):
     speed_ability_duration = 2
     transform_ability_duration = 2
     ghosts_velocity = 6
+    ghost_value = 500
 
     level_map = Map(["###################",
                      "#........#........#",

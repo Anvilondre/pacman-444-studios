@@ -1,4 +1,5 @@
 import enum
+from copy import copy
 
 import pygame
 
@@ -75,21 +76,23 @@ class Icon(object):
         self.counter += 1
 
     def copy(self):
+        """Returns a deep copy of an object."""
         copy_icon = Icon(self._animation_name, (self._width, self._height))
-        copy_icon.x = self.x
-        copy_icon.y = self.y
-        copy_icon.icon_size = self.icon_size
-        copy_icon._width = self._width
-        copy_icon._height = self._height
-        copy_icon.current_state = self.current_state  # TODO: COPY
+        copy_icon.x = copy(self.x)
+        copy_icon.y = copy(self.y)
+        copy_icon.icon_size = copy(self.icon_size)
+        copy_icon._width = copy(self._width)
+        copy_icon._height = copy(self._height)
+        copy_icon.current_state = copy(self.current_state)
         copy_icon.icon_states = self.icon_states.copy()
-        copy_icon._counter_upper_limit = self._counter_upper_limit
-        copy_icon.counter = self.counter
+        copy_icon._counter_upper_limit = copy(self._counter_upper_limit)
+        copy_icon.counter = copy(self.counter)
 
         return copy_icon
 
 
 class ChargableIcon(Icon):
+
     class States(enum.Enum):
         Default = "Default"
         ChargingActive = "ChargingActive"
@@ -99,19 +102,28 @@ class ChargableIcon(Icon):
         DischargingActive = "DischargingActive"
         DischargingInactive = "DischargingInactive"
 
+    class Modes(enum.Enum):
+        # TODO UNSTUB
+        Auto = "Auto"
+        Manual = "Manual"
+
     def __init__(self, animation_name, animations_dims, discharging_time: int, charging_time: int, x=0, y=0,
-                 icon_state="Default"):
+                 icon_state="Default", mode=Modes.Manual.value):
         super().__init__(animation_name, animations_dims, x, y, icon_state)
         self.current_state = self.States.IdleInactive.value
+
         self.discharging_time = discharging_time  # sec
+        """Indicates the time (in seconds) needed to discharge from any value."""
+
         self.charging_time = charging_time  # sec
+        """Indicates the time (in seconds) needed to charge from any value."""
+
         self.MAX_VALUE = 1
         self.MIN_VALUE = 0
-        self.current_value = 1  # [self.MIN_VALUE, self.MAX_VALUE]
+        self.current_value = 1  # belongs to [self.MIN_VALUE, self.MAX_VALUE]
 
     @property
     def current_state(self):
-        # return str(self._icon_state).replace("States.", "")
         return self._icon_state
 
     @current_state.setter
@@ -153,18 +165,14 @@ class ChargableIcon(Icon):
             if self.current_value - elapsed_time / self.discharging_time > self.MIN_VALUE:
                 self.current_value -= elapsed_time / self.discharging_time
             else:
-                #self.activate()
-                #self.start_charging()
                 self.start_idle()
                 self.current_value = self.MIN_VALUE
 
     def deactivate(self):
         self.current_state = self.current_state.replace("Active", "Inactive")
-        self._restretch_icon()
 
     def activate(self):
         self.current_state = self.current_state.replace("Inactive", "Active")
-        self._restretch_icon()
 
     def is_active(self):
         return True if "Active" in self.current_state else False
@@ -227,15 +235,15 @@ class ChargableIcon(Icon):
     def copy(self):
         copy_icon = ChargableIcon(self._animation_name, (self._width, self._height),
                                   self.discharging_time, self.charging_time)
-        copy_icon.x = self.x
-        copy_icon.y = self.y
-        copy_icon.icon_size = self.icon_size
-        copy_icon._width = self._width
-        copy_icon._height = self._height
-        copy_icon.current_state = self.current_state  # TODO: COPY
-        copy_icon.icon_states = self.icon_states  # TODO: COPY
-        copy_icon._counter_upper_limit = self._counter_upper_limit
-        copy_icon.counter = self.counter
+        copy_icon.x = copy(self.x)
+        copy_icon.y = copy(self.y)
+        copy_icon.icon_size = copy(self.icon_size)
+        copy_icon._width = copy(self._width)
+        copy_icon._height = copy(self._height)
+        copy_icon.current_state = copy(self.current_state)
+        copy_icon.icon_states = copy(self.icon_states)
+        copy_icon._counter_upper_limit = copy(self._counter_upper_limit)
+        copy_icon.counter = copy(self.counter)
         copy_icon._restretch_icon()
 
         return copy_icon
@@ -282,7 +290,7 @@ class IconsPack(object):
             elif self.align == self.Align.Center:
                 # We need to match middle of line of boxes and middle of boundrect
                 delta = (self.boundrect.x + self.boundrect.width / 2) - (
-                            self.icons[0].x + (self._n * self.box_size) / 2)
+                        self.icons[0].x + (self._n * self.box_size) / 2)
 
             elif self.align == self.Align.Right:
                 delta = (self.boundrect.x + self.boundrect.width) - (max(icon.x for icon in self.icons) + self.box_size)
@@ -369,15 +377,20 @@ class IconsPack(object):
                 self._n += 1
 
         self._rearrange()
+        self._fit_icons_into_boundrect()
 
-        # TODO: buggy when n > 10
+    def _fit_icons_into_boundrect(self):
+        # FIXME: buggy when n > 10
+
         # If icons width is greater than width of boundrect..
         icons_width = self._n * self.box_size
         if icons_width > self.boundrect.width:
+
             # ..then make every icon smaller and change its x position
             correction_ratio = self.boundrect.width / icons_width
             self.icons_size = int(self.icons_size * correction_ratio)
             self.box_size = int(self.box_size * correction_ratio)
+
             for i, icon in enumerate(self.icons):
                 icon.animations = ResourceManager.rescale_animations(icon.animations,
                                                                      (self.icons_size, self.icons_size))
@@ -397,7 +410,7 @@ class IconsPack(object):
 class AbilityIconPack(object):
 
     def __init__(self, boundrect, box_size: int = 87, align=IconsPack.Align.Left,
-                 pop_append_order=IconsPack.Order.PopRightAppendRight):
+                 pop_append_order=IconsPack.Order.PopRightAppendRight, mode=ChargableIcon.Modes.Manual.value):
 
         self.boundrect = boundrect
         self.box_size = box_size
@@ -409,82 +422,165 @@ class AbilityIconPack(object):
         self._charge_icons = None
 
         self._init_icons(boundrect, box_size, align, pop_append_order)
-        self._init_charge_icons(boundrect, box_size, align, pop_append_order)
+        self._init_charge_icons(boundrect, box_size, align, pop_append_order, mode)
+        self.activated_ability_index = None
 
-    def _init_icons(self, boundrect, box_size: int = 87, align=IconsPack.Align.Left,
-                    pop_append_order=IconsPack.Order.PopRightAppendRight):
-
+    def _init_icons(self, boundrect, box_size, align, pop_append_order):
         self._icons = IconsPack(boundrect, box_size, align, pop_append_order)
-
         self.ability_boost_icon = Icon("Boost", animations_dims=(box_size, box_size))
         self._icons.append(self.ability_boost_icon)
-
         self.ability_morph_icon = Icon("Morph", animations_dims=(box_size, box_size))
         self._icons.append(self.ability_morph_icon)
 
-    def _init_charge_icons(self, boundrect, box_size: int = 87, align=IconsPack.Align.Left,
-                           pop_append_order=IconsPack.Order.PopRightAppendRight):
-
+    def _init_charge_icons(self, boundrect, box_size, align, pop_append_order, mode):
         self._charge_icon = ChargableIcon("HorizontalBottom", animations_dims=(box_size, box_size),
-                                          discharging_time=30, charging_time=30)
-
+                                          discharging_time=30, charging_time=30, mode=mode)
+        self._charge_icon.start_idle()
+        self._charge_icon.deactivate()
         self._charge_icons = IconsPack(boundrect, box_size, align, pop_append_order)
 
         self._charge_icons.append(self._charge_icon)
         self._charge_icons.duplicate(len(self._icons.icons), self._charge_icon)
 
-    def update(self, pacman, abilities_list, prev_pacman, prev_abilities_status, elapsed_time):
+    def update(self, pacman, abilities, cooldown_timer, prev_abilities, prev_cooldown_timer, debug = False):
 
-        # FIXME: Messy workaround. Use time data from abilities instead
+        # First we find index of ability that is active at the moment.
+        # If there is no such ability, then the value of variable stays unchanged
+        # (it refers to the ability that was activated in the past)
+        # TODO: COULD BE OPTIMIZED AND SET ONCE IN IF(ACTIVATED): ...
+        for i in range(len(abilities)):
+            if abilities[i].is_active:
+                self.activated_ability_index = i
 
-        for charge_icon, ability, prev_ability_is_active \
-                in zip(self._charge_icons.icons, abilities_list, prev_abilities_status):
+        # If ability and cooldown are not active and pacman has no mana then unset activated_ability_index
+        if pacman.mana == 0 and not cooldown_timer.is_alive():
+            self.activated_ability_index = None
 
-            # We do subtraction because cooldown starts just after activation of ability
-            # (not after deactivation of ability)
-            if not self.is_cooldown_correction:
-                charge_icon.charging_time = abs(pacman.cooldown - ability.duration)
-            else:
-                pass
-            charge_icon.discharging_time = ability.duration
+        if not self.activated_ability_index is None:
+            activated_ability = abilities[self.activated_ability_index]
 
-            if pacman.lives < prev_pacman.lives and charge_icon.is_discharging():
-                print("MINIDEAD BUG")
-                # Discharge all and start charging with new cooldown correction
-                for charge_icon in self._charge_icons.icons:
-                    charge_icon.discharge()
-                    # We have to recalculate charging time because cooldown in fact starts when ability activates
-                    corrected_charging_time_left = charge_icon.charging_time - \
-                                                   charge_icon.current_value * charge_icon.discharging_time
-                    charge_icon.charging_time = corrected_charging_time_left
-                    charge_icon.start_charging()
+            activated_ability_time_elapsed = activated_ability.duration_timer.elapsed_time
+            activated_ability_duration = activated_ability.duration
+            cooldown_time_elapsed = cooldown_timer.elapsed_time
+            cooldown_duration_corrected = cooldown_timer.duration - activated_ability_duration
+        else:
+            activated_ability_time_elapsed = 0
+            activated_ability_duration = 1
+            cooldown_time_elapsed = 0
+            cooldown_duration_corrected = 1
 
-                    self.is_cooldown_correction = True
+        # DEFINE STATES
+        for ability, prev_ability in zip(abilities, prev_abilities):
 
-            if charge_icon.is_charged():
-                self.is_cooldown_correction = False
-
-            if pacman.is_alive:
-                pass
-                #charge_icon.charge()
-                #self.is_cooldown_correction = False
-
-            if ability.is_active or (charge_icon.is_charged() and pacman.mana > 0):
-                charge_icon.activate()
-            else:
-                charge_icon.deactivate()
-
-            if prev_ability_is_active == False and ability.is_active == True:
-                # Start discharging all chargebars
+            # If ability has just been activated, then start discharging all charge_icons
+            if ability.is_active and not prev_ability.is_active:
                 for charge_icon in self._charge_icons.icons:
                     charge_icon.start_discharging()
+                break
 
-            if charge_icon.is_discharged():
-                charge_icon.start_charging()
+            # Ability is working right now
+            elif ability.is_active:
+                for charge_icon in self._charge_icons.icons:
+                    charge_icon.start_discharging()
+                break
 
-            charge_icon.update(elapsed_time)
-            # print("state", charge_icon.current_state, "; charging time:", charge_icon.charging_time,
-            #       "; current value:", charge_icon.current_value)
+            # Start idle if ability was suddenly deactivated while being active
+            elif not ability.is_active and prev_ability.is_active and \
+                 not cooldown_timer.is_alive() and prev_cooldown_timer.is_alive():
+                for charge_icon in self._charge_icons.icons:
+                    charge_icon.start_idle()
+                    charge_icon.charge()
+                    charge_icon.current_value = charge_icon.current_value
+
+            # If activated_ability has become inactive, then start charging (cooldown)
+            elif (self.activated_ability_index is not None and
+                  abilities[self.activated_ability_index].is_active is False and
+                  prev_abilities[self.activated_ability_index].is_active is True):
+                # and charge_icon.is_discharged() is True
+                # and charge_icon.is_idle() is False):
+                for charge_icon in self._charge_icons.icons:
+                    charge_icon.start_charging()
+                    charge_icon.current_value = charge_icon.current_value
+
+            # Start idle if cooldown was suddenly deactivated while being active
+            elif not ability.is_active and not prev_ability.is_active and \
+                 not cooldown_timer.is_alive() and prev_cooldown_timer.is_alive():
+                for charge_icon in self._charge_icons.icons:
+                    charge_icon.start_idle()
+                    charge_icon.charge()
+                    charge_icon.current_value = charge_icon.current_value
+
+            # If cooldown is over, then start idle
+            elif not cooldown_timer.is_alive():  # charge_icon.is_charging() and charge_icon.is_charged():
+                for charge_icon in self._charge_icons.icons:
+                    charge_icon.start_idle()
+                    charge_icon.current_value = charge_icon.current_value
+
+        # DEFINE ACTIVATION STATE
+        for ability, prev_ability, charge_icon, icon in zip(abilities, prev_abilities,
+                                                            self._charge_icons.icons, self._icons.icons):
+            if ability.is_active or (charge_icon.is_charged() and pacman.mana > 0):
+                charge_icon.activate()
+                icon.current_state = "Active"
+            else:
+                charge_icon.deactivate()
+                icon.current_state = "Disabled"
+
+            if self.activated_ability_index is not None and \
+                    charge_icon is self._charge_icons.icons[self.activated_ability_index]:
+                charge_icon.activate()
+
+        # RECALCULATE AND MODIFY CURRENT VALUE
+        # Epsilon is used to round current_value to corresponding MIN/MAX VALUE during discharging/charging
+        # TODO: epsilon should be a function of variables showing current system performance.
+        #  Being a constant, it may perform badly on slow systems. Further investigation is needed.
+        epsilon = 0.0050
+        for n, charge_icon in zip(range(len(self._charge_icons.icons)), self._charge_icons.icons):
+
+            if charge_icon.is_discharging():
+                if debug:
+                    print(n, "STATE:", charge_icon.current_state, "; VAL:", charge_icon.current_value, "; DECREMENT BY:",
+                          activated_ability_time_elapsed / activated_ability_duration, "; ELAPSE:",
+                          activated_ability_time_elapsed, "; DUR:",
+                          activated_ability_duration)
+
+                potential_value = charge_icon.current_value - activated_ability_time_elapsed/activated_ability_duration
+                if potential_value > charge_icon.MIN_VALUE and activated_ability_time_elapsed >= 0:
+
+                    # Round to charge_icon.MIN_VALUE if value is in epsilon-neighbourhood of charge_icon.MIN_VALUE
+                    if charge_icon.MIN_VALUE <= potential_value <= charge_icon.MIN_VALUE + epsilon:
+                        if debug:
+                            print("FORCED ROUNDING AT", potential_value)
+                        potential_value = charge_icon.MIN_VALUE
+                    charge_icon.current_value = potential_value
+
+                else:
+                    charge_icon.current_value = charge_icon.MIN_VALUE
+
+            elif charge_icon.is_charging():
+                if debug:
+                    print(n, "STATE:", charge_icon.current_state, "; VAL:", charge_icon.current_value, "; DECREMENT BY:",
+                          cooldown_time_elapsed / cooldown_duration_corrected, "; ELAPSE:", cooldown_time_elapsed, "; DUR:",
+                          cooldown_duration_corrected)
+
+                potential_value = charge_icon.current_value + cooldown_time_elapsed/cooldown_duration_corrected
+                if potential_value < charge_icon.MAX_VALUE and cooldown_time_elapsed >= 0:
+
+                    # Round to charge_icon.MAX_VALUE if value is in epsilon-neighbourhood of charge_icon.MAX_VALUE
+                    if charge_icon.MAX_VALUE - epsilon <= potential_value <= charge_icon.MAX_VALUE:
+                        if debug:
+                            print("FORCED ROUNDING AT", potential_value)
+                        potential_value = charge_icon.MAX_VALUE
+
+                    charge_icon.current_value = potential_value
+
+                else:
+                    charge_icon.current_value = charge_icon.MAX_VALUE
+
+            elif charge_icon.is_idle():
+                if debug:
+                    print(n, "STATE:", charge_icon.current_state, "; VAL:", charge_icon.current_value)
+                    charge_icon.current_value = charge_icon.current_value
 
     def draw(self, target_surface):
         for icon in self._icons.icons + self._charge_icons.icons:

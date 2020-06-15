@@ -7,7 +7,7 @@ from src.data import Constants
 
 
 class ResourceManager(object):
-    # TODO IMPLEMENT
+
     animations = dict()
     """{"%animation_owner_class%": {"%animation_name%": %animation_dict%:, "%animation_name%": %animation_dict%, ..}}"""
 

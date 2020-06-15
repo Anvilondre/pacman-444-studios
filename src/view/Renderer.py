@@ -329,11 +329,15 @@ class Renderer(object):
     def restart(self):
         self.initial_map_render = True
 
-    def render(self, entities_list: [], abilities_list: [], current_level: Level,
+    def render(self, entities_list: [], abilities_list: [], cooldown_timer,
+               current_level: Level,
                elapsed_time: float,
                showgrid: bool = False, show_hitboxes: bool = True,
                render_mode: RenderModes = RenderModes.RedrawAll):
         """entities_list: (pellets, mega_pellets, walls, floors, cherry, pacmans, ghosts)"""
+
+        # This variable is needed for proper animation speed independent of FPS
+        self.time_elapsed_from_prev_animation_frame += elapsed_time
 
         # Unpack entities_list
         pellets, mega_pellets, walls, floors, cherry, pacmans, ghosts = entities_list
@@ -341,10 +345,8 @@ class Renderer(object):
         if self.initial_map_render:
             self.prev_pacmans = [pacman.copy() for pacman in pacmans]
             self.prev_ghosts = [ghost.copy() for ghost in ghosts]
-            self.prev_abilities_status = [ability.is_active for ability in abilities_list]
-
-        # This variable is needed for proper animation speed independent of FPS
-        self.time_elapsed_from_prev_animation_frame += elapsed_time
+            self.prev_abilities = [ability.copy() for ability in abilities_list]
+            self.prev_cooldown_timer = cooldown_timer.copy()
 
         if render_mode == RenderModes.RedrawAll:
             self._redraw_all_mapobjects(entities_list, show_hitboxes)
@@ -390,6 +392,7 @@ class Renderer(object):
             self.window.blit(surf[0], (surf[1], surf[2]))
 
         # Draw GUI
+        # TODO MOVE GUI DRAWING TO SEPARATE METHOD
         self.lives_icons.duplicate(pacmans[0].lives,
                                    duplicated_icon=Icon("Lives", animations_dims=(int(self.gamescreen_cell_size),
                                                                                   int(self.gamescreen_cell_size))))
@@ -403,8 +406,8 @@ class Renderer(object):
             for icon in icon_pack.icons:
                 icon.draw(self.window)
 
-        self.abilities_widget.update(pacmans[0], abilities_list, self.prev_pacmans[0], self.prev_abilities_status,
-                                     elapsed_time)
+        self.abilities_widget.update(pacman=pacmans[0], abilities=abilities_list, cooldown_timer=cooldown_timer,
+                                     prev_abilities=self.prev_abilities, prev_cooldown_timer=self.prev_cooldown_timer)
         self.abilities_widget.draw(self.window)
 
         # Draw Grid
@@ -415,10 +418,11 @@ class Renderer(object):
             self.time_elapsed_from_prev_animation_frame = 0
 
         if not self.initial_map_render:
-            # Update prev entities list
+            # Update prev lists
             self.prev_pacmans = [pacman.copy() for pacman in pacmans]
             self.prev_ghosts = [ghost.copy() for ghost in ghosts]
-            self.prev_abilities_status = [ability.is_active for ability in abilities_list]
+            self.prev_abilities = [ability.copy() for ability in abilities_list]
+            self.prev_cooldown_timer = cooldown_timer.copy()
 
         pygame.display.update()
 

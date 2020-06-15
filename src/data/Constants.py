@@ -76,7 +76,7 @@ LIVES_BAR_WIDTH = 5 / 19
 ABILITIES_BAR_WIDTH = 9 / 19
 MANA_BAR_WIDTH = 5 / 19
 
-GAMESCREEN_BOUNDBOX_SURF_WIDTH_RATIO = 1920 / 1920  # TODO: Add explanation
+GAMESCREEN_BOUNDBOX_SURF_WIDTH_RATIO = 1920 / 1920
 GAMESCREEN_BOUNDBOX_SURF_HEIGHT_RATIO = 900 / 1080
 GAMESCREEN_CELL_SIZE_RATIO = 36 * 2 / 1920
 GAMESCREEN_COLOR = ((42, 37, 105))
@@ -255,13 +255,13 @@ ABILITIES_CHARGEBAR_ANIMATIONS_PATH = {"Default": ["../res/icons/abilities/charg
                                        "DischargingActive": ["../res/icons/abilities/chargebar/DischargingActive/0.png"],
                                        "DischargingInactive": ["../res/icons/abilities/chargebar/DischargingInactive/0.png"]}
 BOOST_ICON_ANIMATIONS_PATH = {"Default": ["../res/icons/boost/default/0.png"],
-                              "active": ["../res/icons/boost/active/0.png"],
-                              "disabled": ["../res/icons/boost/disabled/0.png"],
-                              "pushed": ["../res/icons/boost/pushed/0.png"]}
+                              "Active": ["../res/icons/boost/active/0.png"],
+                              "Disabled": ["../res/icons/boost/disabled/0.png"],
+                              "Pushed": ["../res/icons/boost/pushed/0.png"]}
 MORPH_ICON_ANIMATIONS_PATH = {"Default": ["../res/icons/morph/default/0.png"],
-                              "active": ["../res/icons/morph/active/0.png"],
-                              "disabled": ["../res/icons/morph/disabled/0.png"],
-                              "pushed": ["../res/icons/morph/pushed/0.png"]}
+                              "Active": ["../res/icons/morph/active/0.png"],
+                              "Disabled": ["../res/icons/morph/disabled/0.png"],
+                              "Pushed": ["../res/icons/morph/pushed/0.png"]}
 MANA_ICON_ANIMATIONS_PATH = {"Default": ["../res/icons/mana/default/0.png"]}
 
 # Debugger

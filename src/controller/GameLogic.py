@@ -5,7 +5,7 @@ import time
 from itertools import cycle
 
 import pygame
-from pygame.constants import K_F1, K_SPACE
+from pygame.constants import K_F1, K_SPACE, K_f
 from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
 
 from src.controller.Abilities import SpeedAbility, TransformAbility, IterativeTimer
@@ -129,7 +129,7 @@ class Controller:
 
     def init_renderer(self):
         pygame.init()
-        self.renderer = Renderer((0, 0), is_fullscreen=False)
+        self.renderer = Renderer((0, 0), is_fullscreen=True)
 
     def init_debugger(self):
         self.ticktime_debugger = TickTimeDebugger(mode=Modes.Store)
@@ -214,7 +214,7 @@ class Controller:
                         self.set_cooldown_timer()
                     elif self.transform_ability.is_active:
                         self.transform_ability.changeForm()
-                elif event.key == K_SPACE:
+                elif event.key == K_f:
                     self.is_playing = False
 
     def set_cooldown_timer(self):
@@ -523,6 +523,7 @@ class Controller:
                 self.physics_update_exec_time = end_time - start_time
         elif self.pacman.animation_count >= 8:
             self.render_update(0.1)
+            self.renderer.render_label("WASTED", "Press \"F\" to try again.", bg_full_opacity=True)
             self.pacman.is_alive = True
             self.map_restart()
 
@@ -556,7 +557,10 @@ class Controller:
             self.cooldown_timer.update(tick_time)
 
     def run(self):
-        self.is_playing = True
+        self.is_playing = False
+        self.render_update(1 / GLOBAL_TICK_RATE)
+        self.renderer.render_label("WELCOME", "Press \"F\" to start The Game.", bg_full_opacity=False)
+        self.renderer.restart()
         clock = pygame.time.Clock()
         self.ticktime_debugger.run()
         run = True
@@ -587,7 +591,7 @@ class Controller:
                         sys.exit()
 
                     if event.type == pygame.KEYDOWN:
-                        if event.key == K_SPACE:
+                        if event.key == K_f:
                             self.is_playing = True
                             if self.is_map_restart:
                                 self.is_map_restart = False

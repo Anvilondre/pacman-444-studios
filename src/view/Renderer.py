@@ -53,6 +53,10 @@ class Renderer(object):
         else:
             self.window = pygame.display.set_mode((windowed_screen_width, windowed_screen_height))
 
+        pygame.display.set_caption("PacMan Deluxe Edition")
+        #img = pygame.image.load(Constants.WINDOW_ICON_PATH)
+        #pygame.display.set_icon(img)
+
         # Get actual window size
         self.canvas_width = pygame.display.get_surface().get_width()
         self.canvas_height = pygame.display.get_surface().get_height()
@@ -437,6 +441,28 @@ class Renderer(object):
             self.prev_ghosts = [ghost.copy() for ghost in ghosts]
             self.prev_abilities = [ability.copy() for ability in abilities_list]
             self.prev_cooldown_timer = cooldown_timer.copy()
+
+        pygame.display.update()
+
+    def render_label(self, label_str, hint_str, bg_full_opacity=False):
+        bg = ResourceManager.get_animations_for(None, "Default")
+        if bg_full_opacity:
+            self.window.blit(bg["Default"][0], (0, 0))
+        else:
+            self.window.blit(bg["Default"][1], (0, 0))
+
+        font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH,
+                                int(self.canvas_width * 100/Constants.WINDOWED_SCREEN_WIDTH))
+        gameover_text = font.render(label_str, 1, Constants.FONT_COLOR)
+        place = gameover_text.get_rect(center=(self.canvas_width/2, self.canvas_height/2))
+        self.window.blit(gameover_text, place)
+
+        font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH,
+                                int(self.canvas_width * 24/Constants.WINDOWED_SCREEN_WIDTH))
+        hint_text = font.render(hint_str, 1, Constants.FONT_COLOR)
+        place = hint_text.get_rect(center=(self.canvas_width/2,
+                                           self.canvas_height/2 + self.canvas_width*56/Constants.WINDOWED_SCREEN_WIDTH))
+        self.window.blit(hint_text, place)
 
         pygame.display.update()
 

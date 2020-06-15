@@ -264,6 +264,12 @@ MORPH_ICON_ANIMATIONS_PATH = {"Default": ["../res/icons/morph/default/0.png"],
                               "Pushed": ["../res/icons/morph/pushed/0.png"]}
 MANA_ICON_ANIMATIONS_PATH = {"Default": ["../res/icons/mana/default/0.png"]}
 
+# Game Over
+#TODO RENAME. IT"S NOT A GAME OVER
+GAMEOVER_BG_ANIMATIONS_PATH = {"Default": ["../res/backgrounds/0.png", "../res/backgrounds/1.png"]}
+# TODO MOVE TO RESOURCE MANAGER
+WINDOW_ICON_PATH = "../res/icons/window/0.png"
+
 # Debugger
 DEFAULT_GRAPH_SAVEPATH = "debug/graphs/ticktime.png"
 

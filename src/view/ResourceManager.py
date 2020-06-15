@@ -37,6 +37,10 @@ class ResourceManager(object):
         ResourceManager.animations["<class 'src.view.Widgets.ChargableIcon'>"] =\
             {"HorizontalBottom": ResourceManager.get_animations_from(Constants.ABILITIES_CHARGEBAR_ANIMATIONS_PATH)}
 
+        # FIXME DIRTY DIRTY HACK PLEASE FIX IT AND MAKE ADEQUATE IN THE FUTURE UPDATES
+        ResourceManager.animations["<class 'NoneType'>"] =\
+            {"Default": ResourceManager.get_animations_from(Constants.GAMEOVER_BG_ANIMATIONS_PATH)}
+
     @staticmethod
     def get_animations_for(object, animation_name):
         """This method returns a copy of animations dict for a class of given object"""

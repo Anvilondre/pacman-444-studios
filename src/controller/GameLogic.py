@@ -9,7 +9,7 @@ import pygame
 from pygame.constants import K_F1, K_SPACE
 from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
 
-from src.controller.Abilities import SpeedAbility, TransformAbility
+from src.controller.Abilities import SpeedAbility, TransformAbility, IterativeTimer
 from src.controller.GhostsAI import PathFinder
 from src.data import Constants
 from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
@@ -17,6 +17,7 @@ from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSIC
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
 from src.view.Renderer import Renderer, RenderModes
+from src.view.ResourceManager import ResourceManager
 
 
 def calculate_L1(point1, point2):
@@ -84,23 +85,21 @@ class Controller:
     def __init__(self, levels):
         self.levels = cycle(levels)
         self.game_over = \
-            self.is_playing = \
-            self.window = \
-            self.current_level = \
-            self.walls = \
-            self.pellets = \
-            self.mega_pellets = \
-            self.pacman = \
-            self.path_finder = \
-            self.ghosts = \
-            self.speed_ability = \
-            self.transform_ability = \
-            self.ability_timer = \
-            self.ability_is_ready = \
-            self.is_map_restart = \
-            self.mp_list = \
-            self.floors = \
-            self.renderer = None
+        self.is_playing = \
+        self.window = \
+        self.current_level = \
+        self.walls = \
+        self.pellets = \
+        self.mega_pellets = \
+        self.pacman = \
+        self.path_finder = \
+        self.ghosts = \
+        self.speed_ability = \
+        self.transform_ability = \
+        self.cooldown_timer = \
+        self.ability_is_ready = \
+        self.is_map_restart = \
+        self.renderer = None
         self.ghost_update_exec_time = \
             self.physics_update_exec_time = \
             self.render_update_exec_time = \
@@ -153,7 +152,8 @@ class Controller:
     def init_pacman(self):
         self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord,
                              self.current_level.level_map.pacman_initial_coord,
-                             SECTOR_SIZE, SECTOR_SIZE, int(self.current_level.PACMAN_PX_PER_SECOND * self.tick_time))
+                             SECTOR_SIZE, SECTOR_SIZE, int(self.current_level.PACMAN_PX_PER_SECOND * self.tick_time),
+                             cooldown=self.current_level.pacman_cooldown)
         self.ability_is_ready = True
 
     def init_ghosts(self):
@@ -169,6 +169,8 @@ class Controller:
                                           self.pacman.velocity, self.current_level.pacman_boost)
 
         self.transform_ability = TransformAbility(self.pacman, self.current_level.speed_ability_duration)
+
+        self.cooldown_timer = IterativeTimer(self.pacman.cooldown, self.set_ability_ready)  # run timer for cooldown
 
     def handle_events(self):
         """Get key input from player"""
@@ -214,23 +216,22 @@ class Controller:
 
     def set_cooldown_timer(self):
         self.ability_is_ready = False
-        self.ability_timer = Timer(self.current_level.pacman_cooldown, self.set_ability_ready)  # run timer for cooldown
-        self.ability_timer.start()
+        self.cooldown_timer = IterativeTimer(self.pacman.cooldown, self.set_ability_ready)  # run timer for cooldown
+        self.cooldown_timer.start()
 
     def set_ability_ready(self):
         self.ability_is_ready = True
 
     def deactivate_active_ability(self):
-        if self.ability_timer is not None and self.ability_timer.is_alive:
+        if self.cooldown_timer is not None and self.cooldown_timer.is_alive():
             self.ability_is_ready = True
 
             if self.transform_ability.is_active:
                 self.transform_ability.deactivate()
-
             else:
                 self.speed_ability.deactivate()
 
-            self.ability_timer.cancel()
+            self.cooldown_timer.cancel()
 
     def collides_wall(self, creature):
         for wall in self.walls:
@@ -364,6 +365,7 @@ class Controller:
         self.pacman.form = forms[random.randint(0, 2)]
         self.pacman.score = Constants.pacman_score
         self.pacman.lives = Constants.pacman_lives
+        self.pacman.cooldown = self.current_level.pacman_cooldown
         self.pacman.ghosts_eaten = 0
         self.init_abilities()
         for ghost in self.ghosts:
@@ -515,16 +517,26 @@ class Controller:
         print("Time Lapsed = {0}:{1}:{2}".format(int(hours), int(mins), sec))
 
     def render_update(self, tick_time):
+
         self.counter_render_tick_time += tick_time
         if self.counter_render_tick_time > DESIRED_RENDER_TICK_TIME:
             start_time = time.time()
             self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
-                                  [], [self.pacman], self.ghosts], self.current_level,
-                                 self.counter_render_tick_time, showgrid=False, show_hitboxes=False,
-                                 render_mode=RenderModes.PartialRedraw_A)
+                             [], [self.pacman], self.ghosts],
+                             [self.speed_ability, self.transform_ability], self.cooldown_timer,
+                             self.current_level, tick_time, showgrid=False, show_hitboxes=False,
+                             render_mode=RenderModes.PartialRedraw_A)
             end_time = time.time()
             self.counter_render_tick_time = 0
             self.render_update_exec_time = end_time - start_time
+
+    def abilities_update(self, tick_time):
+        if self.speed_ability:
+            self.speed_ability.update(tick_time)
+        if self.transform_ability:
+            self.transform_ability.update(tick_time)
+        if self.cooldown_timer:
+            self.cooldown_timer.update(tick_time)
 
     def run(self):
         self.is_playing = True
@@ -543,6 +555,8 @@ class Controller:
                 self.physics_update(self.tick_time)
                 if self.pacman.is_alive:
                     self.update_ghosts(self.tick_time, hardcore=True)
+                self.abilities_update(self.tick_time)
+
                 self.update_level()
                 if not self.is_map_restart:
                     self.render_update(self.tick_time)

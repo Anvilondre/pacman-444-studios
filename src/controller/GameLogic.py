@@ -3,7 +3,6 @@ import random
 import sys
 import time
 from itertools import cycle
-from threading import Timer
 
 import pygame
 from pygame.constants import K_F1, K_SPACE
@@ -17,7 +16,6 @@ from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSIC
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
 from src.view.Renderer import Renderer, RenderModes
-from src.view.ResourceManager import ResourceManager
 
 
 def calculate_L1(point1, point2):

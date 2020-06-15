@@ -60,7 +60,6 @@ class Level1(Level):
     speed_ability_duration = 5
     transform_ability_duration = 5
     ghosts_velocity = 6
-    ghosts_slowdown = 0
 
     level_map = Map(["##############.####",
                      "#........#........#",
@@ -71,7 +70,7 @@ class Level1(Level):
                      "####.###.#.###.####",
                      "####.#.......#.####",
                      "####.#.## ##.#.####",
-                     ".......# $ #.......",
+                     ".......#$.$#.......",
                      "####.#.#####.#.####",
                      "####.#.......#.####",
                      "####.#.#####.#.####",
@@ -94,7 +93,6 @@ class Level2(Level):
     speed_ability_duration = 5
     transform_ability_duration = 5
     ghosts_velocity = 5
-    ghosts_slowdown = 2
 
     level_map = Map(["######### #########",
                      "#........ ........#",
@@ -127,7 +125,6 @@ class Level3(Level):
     speed_ability_duration = 5
     transform_ability_duration = 5
     ghosts_velocity = 7
-    ghosts_slowdown = 3
 
     level_map = Map(["#############.#####",
                      "#........#........#",

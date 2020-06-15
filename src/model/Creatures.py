@@ -365,7 +365,7 @@ class Ghost(Creature):
 
     def __init__(self, x, y, initial_location, width, height, velocity, direction="up", form="random",
                  mapobject_hitbox=None, creature_hitbox=None, animations=None,
-                 is_chasing=Constants.ghost_is_chasing):
+                 is_chasing=Constants.ghost_is_chasing, target_coord=None):
 
         # FIXME Messy workaround. Width and height could have wrong values
 

@@ -14,8 +14,7 @@ class Map:
             self.floors = \
             self.hash_map = \
             self.pacman_initial_coord = \
-            self.ghosts_initial_coords = \
-            self.linked_list = None
+            self.ghosts_initial_coords = 0
 
     def pre_process(self):
         pellets = []
@@ -23,7 +22,6 @@ class Map:
         walls = []
         floors = []
         hash_map = {}
-        linked_list = {}
         pacman_initial_coord = (0, 0)
         ghosts_initial_coords = []
         for x in range(self.width):
@@ -67,7 +65,6 @@ class Map:
         self.hash_map = hash_map
         self.pacman_initial_coord = pacman_initial_coord
         self.ghosts_initial_coords = ghosts_initial_coords
-        self.linked_list = linked_list
 
     def get_object_from_coord(self, x, y):
         return self.hash_map[(x, y)]

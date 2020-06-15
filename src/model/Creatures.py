@@ -412,13 +412,13 @@ class Ghost(Creature):
                  mapobject_hitbox=Constants.GHOST_MAPOBJECT_HITBOX_PATH,
                  creature_hitbox=Constants.GHOST_CREATURE_HITBOX_PATH,
                  animations=Constants.GHOST_RED_ANIMATIONS_PATHS,
-                 is_chasing=Constants.ghost_is_chasing):
+                 is_chasing=Constants.ghost_is_chasing, target_coord = None):
         super().__init__(x, y, initial_location, width, height, velocity, direction,
                          Constants.forms[random.randint(0, 2)] if form == "random" else form,
                          mapobject_hitbox, creature_hitbox, animations)
         self.is_chasing = is_chasing
         self.form = self.form
-
+        self.target_coord = target_coord
     @property
     def is_chasing(self):
         return self._is_chasing

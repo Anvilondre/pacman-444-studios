@@ -44,7 +44,6 @@ def revive_ghost(ghost):
 
 
 def ghost_died(ghost):  # TODO: Animations
-    # print("GHOST DIE")
     ghost.is_alive = False
 
 
@@ -99,6 +98,8 @@ class Controller:
             self.ability_timer = \
             self.ability_is_ready = \
             self.is_map_restart = \
+            self.mp_list = \
+            self.floors = \
             self.renderer = None
         self.ghost_update_exec_time = \
             self.physics_update_exec_time = \
@@ -110,7 +111,8 @@ class Controller:
             self.copy_pellets = \
             self.copy_mega_pellets = \
             self.counter_ai_tick_time = \
-            self.counter_render_tick_time = 0
+            self.mega_pellets_counter = 0
+        self.counter_render_tick_time = 0
         self.initial_setup()
 
     def initial_setup(self):
@@ -140,6 +142,7 @@ class Controller:
     def parse_level(self):
         self.current_level.level_map.pre_process()
         self.walls = self.current_level.level_map.walls
+        self.floors = self.current_level.level_map.floors
         self.pellets = self.current_level.level_map.pellets
         self.mega_pellets = self.current_level.level_map.mega_pellets
         self.map_width = self.current_level.level_map.width * SECTOR_SIZE
@@ -369,6 +372,12 @@ class Controller:
             ghost.is_alive = True
         self.is_playing = False
 
+    def get_random_coord(self, ghost_coord, radius):
+        r_c = random.choice(self.floors).coord
+        if calculate_L1(r_c, ghost_coord) > radius:
+            return r_c
+        return self.get_random_coord(ghost_coord, radius)
+
     def resolve_ghost_direction(self, ghost, pacman_coord, used_sectors=[], used_val=0):
         ghost_coord = get_sector_coord(ghost.x + SECTOR_SIZE / 2, ghost.y + SECTOR_SIZE / 2)
         ghost_init_coord = get_sector_coord(ghost.initial_location[0] + ghost.width / 2, ghost.initial_location[1] +
@@ -391,39 +400,55 @@ class Controller:
     def pacman_in_radius(self, ghost, radius=4):
         return calculate_L1(self.pacman.coord, ghost.coord) < radius * SECTOR_SIZE
 
+    def mp_finder(self):
+        if len(self.mega_pellets) < self.mega_pellets_counter + 1:
+            self.mega_pellets_counter = 0
+        while True:
+            checked_mp = self.mega_pellets[self.mega_pellets_counter]
+            self.mega_pellets_counter += 1
+            checked_mp.patrolled = True
+            return checked_mp
+            if len(self.mega_pellets) > self.mega_pellets_counter + 1:
+                self.mega_pellets_counter += 1
+
     def update_ghosts(self, tick_time, hardcore=True):
         self.counter_ai_tick_time += tick_time
         if self.counter_ai_tick_time > DESIRED_AI_TICK_TIME:
             start_time = time.time()
             pacman_coord = get_sector_coord(self.pacman.x + self.pacman.width / 2,
                                             self.pacman.y + self.pacman.height / 2)
-
-            m_pellets = self.mega_pellets.copy()
-
             used_sectors = []
 
-            for ghost in self.ghosts:
-                ghost.is_chasing = self.pacman_in_radius(ghost)
-                if ghost.is_chasing or not m_pellets:
-                    target = pacman_coord
-                else:
-                    optimal_pellet = get_closed_mp(m_pellets, ghost.coord)
-                    m_pellets.remove(optimal_pellet)
-                    target = get_sector_coord(*optimal_pellet.coord)
+            for i in range(len(self.ghosts)):
+                target = self.ghosts[i].target_coord
+                if get_sector_coord(self.ghosts[i].x + SECTOR_SIZE/2, self.ghosts[i].y + SECTOR_SIZE/2) == self.ghosts[i].target_coord:
+                    self.ghosts[i].target_coord = None
 
-                path = self.resolve_ghost_direction(ghost, target, used_sectors, 4)  # Hardcore heuristics
+                if self.pacman_in_radius(self.ghosts[i], 6):
+                    target = pacman_coord
+
+                if i >= len(self.mega_pellets) and self.ghosts[i].target_coord is None:
+                    target = get_sector_coord(*self.get_random_coord(self.ghosts[i].coord, SECTOR_SIZE * 12))
+                else:
+                    if self.ghosts[i].target_coord is None and self.ghosts[i].target_coord != pacman_coord:
+                        optimal_pellet = self.mp_finder()
+                        target = get_sector_coord(*optimal_pellet.coord)
+
+                target_coord = (target[0] * SECTOR_SIZE, target[1] * SECTOR_SIZE)
+                if self.is_off_map(target_coord):
+                    target = get_sector_coord(*self.get_random_coord(self.ghosts[i].coord, SECTOR_SIZE * 12))
+                self.ghosts[i].target_coord = target
+
+                path = self.resolve_ghost_direction(self.ghosts[i], target, used_sectors, 4)  # Hardcore heuristics
                 if hardcore and path is not None:
                     used_sectors.extend(path)
-
             end_time = time.time()
             self.ghost_update_exec_time = end_time - start_time
-            # self.time_convert(self.ghost_update_exec_time)
             self.counter_ai_tick_time = 0
 
     def move_ghosts(self, counter_physics_tick_time):
         for ghost in self.ghosts:
             ghost.velocity = int(self.current_level.GHOST_PX_PER_SECOND * counter_physics_tick_time)
-            # print("GHOST: " + str(ghost.velocity))
             self.move_creature(ghost)
 
     def check_pacman_ghost_collision(self):  # TODO: Change hitbox
@@ -440,7 +465,7 @@ class Controller:
                 self.pacman.score += pellet.value
                 self.pellets.remove(pellet)
 
-    def check_mega_pellet_collision(self):  # TODO: Change hitbox
+    def check_mega_pellet_collision(self):
         for mega_pellet in self.mega_pellets:
             if pygame.sprite.collide_mask(self.pacman.mapobject_hitbox, mega_pellet.hitbox):
                 self.pacman.score += mega_pellet.value
@@ -478,6 +503,7 @@ class Controller:
                 end_time = time.time()
                 self.physics_update_exec_time = end_time - start_time
         elif self.pacman.animation_count >= 8:
+            self.render_update(0.1)
             self.pacman.is_alive = True
             self.map_restart()
 
@@ -516,7 +542,7 @@ class Controller:
                 self.handle_events()
                 self.physics_update(self.tick_time)
                 if self.pacman.is_alive:
-                    self.update_ghosts(self.tick_time, hardcore=False)
+                    self.update_ghosts(self.tick_time, hardcore=True)
                 self.update_level()
                 if not self.is_map_restart:
                     self.render_update(self.tick_time)
@@ -535,5 +561,4 @@ class Controller:
                             if self.is_map_restart:
                                 self.is_map_restart = False
                                 self.renderer.restart()
-
         pygame.quit()

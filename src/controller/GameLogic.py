@@ -84,33 +84,36 @@ class Controller:
     def __init__(self, levels):
         self.levels = cycle(levels)
         self.game_over = \
-            self.is_playing = \
-            self.window = \
-            self.current_level = \
-            self.walls = \
-            self.pellets = \
-            self.mega_pellets = \
-            self.pacman = \
-            self.path_finder = \
-            self.ghosts = \
-            self.speed_ability = \
-            self.transform_ability = \
-            self.cooldown_timer = \
-            self.ability_is_ready = \
-            self.is_map_restart = \
-            self.renderer = None
+        self.is_playing = \
+        self.window = \
+        self.current_level = \
+        self.walls = \
+        self.pellets = \
+        self.mega_pellets = \
+        self.teleports = \
+        self.pacman = \
+        self.path_finder = \
+        self.ghosts = \
+        self.speed_ability = \
+        self.transform_ability = \
+        self.cooldown_timer = \
+        self.ability_is_ready = \
+        self.is_map_restart = \
+        self.renderer = \
         self.ghost_update_exec_time = \
-            self.physics_update_exec_time = \
-            self.render_update_exec_time = \
-            self.counter_physics_tick_time = \
-            self.tick_time = \
-            self.map_width = \
-            self.map_height = \
-            self.copy_pellets = \
-            self.copy_mega_pellets = \
-            self.counter_ai_tick_time = \
-            self.mega_pellets_counter = 0
-        self.player_score = 0
+        self.physics_update_exec_time = \
+        self.render_update_exec_time = \
+        self.counter_physics_tick_time = \
+        self.tick_time = \
+        self.map_width = \
+        self.map_height = \
+        self.copy_pellets = \
+        self.copy_mega_pellets = \
+        self.counter_ai_tick_time = \
+        self.mega_pellets_counter = \
+        self.player_score = \
+        self.ticktime_debugger = \
+        self.floors = \
         self.counter_render_tick_time = 0
         self.initial_setup()
 
@@ -118,10 +121,6 @@ class Controller:
         self.game_over = False
         self.init_renderer()
         self.init_debugger()
-        #self.current_level = next(self.levels)
-        #self.current_level = next(self.levels)
-        #self.current_level = next(self.levels)
-        #self.current_level = next(self.levels)
         self.load_level()
 
     def load_level(self):
@@ -134,7 +133,7 @@ class Controller:
 
     def init_renderer(self):
         pygame.init()
-        self.renderer = Renderer((0, 0), is_fullscreen=True)
+        self.renderer = Renderer((0, 0), is_fullscreen=False)
 
     def init_debugger(self):
         self.ticktime_debugger = TickTimeDebugger(mode=Modes.Store)
@@ -152,6 +151,7 @@ class Controller:
         self.map_height = self.current_level.level_map.height * SECTOR_SIZE
         self.copy_pellets = copy.copy(self.pellets)
         self.copy_mega_pellets = copy.copy(self.mega_pellets)
+        self.teleports = self.current_level.level_map.teleports
 
     def init_pacman(self):
         self.pacman = PacMan(*self.current_level.level_map.pacman_initial_coord,
@@ -437,6 +437,8 @@ class Controller:
             used_sectors = []
 
             for i in range(len(self.ghosts)):
+                if get_sector_coord(self.ghosts[i].x + SECTOR_SIZE / 2, self.ghosts[i].y + SECTOR_SIZE / 2) in self.teleports:
+                    continue
                 target = self.ghosts[i].target_coord
 
                 if get_sector_coord(self.ghosts[i].x + SECTOR_SIZE / 2, self.ghosts[i].y + SECTOR_SIZE / 2) == target:

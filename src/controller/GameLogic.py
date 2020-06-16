@@ -437,9 +437,12 @@ class Controller:
             used_sectors = []
 
             for i in range(len(self.ghosts)):
-                if get_sector_coord(self.ghosts[i].x + SECTOR_SIZE / 2, self.ghosts[i].y + SECTOR_SIZE / 2) in self.teleports:
-                    continue
                 target = self.ghosts[i].target_coord
+
+                if get_sector_coord(self.ghosts[i].x + SECTOR_SIZE / 2, self.ghosts[i].y + SECTOR_SIZE / 2) in self.teleports:
+                    if target in self.teleports:
+                        self.ghosts[i].target_coord = None
+                    continue
 
                 if get_sector_coord(self.ghosts[i].x + SECTOR_SIZE / 2, self.ghosts[i].y + SECTOR_SIZE / 2) == target:
                     target = None

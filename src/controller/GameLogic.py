@@ -133,7 +133,7 @@ class Controller:
 
     def init_renderer(self):
         pygame.init()
-        self.renderer = Renderer((0, 0), is_fullscreen=False)
+        self.renderer = Renderer(map_dimensions=(0, 0), is_fullscreen=False)
 
     def init_debugger(self):
         self.ticktime_debugger = TickTimeDebugger(mode=Modes.Store)
@@ -567,7 +567,7 @@ class Controller:
         self.is_playing = False
 
         self.render_update(1 / GLOBAL_TICK_RATE)
-        self.renderer.render_label("WELCOME", "Press \"F\" to start The Game.", bg_full_opacity=False)
+        self.renderer.render_label("WELCOME", "Press \"F\" to start.", bg_full_opacity=True)
         self.renderer.restart()
 
         clock = pygame.time.Clock()

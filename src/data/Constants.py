@@ -59,9 +59,9 @@ MANA_BAR_X_RATIO = 470 / 1920
 MANA_BAR_Y_RATIO = 1030 / 1920
 
 # GameLogic
-DESIRED_PHYSICS_TICK_TIME = 0.001
+DESIRED_PHYSICS_TICK_TIME = 0.005
 DESIRED_AI_TICK_TIME = 0.05
-DESIRED_RENDER_TICK_TIME = 0.001
+DESIRED_RENDER_TICK_TIME = 0.005
 PACMAN_PX_PER_SECOND = 36 * 5
 PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
 GHOST_PX_PER_SECOND = 36 * 5
@@ -264,10 +264,9 @@ MORPH_ICON_ANIMATIONS_PATH = {"Default": ["../res/icons/morph/default/0.png"],
                               "Pushed": ["../res/icons/morph/pushed/0.png"]}
 MANA_ICON_ANIMATIONS_PATH = {"Default": ["../res/icons/mana/default/0.png"]}
 
-# Game Over
-#TODO RENAME. IT"S NOT A GAME OVER
-GAMEOVER_BG_ANIMATIONS_PATH = {"Default": ["../res/backgrounds/0.png", "../res/backgrounds/1.png"]}
-# TODO MOVE TO RESOURCE MANAGER
+# Background
+BACKGROUND_ANIMATIONS_PATH = {"Default": ["../res/backgrounds/0.png", "../res/backgrounds/1.png"]}
+
 WINDOW_ICON_PATH = "../res/icons/window/0.png"
 
 # Debugger

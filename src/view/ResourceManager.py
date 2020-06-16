@@ -1,3 +1,4 @@
+import enum
 import os
 from copy import copy
 
@@ -9,7 +10,15 @@ from src.data import Constants
 class ResourceManager(object):
 
     animations = dict()
-    """{"%animation_owner_class%": {"%animation_name%": %animation_dict%:, "%animation_name%": %animation_dict%, ..}}"""
+
+    class AnimationsOwners(enum.Enum):
+        PacMan = "PacMan"
+        Ghost = "Ghost"
+        Icon = "Icon"
+        ChargableIcon = "ChargableIcon"
+        Background = "Background"
+
+    """{"%animation_owner%": {"%animation_name%": %animation_dict%:, "%animation_name%": %animation_dict%, ..}}"""
 
     @staticmethod
     def load_resources():
@@ -18,35 +27,35 @@ class ResourceManager(object):
     @staticmethod
     def load_animations():
 
-        ResourceManager.animations["<class 'src.model.Creatures.PacMan'>"] = \
+        ResourceManager.animations[ResourceManager.AnimationsOwners.PacMan] = \
             {"Red": ResourceManager.get_animations_from(Constants.PACMAN_RED_ANIMATIONS_PATHS),
              "Green": ResourceManager.get_animations_from(Constants.PACMAN_GREEN_ANIMATIONS_PATHS),
              "Blue": ResourceManager.get_animations_from(Constants.PACMAN_BLUE_ANIMATIONS_PATHS)}
 
-        ResourceManager.animations["<class 'src.model.Creatures.Ghost'>"] = \
+        ResourceManager.animations[ResourceManager.AnimationsOwners.Ghost] = \
             {"Red": ResourceManager.get_animations_from(Constants.GHOST_RED_ANIMATIONS_PATHS),
              "Green": ResourceManager.get_animations_from(Constants.GHOST_GREEN_ANIMATIONS_PATHS),
              "Blue": ResourceManager.get_animations_from(Constants.GHOST_BLUE_ANIMATIONS_PATHS)}
 
-        ResourceManager.animations["<class 'src.view.Widgets.Icon'>"] =\
+        ResourceManager.animations[ResourceManager.AnimationsOwners.Icon] =\
             {"Lives": ResourceManager.get_animations_from(Constants.LIVES_ICON_ANIMATIONS_PATH),
              "Boost": ResourceManager.get_animations_from(Constants.BOOST_ICON_ANIMATIONS_PATH),
              "Morph": ResourceManager.get_animations_from(Constants.MORPH_ICON_ANIMATIONS_PATH),
              "Mana": ResourceManager.get_animations_from(Constants.MANA_ICON_ANIMATIONS_PATH)}
 
-        ResourceManager.animations["<class 'src.view.Widgets.ChargableIcon'>"] =\
+        ResourceManager.animations[ResourceManager.AnimationsOwners.ChargableIcon] =\
             {"HorizontalBottom": ResourceManager.get_animations_from(Constants.ABILITIES_CHARGEBAR_ANIMATIONS_PATH)}
 
         # FIXME DIRTY DIRTY HACK PLEASE FIX IT AND MAKE ADEQUATE IN THE FUTURE UPDATES
-        ResourceManager.animations["<class 'NoneType'>"] =\
-            {"Default": ResourceManager.get_animations_from(Constants.GAMEOVER_BG_ANIMATIONS_PATH)}
+        ResourceManager.animations[ResourceManager.AnimationsOwners.Background] =\
+            {"Default": ResourceManager.get_animations_from(Constants.BACKGROUND_ANIMATIONS_PATH)}
 
     @staticmethod
-    def get_animations_for(object, animation_name):
+    def get_animations_for(animation_owner, animation_name):
         """This method returns a copy of animations dict for a class of given object"""
         animations_copy = dict()
 
-        for animation_type, animation_frame in ResourceManager.animations[str(type(object))][animation_name].items():
+        for animation_type, animation_frame in ResourceManager.animations[animation_owner][animation_name].items():
 
             # Create list of images which are located at given path (at animations_paths)
             animation_frames_list = []

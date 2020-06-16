@@ -6,27 +6,37 @@ import pygame
 from src.view.ResourceManager import ResourceManager
 
 
-class Icon(object):
-    """This class represents an icon.
-    animation_name stands for type of animation for Icon (e.g. "Default", "Lives", "Pause", etc)
-    that specifies a folder from which animation frames are loaded."""
+class Sprite(object):
+    """This class represents a sprite with animation support.
 
-    def __init__(self, animation_name, animations_dims, x=0, y=0, icon_state="Default"):
-        self.x = x
-        self.y = y
-        self._animation_name = animation_name
-        self.animations = ResourceManager.get_animations_for(self, self._animation_name)
+    - animations_owner is a property that defines the owner of animations sprite sheet (e.g. PacMan, Icon, Ghostm etc).
+    - animation_name stands for type of animation for Sprite that specifies a folder from which
+      animation frames areloaded (e.g. "Default", "Lives", "Pause", etc)."""
+
+    def __init__(self, animations_owner: ResourceManager.AnimationsOwners,
+                 animations_name, animations_dims, x=0, y=0, sprite_state="Default"):
+
+        self.x = x  # px
+        self.y = y  # px
+        self._animations_owner = animations_owner
+        self._animations_name = animations_name
+        self.animations = ResourceManager.get_animations_for(animations_owner, self._animations_name)
         self.animations = ResourceManager.rescale_animations(self.animations, animations_dims)
-        self._width = 0
-        self._height = 0
-        self.icon_size = self.animations["Default"][0].get_rect().width
-        self.current_state = icon_state
-        self.icon_states = list(self.animations.keys())
+        """Dictionary of lists of animation frames."""
+        self.width = 0
+        self.height = 0
+        self.sprite_size = self.animations["Default"][0].get_rect().width
+
+        # HACK:
+        self.current_state = sprite_state
+
+        self.sprite_states = list(self.animations.keys())
         self._counter_upper_limit = len(self.animations[self.current_state]) - 1
         self.counter = 0
 
     def image(self):
-        self.image = self.animations[self.current_state][self.counter]
+        """Returns current animation frame"""
+        return self.animations[self.current_state][self.counter]
 
     @property
     def counter(self):
@@ -40,32 +50,32 @@ class Icon(object):
             self._counter = 0
 
     @property
-    def icon_size(self):
-        return self._icon_size
+    def sprite_size(self):
+        return self._sprite_size
 
-    @icon_size.setter
-    def icon_size(self, value):
+    @sprite_size.setter
+    def sprite_size(self, value):
         if int(value) >= 0:
             self.animations = ResourceManager.rescale_animations(self.animations, (int(value), int(value)))
-            self._icon_size = int(value)
-            self._width = self._icon_size
-            self._height = self._icon_size
+            self._sprite_size = int(value)
+            self.width = self._sprite_size
+            self.height = self._sprite_size
         else:
-            raise ValueError("Cannot assign icon_size to " + str(value))
+            raise ValueError("Cannot assign sprite_size to " + str(value))
 
     @property
     def current_state(self):
-        return self._icon_state
+        return self._sprite_state
 
     @current_state.setter
     def current_state(self, value):
         if value in self.animations.keys():
-            self._icon_state = value
+            self._sprite_state = value
             self._counter_upper_limit = len(self.animations[self.current_state]) - 1
         else:
-            raise ValueError("Cannot assign icon_state to " + str(value) +
+            raise ValueError("Cannot assign sprite_state to " + str(value) +
                              ". Unable to find appropriate animation type amongst these: " +
-                             str(self.icon_states))
+                             str(self.sprite_states))
 
     def rescale_current_animations(self, size):
         self.animations[self.current_state][self.counter] = pygame.transform.scale(
@@ -77,21 +87,21 @@ class Icon(object):
 
     def copy(self):
         """Returns a deep copy of an object."""
-        copy_icon = Icon(self._animation_name, (self._width, self._height))
-        copy_icon.x = copy(self.x)
-        copy_icon.y = copy(self.y)
-        copy_icon.icon_size = copy(self.icon_size)
-        copy_icon._width = copy(self._width)
-        copy_icon._height = copy(self._height)
-        copy_icon.current_state = copy(self.current_state)
-        copy_icon.icon_states = self.icon_states.copy()
-        copy_icon._counter_upper_limit = copy(self._counter_upper_limit)
-        copy_icon.counter = copy(self.counter)
+        copy_sprite = Sprite(self._animations_owner, self._animations_name, (self.width, self.height))
+        copy_sprite.x = copy(self.x)
+        copy_sprite.y = copy(self.y)
+        copy_sprite.sprite_size = copy(self.sprite_size)
+        copy_sprite.width = copy(self.width)
+        copy_sprite.height = copy(self.height)
+        copy_sprite.current_state = copy(self.current_state)
+        copy_sprite.sprite_states = self.sprite_states.copy()
+        copy_sprite._counter_upper_limit = copy(self._counter_upper_limit)
+        copy_sprite.counter = copy(self.counter)
 
-        return copy_icon
+        return copy_sprite
 
 
-class ChargableIcon(Icon):
+class ChargableSprite(Sprite):
 
     class States(enum.Enum):
         Default = "Default"
@@ -107,9 +117,10 @@ class ChargableIcon(Icon):
         Auto = "Auto"
         Manual = "Manual"
 
-    def __init__(self, animation_name, animations_dims, discharging_time: int, charging_time: int, x=0, y=0,
-                 icon_state="Default", mode=Modes.Manual.value):
-        super().__init__(animation_name, animations_dims, x, y, icon_state)
+    def __init__(self, animations_owner: ResourceManager.AnimationsOwners, animations_name: str, animations_dims: (),
+                 discharging_time: int, charging_time: int, x=0, y=0,
+                 sprite_state="Default", mode=Modes.Manual.value):
+        super().__init__(animations_owner, animations_name, animations_dims, x, y, sprite_state)
         self.current_state = self.States.IdleInactive.value
 
         self.discharging_time = discharging_time  # sec
@@ -124,17 +135,17 @@ class ChargableIcon(Icon):
 
     @property
     def current_state(self):
-        return self._icon_state
+        return self._sprite_state
 
     @current_state.setter
     def current_state(self, value):
         if value in self.animations.keys():
-            self._icon_state = value
+            self._sprite_state = value
             self._counter_upper_limit = len(self.animations[self.current_state]) - 1
         else:
-            raise ValueError("Cannot assign icon_state to " + str(value) +
+            raise ValueError("Cannot assign sprite_state to " + str(value) +
                              ". Unable to find appropriate animation type amongst these: " +
-                             str(self.icon_states))
+                             str(self.sprite_states))
 
     @property
     def current_value(self):
@@ -144,7 +155,7 @@ class ChargableIcon(Icon):
     def current_value(self, value):
         if self.MIN_VALUE <= value <= self.MAX_VALUE:
             self._current_value = value
-            self._restretch_icon()
+            self._restretch_sprite()
         else:
             raise ValueError("current_value cannot be assigned to number outside ["
                              + str(self.MIN_VALUE) + "; " + str(self.MAX_VALUE) + "] interval: ",
@@ -224,29 +235,30 @@ class ChargableIcon(Icon):
         else:
             self.current_state = self.States.IdleInactive.value
 
-    def _restretch_icon(self):
-        self._width = int(self.current_value * self.icon_size)
-        self._height = self.icon_size
+    def _restretch_sprite(self):
+        self._width = int(self.current_value * self.sprite_size)
+        self._height = self.sprite_size
         self.animations[self.current_state][self.counter] = \
             pygame.transform.scale(
-                ResourceManager.get_animations_for(self, self._animation_name)[self.current_state][self.counter],
+                ResourceManager.get_animations_for(self._animations_owner, self._animations_name)
+                [self.current_state][self.counter],
                 (self._width, self._height))
 
     def copy(self):
-        copy_icon = ChargableIcon(self._animation_name, (self._width, self._height),
-                                  self.discharging_time, self.charging_time)
-        copy_icon.x = copy(self.x)
-        copy_icon.y = copy(self.y)
-        copy_icon.icon_size = copy(self.icon_size)
-        copy_icon._width = copy(self._width)
-        copy_icon._height = copy(self._height)
-        copy_icon.current_state = copy(self.current_state)
-        copy_icon.icon_states = copy(self.icon_states)
-        copy_icon._counter_upper_limit = copy(self._counter_upper_limit)
-        copy_icon.counter = copy(self.counter)
-        copy_icon._restretch_icon()
+        copy_sprite = ChargableSprite(self._animations_owner, self._animations_name, (self._width, self._height),
+                                      self.discharging_time, self.charging_time)
+        copy_sprite.x = copy(self.x)
+        copy_sprite.y = copy(self.y)
+        copy_sprite.sprite_size = copy(self.sprite_size)
+        copy_sprite._width = copy(self._width)
+        copy_sprite._height = copy(self._height)
+        copy_sprite.current_state = copy(self.current_state)
+        copy_sprite.sprite_states = copy(self.sprite_states)
+        copy_sprite._counter_upper_limit = copy(self._counter_upper_limit)
+        copy_sprite.counter = copy(self.counter)
+        copy_sprite._restretch_sprite()
 
-        return copy_icon
+        return copy_sprite
 
 
 class IconsPack(object):
@@ -262,7 +274,7 @@ class IconsPack(object):
 
     def __init__(self, boundrect, box_size: int = 87,
                  align=Align.Left, pop_append_order=Order.PopRightAppendRight):
-        self.icons = []  # list of Icon
+        self.icons = []  # list of Sprite
         self.boundrect = boundrect  # icons bounding rect
         self._n = 0  # number of icons
         self.box_size = box_size  # size of box containing single image, px
@@ -298,7 +310,7 @@ class IconsPack(object):
             for icon in self.icons:
                 icon.x += delta
 
-    def duplicate(self, n, duplicated_icon: Icon = "duplicate last"):
+    def duplicate(self, n, duplicated_icon: Sprite = "duplicate last"):
         """This method sets number of images in a line.
         If n > N, where N is a number of icons already placed in a line, it appends given image n-N times.
         If n < N, where N is a number of icons already placed in a line, it pops given image N-n times.
@@ -317,8 +329,8 @@ class IconsPack(object):
             else:
                 self.append(duplicated_icon.copy())
 
-    def append(self, icon: Icon):
-        """This method appends given Icon to the line and places after the last one.
+    def append(self, icon: Sprite):
+        """This method appends given Sprite to the line and places after the last one.
         It resizes icons properly if they get bigger than boundrect."""
 
         icon.y = self.boundrect.y + (self.boundrect.height - self.icons_size) / 2
@@ -398,7 +410,7 @@ class IconsPack(object):
                 icon.y = self.boundrect.y + (self.boundrect.height - self.icons_size) / 4
 
     def pop(self):
-        """This method pops last Icon in a line. It doesn't change size of Icons left"""
+        """This method pops last Sprite in a line. It doesn't change size of Icons left"""
         if self._n > 0:
             self._n -= 1
             if self.pop_append_order == self.Order.PopRightAppendRight:
@@ -410,7 +422,7 @@ class IconsPack(object):
 class AbilityIconPack(object):
 
     def __init__(self, boundrect, box_size: int = 87, align=IconsPack.Align.Left,
-                 pop_append_order=IconsPack.Order.PopRightAppendRight, mode=ChargableIcon.Modes.Manual.value):
+                 pop_append_order=IconsPack.Order.PopRightAppendRight, mode=ChargableSprite.Modes.Manual.value):
 
         self.boundrect = boundrect
         self.box_size = box_size
@@ -427,14 +439,17 @@ class AbilityIconPack(object):
 
     def _init_icons(self, boundrect, box_size, align, pop_append_order):
         self._icons = IconsPack(boundrect, box_size, align, pop_append_order)
-        self.ability_boost_icon = Icon("Boost", animations_dims=(box_size, box_size))
+        self.ability_boost_icon = Sprite(animations_owner=ResourceManager.AnimationsOwners.Icon,
+                                         animations_name="Boost", animations_dims=(box_size, box_size))
         self._icons.append(self.ability_boost_icon)
-        self.ability_morph_icon = Icon("Morph", animations_dims=(box_size, box_size))
+        self.ability_morph_icon = Sprite(animations_owner=ResourceManager.AnimationsOwners.Icon,
+                                         animations_name="Morph", animations_dims=(box_size, box_size))
         self._icons.append(self.ability_morph_icon)
 
     def _init_charge_icons(self, boundrect, box_size, align, pop_append_order, mode):
-        self._charge_icon = ChargableIcon("HorizontalBottom", animations_dims=(box_size, box_size),
-                                          discharging_time=30, charging_time=30, mode=mode)
+        self._charge_icon = ChargableSprite(animations_owner=ResourceManager.AnimationsOwners.ChargableIcon,
+                                            animations_name="HorizontalBottom", animations_dims=(box_size, box_size),
+                                            discharging_time=30, charging_time=30, mode=mode)
         self._charge_icon.start_idle()
         self._charge_icon.deactivate()
         self._charge_icons = IconsPack(boundrect, box_size, align, pop_append_order)

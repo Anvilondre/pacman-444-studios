@@ -74,6 +74,7 @@ class MapObject:
 
     def create_hitbox_of(self, path, x=0, y=0):
         """Returns sprite with mask created from given image"""
+
         if os.path.exists(path):
             img = pygame.image.load(path)
             img = pygame.transform.scale(img, (self.width, self.height))

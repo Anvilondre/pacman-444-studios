@@ -71,7 +71,7 @@ class Level1(Level):
                      "####.###.#.###.####",
                      "####.#.......#.####",
                      "####.#.## ##.#.####",
-                     ".......# $ #.......",
+                     ".......#$ $#.......",
                      "####.#.#####.#.####",
                      "####.#.......#.####",
                      "####.#.#####.#.####",
@@ -84,16 +84,16 @@ class Level1(Level):
 
 
 class Level2(Level):
-    level_name = "2. Wow, two?"
-    PACMAN_PX_PER_SECOND = 36 * 5
+    level_name = "2. A little harder.."
+    PACMAN_PX_PER_SECOND = 36 * 6
     PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
-    GHOST_PX_PER_SECOND = 36 * 5
+    GHOST_PX_PER_SECOND = 36 * 6
     pacman_velocity = 6
     pacman_boost = 20
     ghost_value = 200
     pacman_cooldown = 10
-    speed_ability_duration = 4
-    transform_ability_duration = 4
+    speed_ability_duration = 3
+    transform_ability_duration = 3
     ghosts_velocity = 6
     ghost_value = 200
 
@@ -140,7 +140,7 @@ class Level3(Level):
                      "####.###.#.###.####",
                      "####.#.......#.####",
                      "####.#.## ##.#.####",
-                     ".......#$ $#.......",
+                     ".......#$$$#.......",
                      "####.#.#####.#.####",
                      "####.#.......#.####",
                      "####.#.#####.#.####",
@@ -157,7 +157,7 @@ class Level4(Level):
     PACMAN_PX_PER_SECOND = 36 * 7
     PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
     GHOST_PX_PER_SECOND = 36 * 7
-    pacman_velocity = 6
+    pacman_velocity = 100
     pacman_boost = 20
     pacman_cooldown = 10
     speed_ability_duration = 2.5
@@ -188,9 +188,9 @@ class Level4(Level):
 
 class Level5(Level):
     level_name = "5. Final boss!"
-    PACMAN_PX_PER_SECOND = 36 * 8
+    PACMAN_PX_PER_SECOND = 36 * 7
     PACMAN_BOOST_PX_PER_SECOND = 36 * 3.5
-    GHOST_PX_PER_SECOND = 36 * 8
+    GHOST_PX_PER_SECOND = 36 * 7
     pacman_velocity = 6
     pacman_boost = 20
     pacman_cooldown = 10
@@ -207,7 +207,7 @@ class Level5(Level):
                      "#....#...#...#....#",
                      "####.###.#.###.####",
                      "####.#.......#.####",
-                     "####.#.## ##.#.####",
+                     "####.#.##$##.#.####",
                      "#......#$$$#......#",
                      "####.#.#####.#.####",
                      "####.#.......#.####",

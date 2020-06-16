@@ -6,7 +6,7 @@ import pygame
 from src.data import Constants
 from src.data.Levels import Level
 from src.view.ResourceManager import ResourceManager
-from src.view.Widgets import IconsPack, Icon, AbilityIconPack
+from src.view.Widgets import IconsPack, AbilityIconPack, Sprite
 
 
 def distance(a, b):
@@ -177,7 +177,9 @@ class Renderer(object):
                                 self.lives_bar_surf_width, self.lives_bar_surf_height)
         self.lives_icons = IconsPack(boundrect, box_size=self.gamescreen_cell_size)
 
-        self.Lives_icon = Icon("Lives", animations_dims=(int(self.gamescreen_cell_size), int(self.gamescreen_cell_size)))
+        self.Lives_icon = Sprite(animations_owner=ResourceManager.AnimationsOwners.Icon,
+                                 animations_name="Lives",
+                                 animations_dims=(int(self.gamescreen_cell_size), int(self.gamescreen_cell_size)))
         self.lives_icons.append(self.Lives_icon)
 
         # Abilities Icons
@@ -194,8 +196,9 @@ class Renderer(object):
                                     align=IconsPack.Align.Right,
                                     pop_append_order=IconsPack.Order.PopLeftAppendLeft)
 
-        self.mana_icon = Icon("Mana", animations_dims=(int(self.gamescreen_cell_size),
-                                                       int(self.gamescreen_cell_size)))
+        self.mana_icon = Sprite(animations_owner=ResourceManager.AnimationsOwners.Icon,
+                                animations_name="Mana",
+                                animations_dims=(int(self.gamescreen_cell_size), int(self.gamescreen_cell_size)))
         self.mana_icons.append(self.mana_icon)
 
     def _init_teleport_covers(self):
@@ -281,7 +284,7 @@ class Renderer(object):
             self.window.blit(text, place)
 
     def _draw_text(self, pacman, current_level):
-        # TODO OPTIMIZE
+
         font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH, int(self.canvas_height * Constants.FONT_SIZE_RATIO))
         score_text = font.render("Score: " + str(pacman.score), 1, Constants.FONT_COLOR)
         place = score_text.get_rect(topleft=(self.gamescreen_surf_x, self.top_bar_height / 2))
@@ -410,13 +413,16 @@ class Renderer(object):
             self.window.blit(surf[0], (surf[1], surf[2]))
 
         # Draw GUI
-        # TODO MOVE GUI DRAWING TO SEPARATE METHOD
         self.lives_icons.duplicate(pacmans[0].lives,
-                                   duplicated_icon=Icon("Lives", animations_dims=(int(self.gamescreen_cell_size),
-                                                                                  int(self.gamescreen_cell_size))))
+                                   duplicated_icon=Sprite(animations_owner=ResourceManager.AnimationsOwners.Icon,
+                                                          animations_name="Lives",
+                                                          animations_dims=(int(self.gamescreen_cell_size),
+                                                                           int(self.gamescreen_cell_size))))
         self.mana_icons.duplicate(pacmans[0].mana,
-                                  duplicated_icon=Icon("Mana", animations_dims=(int(self.gamescreen_cell_size),
-                                                                                int(self.gamescreen_cell_size))))
+                                  duplicated_icon=Sprite(animations_owner=ResourceManager.AnimationsOwners.Icon,
+                                                         animations_name="Mana",
+                                                         animations_dims=(int(self.gamescreen_cell_size),
+                                                                          int(self.gamescreen_cell_size))))
         self._draw_text(pacmans[0], current_level)
 
         # Draw Icons
@@ -445,7 +451,7 @@ class Renderer(object):
         pygame.display.update()
 
     def render_label(self, label_str, hint_str, bg_full_opacity=False):
-        bg = ResourceManager.get_animations_for(None, "Default")
+        bg = ResourceManager.get_animations_for(ResourceManager.AnimationsOwners.Background, "Default")
         if bg_full_opacity:
             self.window.blit(bg["Default"][0], (0, 0))
         else:
@@ -465,6 +471,7 @@ class Renderer(object):
         self.window.blit(hint_text, place)
 
         pygame.display.update()
+
 
     def _draw_mapobjects(self, mapobjects, show_hitboxes=False):
         for obj in mapobjects:

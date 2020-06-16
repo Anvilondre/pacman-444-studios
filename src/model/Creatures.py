@@ -18,8 +18,10 @@ class Creature(object):
         self.form = form
         self.mapobject_hitbox = mapobject_hitbox  # ResourceManager.create_hitbox_of(mapobject_hitbox_path, (self.width, self.height))
         self.creature_hitbox = creature_hitbox  # ResourceManager.create_hitbox_of(creature_hitbox_path, (self.width, self.height))
+        # HACK: ---
         self._x = 0
         self._y = 0
+        # ---------
         self.x = x
         self.y = y
         self.coord = (self.x, self.y)
@@ -257,7 +259,7 @@ class PacMan(Creature):
         form = Constants.forms[random.randint(0, 2)] if form == "random" else form
 
         if animations is None:
-            animations = ResourceManager.get_animations_for(self, form)
+            animations = ResourceManager.get_animations_for(ResourceManager.AnimationsOwners.PacMan, form)
 
         super().__init__(x, y, initial_location, width, height, velocity, direction,
                          form, mapobject_hitbox, creature_hitbox, animations)
@@ -347,7 +349,7 @@ class PacMan(Creature):
     def form(self, value: str):
         if value in Constants.forms and isinstance(value, str):
             self._form = value
-            self.animations = ResourceManager.get_animations_for(self, value)
+            self.animations = ResourceManager.get_animations_for(ResourceManager.AnimationsOwners.PacMan, value)
             return
 
     def copy(self):
@@ -381,7 +383,7 @@ class Ghost(Creature):
             creature_hitbox = ResourceManager.get_hitbox_of(Constants.GHOST_CREATURE_HITBOX_PATH, (width, height))
 
         if animations is None:
-            animations = ResourceManager.get_animations_for(self, form)
+            animations = ResourceManager.get_animations_for(ResourceManager.AnimationsOwners.Ghost, form)
 
         super().__init__(x, y, initial_location, width, height, velocity, direction,
                          form, mapobject_hitbox, creature_hitbox, animations)
@@ -423,7 +425,7 @@ class Ghost(Creature):
     def form(self, value: str):
         if value in Constants.forms and isinstance(value, str):
             self._form = value
-            self.animations = ResourceManager.get_animations_for(self, value)
+            self.animations = ResourceManager.get_animations_for(ResourceManager.AnimationsOwners.Ghost, value)
             return
 
     def copy(self):

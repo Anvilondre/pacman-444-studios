@@ -360,7 +360,7 @@ class Controller:
 
     def update_level(self):
         """ Jumps to the next level if all pellets are picked """
-        if len(self.mega_pellets) == 3:#not self.pellets and not self.mega_pellets:
+        if not self.pellets and not self.mega_pellets:
 
             # Render one more frame in order to show that PacMan has eaten the last pellet
             self.render_update(1 / Constants.GLOBAL_TICK_RATE)

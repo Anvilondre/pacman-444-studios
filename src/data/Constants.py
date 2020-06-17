@@ -271,8 +271,7 @@ MORPH_ICON_ANIMATIONS_PATH = {"Default": ["../res/icons/morph/default/0.png"],
 MANA_ICON_ANIMATIONS_PATH = {"Default": ["../res/icons/mana/default/0.png"]}
 
 # Background
-BACKGROUND_ANIMATIONS_PATH = {"Default": ["../res/backgrounds/0.png", "../res/backgrounds/1.png",
-                                          "../res/backgrounds/444.png"],
+BACKGROUND_ANIMATIONS_PATH = {"Default": ["../res/backgrounds/0.png", "../res/backgrounds/1.png"],
                               "GameLogo": ["../res/backgrounds/logo.png"]}
 
 WINDOW_ICON_PATH = "../res/icons/window/0.png"

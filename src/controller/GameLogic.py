@@ -16,7 +16,9 @@ from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSIC
 from src.data.Levels import Level5
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
+from src.view import Widgets
 from src.view.Renderer import Renderer, RenderModes
+from src.view.Widgets import Sprite
 
 
 def calculate_L1(point1, point2):
@@ -85,6 +87,7 @@ class Controller:
         self.levels = cycle(levels)
         self.game_over = \
         self.is_playing = \
+        self.is_game_complete = \
         self.window = \
         self.current_level = \
         self.walls = \
@@ -121,6 +124,10 @@ class Controller:
         self.game_over = False
         self.init_renderer()
         self.init_debugger()
+        #self.current_level = next(self.levels)
+        #self.current_level = next(self.levels)
+        #self.current_level = next(self.levels)
+        #self.current_level = next(self.levels)
         self.load_level()
 
     def load_level(self):
@@ -133,7 +140,7 @@ class Controller:
 
     def init_renderer(self):
         pygame.init()
-        self.renderer = Renderer(map_dimensions=(0, 0), is_fullscreen=False)
+        self.renderer = Renderer(map_dimensions=(0, 0), is_fullscreen=True)
 
     def init_debugger(self):
         self.ticktime_debugger = TickTimeDebugger(mode=Modes.Store)
@@ -215,8 +222,9 @@ class Controller:
                         self.set_cooldown_timer()
                     elif self.transform_ability.is_active:
                         self.transform_ability.changeForm()
-                elif event.key == K_f:
-                    self.is_playing = False
+                # DEBUG:
+                #elif event.key == K_f:
+                #    self.is_playing = False
 
     def set_cooldown_timer(self):
         self.ability_is_ready = False
@@ -352,15 +360,24 @@ class Controller:
 
     def update_level(self):
         """ Jumps to the next level if all pellets are picked """
-        if not self.pellets and not self.mega_pellets:
+        if len(self.mega_pellets) == 3:#not self.pellets and not self.mega_pellets:
+
+            # Render one more frame in order to show that PacMan has eaten the last pellet
+            self.render_update(1 / Constants.GLOBAL_TICK_RATE)
+
             if self.current_level.level_name == Level5.level_name:
-                self.player_score = 0
-                #self.renderer.render_label("ZARAHOVANO", "Great job! Would you like to play again?", bg_full_opacity=True)
+                self.player_score = self.pacman.score
+                self.renderer.render_label("Level complete", " ", bg_full_opacity=True)
+                time.sleep(2.5)
+                self.renderer.fade_out()
+                self.is_game_complete = True
             else:
                 self.player_score = self.pacman.score
+                self.renderer.render_label("Level complete", " ", bg_full_opacity=True)
+                time.sleep(2.5)
+                self.renderer.fade_out()
             self.load_level()
             self.renderer.restart()
-            self.is_playing = False
 
     def map_restart(self):
         """ Restart current map """
@@ -511,7 +528,7 @@ class Controller:
                 self.revive_pacman()
             else:
                 self.pacman.lives -= 1
-                self.player_score = 0
+                #self.player_score = 0
                 self.pacman.animation_count = 0
                 self.pacman.is_alive = False
 
@@ -544,7 +561,7 @@ class Controller:
         mins = mins % 60
         print("Time Lapsed = {0}:{1}:{2}".format(int(hours), int(mins), sec))
 
-    def render_update(self, tick_time):
+    def render_update(self, tick_time, skip_screen_update = False):
 
         self.counter_render_tick_time += tick_time
         if self.counter_render_tick_time > DESIRED_RENDER_TICK_TIME:
@@ -553,7 +570,8 @@ class Controller:
                                   [], [self.pacman], self.ghosts],
                                  [self.speed_ability, self.transform_ability], self.cooldown_timer,
                                  self.current_level, tick_time, showgrid=False, show_hitboxes=False,
-                                 render_mode=RenderModes.PartialRedraw_A)
+                                 render_mode=RenderModes.PartialRedraw_A,
+                                 skip_screen_update = skip_screen_update)
             end_time = time.time()
             self.counter_render_tick_time = 0
             self.render_update_exec_time = end_time - start_time
@@ -568,19 +586,26 @@ class Controller:
 
     def run(self):
         self.is_playing = False
+        self.is_game_complete = False
 
-        self.render_update(1 / GLOBAL_TICK_RATE)
-        self.renderer.render_label("WELCOME", "Press \"F\" to start.", bg_full_opacity=True)
+        self.renderer.play_splash_screen()
+
+        self.render_update(1 / GLOBAL_TICK_RATE, skip_screen_update=True)
+        self.renderer.render_label("READY?", "Press \"F\" to start!", bg_full_opacity=True)
         self.renderer.restart()
 
         clock = pygame.time.Clock()
-        self.ticktime_debugger.run()
+        # DEBUG:
+        #self.ticktime_debugger.run()
         run = True
         while run:
+
             miliseconds = clock.tick(GLOBAL_TICK_RATE)
             self.tick_time = miliseconds / 1000.0  # seconds
+            true_tick_time = self.tick_time
 
-            if self.is_playing:
+            if self.is_playing and not self.is_game_complete:
+
                 if self.tick_time > 0.1:
                     self.tick_time = 1 / GLOBAL_TICK_RATE
 
@@ -591,12 +616,11 @@ class Controller:
                 self.abilities_update(self.tick_time)
 
                 self.update_level()
-                if not self.is_map_restart:
+                if not self.is_map_restart and not self.is_game_complete:
                     self.render_update(self.tick_time)
 
-                self.ticktime_debugger.update(self.physics_update_exec_time, self.ghost_update_exec_time,
-                                              self.render_update_exec_time, self.tick_time)
-            else:
+            elif not self.is_playing and not self.is_game_complete:
+
                 for event in pygame.event.get():
                     if event.type == QUIT:
                         pygame.quit()
@@ -608,4 +632,26 @@ class Controller:
                             if self.is_map_restart:
                                 self.is_map_restart = False
                                 self.renderer.restart()
+
+            elif self.is_game_complete:
+
+                self.renderer.render_label("You win!", "Great job! Your score is " + str(self.player_score) +
+                                           " points. Press \"F\" to play again",
+                                           bg_full_opacity=True)
+
+                for event in pygame.event.get():
+                    if event.type == QUIT:
+                        pygame.quit()
+                        sys.exit()
+
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == K_f:
+                            self.is_game_complete = False
+                            if self.is_map_restart:
+                                self.is_map_restart = False
+                                self.renderer.fade_out()
+                                self.renderer.restart()
+                                self.player_score = 0
+                                self.pacman.score = 0
+
         pygame.quit()

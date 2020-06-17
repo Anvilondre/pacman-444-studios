@@ -3,6 +3,7 @@ from copy import copy
 
 import pygame
 
+from src.data import Constants
 from src.view.ResourceManager import ResourceManager
 
 
@@ -14,19 +15,21 @@ class Sprite(object):
       animation frames areloaded (e.g. "Default", "Lives", "Pause", etc)."""
 
     def __init__(self, animations_owner: ResourceManager.AnimationsOwners,
-                 animations_name, animations_dims, x=0, y=0, sprite_state="Default"):
+                 animations_name, animations_dims="original", x=0, y=0, sprite_state="Default"):
 
         self.x = x  # px
         self.y = y  # px
         self._animations_owner = animations_owner
         self._animations_name = animations_name
         self.animations = ResourceManager.get_animations_for(animations_owner, self._animations_name)
-        self.animations = ResourceManager.rescale_animations(self.animations, animations_dims)
-        """Dictionary of lists of animation frames."""
+        if animations_dims != "original":
+            self.animations = ResourceManager.rescale_animations(self.animations, animations_dims)
+            """Dictionary of lists of animation frames."""
         self.width = 0
         self.height = 0
         self.sprite_size = self.animations["Default"][0].get_rect().width
-
+        self._animations_elapsed_time_counter = 0
+        self._animations_period = Constants.ANIMATION_PERIOD  # TODO: MOVE TO ARGUMENTS
         # HACK:
         self.current_state = sprite_state
 
@@ -81,9 +84,13 @@ class Sprite(object):
         self.animations[self.current_state][self.counter] = pygame.transform.scale(
             self.animations[self.current_state][self.counter], size)
 
-    def draw(self, target_surface):
+    def draw(self, target_surface, elapsed_time=1 / Constants.GLOBAL_TICK_RATE):
         target_surface.blit(self.animations[self.current_state][self.counter], (self.x, self.y))
-        self.counter += 1
+
+        self._animations_elapsed_time_counter += elapsed_time
+        if self._animations_elapsed_time_counter >= self._animations_period:
+            self.counter += 1
+            self._animations_elapsed_time_counter = 0
 
     def copy(self):
         """Returns a deep copy of an object."""

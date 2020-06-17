@@ -1,5 +1,7 @@
 import enum
 import math
+import sys
+import time
 
 import pygame
 
@@ -54,8 +56,8 @@ class Renderer(object):
             self.window = pygame.display.set_mode((windowed_screen_width, windowed_screen_height))
 
         pygame.display.set_caption("PacMan Deluxe Edition")
-        #img = pygame.image.load(Constants.WINDOW_ICON_PATH)
-        #pygame.display.set_icon(img)
+        # img = pygame.image.load(Constants.WINDOW_ICON_PATH)
+        # pygame.display.set_icon(img)
 
         # Get actual window size
         self.canvas_width = pygame.display.get_surface().get_width()
@@ -267,8 +269,8 @@ class Renderer(object):
             font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH, 14)
             text = font.render(str(x), 1, Constants.FONT_COLOR)
             place = text.get_rect(topleft=(
-            x * self.gamescreen_cell_size + self.gamescreen_surf_x + self.gamescreen_cell_size / 2,
-            self.gamescreen_surf_y - self.gamescreen_cell_size / 2))
+                x * self.gamescreen_cell_size + self.gamescreen_surf_x + self.gamescreen_cell_size / 2,
+                self.gamescreen_surf_y - self.gamescreen_cell_size / 2))
             self.window.blit(text, place)
 
         for x in range(self.gamescreen_surf_height // self.gamescreen_cell_size + 1):
@@ -354,7 +356,7 @@ class Renderer(object):
                current_level: Level,
                elapsed_time: float,
                showgrid: bool = False, show_hitboxes: bool = True,
-               render_mode: RenderModes = RenderModes.RedrawAll):
+               render_mode: RenderModes = RenderModes.RedrawAll, skip_screen_update = False):
         """entities_list: (pellets, mega_pellets, walls, floors, cherry, pacmans, ghosts)"""
 
         # This variable is needed for proper animation speed independent of FPS
@@ -448,9 +450,10 @@ class Renderer(object):
             self.prev_abilities = [ability.copy() for ability in abilities_list]
             self.prev_cooldown_timer = cooldown_timer.copy()
 
-        pygame.display.update()
+        if not skip_screen_update:
+            pygame.display.update()
 
-    def render_label(self, label_str, hint_str, bg_full_opacity=False):
+    def render_label(self, label_str, hint_str, bg_full_opacity=False, label_size_ratio=1):
         bg = ResourceManager.get_animations_for(ResourceManager.AnimationsOwners.Background, "Default")
         if bg_full_opacity:
             self.window.blit(bg["Default"][0], (0, 0))
@@ -458,20 +461,20 @@ class Renderer(object):
             self.window.blit(bg["Default"][1], (0, 0))
 
         font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH,
-                                int(self.canvas_width * 100/Constants.WINDOWED_SCREEN_WIDTH))
+                                int(self.canvas_width * 100 / Constants.WINDOWED_SCREEN_WIDTH*label_size_ratio))
         gameover_text = font.render(label_str, 1, Constants.FONT_COLOR)
-        place = gameover_text.get_rect(center=(self.canvas_width/2, self.canvas_height/2))
+        place = gameover_text.get_rect(center=(self.canvas_width / 2, self.canvas_height / 2))
         self.window.blit(gameover_text, place)
 
         font = pygame.font.Font(Constants.FRANKLIN_FONT_PATH,
-                                int(self.canvas_width * 24/Constants.WINDOWED_SCREEN_WIDTH))
+                                int(self.canvas_width * 24 / Constants.WINDOWED_SCREEN_WIDTH))
         hint_text = font.render(hint_str, 1, Constants.FONT_COLOR)
-        place = hint_text.get_rect(center=(self.canvas_width/2,
-                                           self.canvas_height/2 + self.canvas_width*56/Constants.WINDOWED_SCREEN_WIDTH))
+        place = hint_text.get_rect(center=(self.canvas_width / 2,
+                                           self.canvas_height / 2 +
+                                           self.canvas_width * 56 / Constants.WINDOWED_SCREEN_WIDTH*label_size_ratio))
         self.window.blit(hint_text, place)
 
         pygame.display.update()
-
 
     def _draw_mapobjects(self, mapobjects, show_hitboxes=False):
         for obj in mapobjects:
@@ -597,3 +600,88 @@ class Renderer(object):
 
             if show_hitboxes:
                 self._show_hitbox(ghost)
+
+
+    def fade_out(self):
+        bg = pygame.Surface((self.canvas_width, self.canvas_height))
+        bg.fill((0,0,0))
+        bg.convert()
+        alpha = 0
+        while (alpha <= 32):
+            time.sleep(1 / Constants.GLOBAL_TICK_RATE)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    return
+
+            bg.set_alpha(alpha)
+            alpha += 0.5
+            self.window.blit(bg, (0, 0))
+            pygame.display.update()
+
+    def play_splash_screen(self):
+        """This method plays back splash screen animation."""
+
+        pacmans = []
+        pacman = Sprite(animations_owner=ResourceManager.AnimationsOwners.PacMan, animations_name="Blue",
+                        animations_dims=(int(self.canvas_width * 0.1), int(self.canvas_width * 0.1)),
+                        x=-100, y=int(self.canvas_width * 0.3))
+        pacman.current_state = "move_right"
+        pacmans.append(pacman)
+        pacman_vel = 800 # px / ms
+
+        ghosts = []
+        ghost_red = Sprite(animations_owner=ResourceManager.AnimationsOwners.Ghost, animations_name="Red",
+                           animations_dims=(int(self.canvas_width * 0.2), int(self.canvas_height * 0.2)),
+                           x=-400 - int(self.canvas_width * 0.1), y=int(self.canvas_width * 0.22))
+        ghost_red.current_state = "move_right"
+        ghosts.append(ghost_red)
+        ghost_vel = 800  # px / ms
+
+        #self.renderer.render_label("WELCOME", "Press \"F\" to start.", bg_full_opacity=True)
+        #self.renderer.restart()
+
+        bg = pygame.Surface((self.canvas_width, self.canvas_height))
+        bg.fill((0,0,0))
+
+        clock = pygame.time.Clock()
+        run = True
+        while run:
+            miliseconds = clock.tick(Constants.GLOBAL_TICK_RATE)
+            tick_time = miliseconds / 1000.0  # seconds
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    return
+
+            if tick_time > 1 / Constants.GLOBAL_TICK_RATE:
+                tick_time = 1 / Constants.GLOBAL_TICK_RATE
+
+            self.window.blit(bg, (0,0))
+
+            for pacman in pacmans:
+                pacman.x += pacman_vel * tick_time
+
+            for ghost in ghosts:
+                ghost.x += ghost_vel * tick_time
+
+            for sprite in pacmans+ghosts:
+                sprite.draw(self.window, tick_time)
+
+            #logo.draw(self.window)
+
+            pygame.display.update()
+
+            if min([ghost.x-ghost.width for ghost in ghosts]) \
+                    > self.canvas_width:
+                self.render_label("PACMAN", "Reimagined", label_size_ratio=2)
+                time.sleep(2.5)
+                self.fade_out()
+                time.sleep(0.5)
+                run = False

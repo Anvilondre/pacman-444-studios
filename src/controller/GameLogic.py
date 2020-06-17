@@ -353,6 +353,11 @@ class Controller:
     def update_level(self):
         """ Jumps to the next level if all pellets are picked """
         if not self.pellets and not self.mega_pellets:
+            self.renderer.render([self.pellets, self.mega_pellets, self.walls, self.current_level.level_map.floors,
+                                  [], [self.pacman], self.ghosts],
+                                 [self.speed_ability, self.transform_ability], self.cooldown_timer,
+                                 self.current_level, self.tick_time, showgrid=False, show_hitboxes=False,
+                                 render_mode=RenderModes.PartialRedraw_A)
             if self.current_level.level_name == Level5.level_name:
                 self.player_score = 0
                 #self.renderer.render_label("ZARAHOVANO", "Great job! Would you like to play again?", bg_full_opacity=True)
@@ -360,7 +365,6 @@ class Controller:
                 self.player_score = self.pacman.score
             self.load_level()
             self.renderer.restart()
-            self.is_playing = False
 
     def map_restart(self):
         """ Restart current map """
@@ -405,7 +409,6 @@ class Controller:
         else:
             path = self.path_finder.get_path(ghost_coord, ghost_init_coord)
             ghost.preferred_direction = self.path_finder.get_direction(ghost_coord, path)
-
         return path
 
     def pacman_in_radius(self, ghost, radius=4):

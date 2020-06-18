@@ -29,7 +29,7 @@ class Sprite(object):
         self.height = 0
         self.sprite_size = self.animations["Default"][0].get_rect().width
         self._animations_elapsed_time_counter = 0
-        self._animations_period = Constants.ANIMATION_PERIOD  # TODO: MOVE TO ARGUMENTS
+        self._animations_period = Constants.ANIMATION_PERIOD
         # HACK:
         self.current_state = sprite_state
 
@@ -120,7 +120,6 @@ class ChargableSprite(Sprite):
         DischargingInactive = "DischargingInactive"
 
     class Modes(enum.Enum):
-        # TODO UNSTUB
         Auto = "Auto"
         Manual = "Manual"
 
@@ -399,7 +398,6 @@ class IconsPack(object):
         self._fit_icons_into_boundrect()
 
     def _fit_icons_into_boundrect(self):
-        # FIXME: buggy when n > 10
 
         # If icons width is greater than width of boundrect..
         icons_width = self._n * self.box_size
@@ -469,7 +467,6 @@ class AbilityIconPack(object):
         # First we find index of ability that is active at the moment.
         # If there is no such ability, then the value of variable stays unchanged
         # (it refers to the ability that was activated in the past)
-        # TODO: COULD BE OPTIMIZED AND SET ONCE IN IF(ACTIVATED): ...
         for i in range(len(abilities)):
             if abilities[i].is_active:
                 self.activated_ability_index = i
@@ -554,8 +551,6 @@ class AbilityIconPack(object):
 
         # RECALCULATE AND MODIFY CURRENT VALUE
         # Epsilon is used to round current_value to corresponding MIN/MAX VALUE during discharging/charging
-        # TODO: epsilon should be a function of variables showing current system performance.
-        #  Being a constant, it may perform badly on slow systems. Further investigation is needed.
         epsilon = 0.0050
         for n, charge_icon in zip(range(len(self._charge_icons.icons)), self._charge_icons.icons):
 

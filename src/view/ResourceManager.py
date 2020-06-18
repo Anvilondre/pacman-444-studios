@@ -46,7 +46,6 @@ class ResourceManager(object):
         ResourceManager.animations[ResourceManager.AnimationsOwners.ChargableIcon] =\
             {"HorizontalBottom": ResourceManager.get_animations_from(Constants.ABILITIES_CHARGEBAR_ANIMATIONS_PATH)}
 
-        # FIXME DIRTY DIRTY HACK PLEASE FIX IT AND MAKE ADEQUATE IN THE FUTURE UPDATES
         ResourceManager.animations[ResourceManager.AnimationsOwners.Background] =\
             {"Default": ResourceManager.get_animations_from(Constants.BACKGROUND_ANIMATIONS_PATH)}
 
@@ -146,8 +145,6 @@ class ResourceManager(object):
         sprite_copy = pygame.sprite.Sprite()
         sprite_copy.surface = sprite.surface.copy()
         sprite_copy.image = sprite.image.copy()
-        # TODO Use Mask.copy() instead (added in Pygame 2.0.0)
-        #sprite_copy.mask = sprite.mask.copy()
         sprite_copy.mask = pygame.mask.from_surface(sprite_copy.image)
         sprite_copy.rect = sprite.rect.copy()
 

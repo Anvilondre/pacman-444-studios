@@ -248,8 +248,6 @@ class PacMan(Creature):
                  cooldown=5, mana=Constants.pacman_mana,
                  score=Constants.pacman_score, lives=Constants.pacman_lives, ghosts_eaten=0):
 
-        # FIXME Messy workaround. Width and height and form could have wrong values
-
         if mapobject_hitbox is None:
             mapobject_hitbox = ResourceManager.get_hitbox_of(Constants.PACMAN_MAPOBJECT_HITBOX_PATH, (width, height))
 
@@ -371,8 +369,6 @@ class Ghost(Creature):
     def __init__(self, x, y, initial_location, width, height, velocity, direction="up", form="random",
                  mapobject_hitbox=None, creature_hitbox=None, animations=None,
                  is_chasing=Constants.ghost_is_chasing, target_coord=None, previous_target_coord=None):
-
-        # FIXME Messy workaround. Width and height could have wrong values
 
         if mapobject_hitbox is None:
             mapobject_hitbox = ResourceManager.get_hitbox_of(Constants.GHOST_MAPOBJECT_HITBOX_PATH, (width, height))

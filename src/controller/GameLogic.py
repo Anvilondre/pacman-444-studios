@@ -406,7 +406,7 @@ class Controller:
     def pacman_in_radius(self, ghost, radius=4):
         return calculate_L1(self.pacman.coord, ghost.coord) < radius * SECTOR_SIZE
 
-    def mp_finder(self, ghost):  # FIXME revision
+    def mp_finder(self, ghost):
         if len(self.mega_pellets) < self.mega_pellets_counter + 1:
             self.mega_pellets_counter = 0
         while True:
@@ -423,7 +423,7 @@ class Controller:
             else:
                 self.mega_pellets_counter = 0
 
-    def update_ghosts(self, tick_time, hardcore=True):  # FIXME revision
+    def update_ghosts(self, tick_time, hardcore=True):
         self.counter_ai_tick_time += tick_time
         if self.counter_ai_tick_time > DESIRED_AI_TICK_TIME:
             start_time = time.time()

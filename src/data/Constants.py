@@ -103,7 +103,7 @@ FONT_SIZE_RATIO = 28 / 684
 
 PACMAN_MAPOBJECT_HITBOX_PATH = "../res/hitbox/pacman_mapobject.png"
 PACMAN_CREATURE_HITBOX_PATH = "../res/hitbox/pacman_creature.png"
-PACMAN_RED_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"], # FIXME: STUB
+PACMAN_RED_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"],
                                "move_left": ["../res/animations/pacman/red/move_left/0.png",
                                              "../res/animations/pacman/red/move_left/1.png",
                                              "../res/animations/pacman/red/move_left/2.png",
@@ -130,7 +130,7 @@ PACMAN_RED_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_le
                                         "../res/animations/pacman/red/dead/7.png",
                                         "../res/animations/pacman/red/dead/8.png"]}
 
-PACMAN_GREEN_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"], # FIXME: STUB
+PACMAN_GREEN_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"],
                                  "move_left": ["../res/animations/pacman/green/move_left/0.png",
                                                "../res/animations/pacman/green/move_left/1.png",
                                                "../res/animations/pacman/green/move_left/2.png",
@@ -157,7 +157,7 @@ PACMAN_GREEN_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_
                                           "../res/animations/pacman/green/dead/7.png",
                                           "../res/animations/pacman/green/dead/8.png"]}
 
-PACMAN_BLUE_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"], # FIXME: STUB
+PACMAN_BLUE_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"],
                                 "move_left": ["../res/animations/pacman/blue/move_left/0.png",
                                               "../res/animations/pacman/blue/move_left/1.png",
                                               "../res/animations/pacman/blue/move_left/2.png",
@@ -188,7 +188,7 @@ PACMAN_BLUE_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_l
 
 GHOST_MAPOBJECT_HITBOX_PATH = "../res/hitbox/ghost_mapobject.png"
 GHOST_CREATURE_HITBOX_PATH = "../res/hitbox/ghost_creature.png"
-GHOST_RED_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"], # FIXME: STUB
+GHOST_RED_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"],
                               "move_left": ["../res/animations/ghost/red/move_left/0.png",
                                             "../res/animations/ghost/red/move_left/1.png"],
                               "move_up": ["../res/animations/ghost/red/move_up/0.png",
@@ -202,7 +202,7 @@ GHOST_RED_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_lef
                                        "../res/animations/ghost/red/dead/2.png",
                                        "../res/animations/ghost/red/dead/3.png"]}
 
-GHOST_GREEN_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"], # FIXME: STUB
+GHOST_GREEN_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"],
                                 "move_left": ["../res/animations/ghost/green/move_left/0.png",
                                               "../res/animations/ghost/green/move_left/1.png"],
                                 "move_up": ["../res/animations/ghost/green/move_up/0.png",
@@ -216,7 +216,7 @@ GHOST_GREEN_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_l
                                          "../res/animations/ghost/green/dead/2.png",
                                          "../res/animations/ghost/green/dead/3.png"]}
 
-GHOST_BLUE_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"], # FIXME: STUB
+GHOST_BLUE_ANIMATIONS_PATHS = {"Default": ["../res/animations/pacman/red/move_left/0.png"],
                                "move_left": ["../res/animations/ghost/blue/move_left/0.png",
                                              "../res/animations/ghost/blue/move_left/1.png"],
                                "move_up": ["../res/animations/ghost/blue/move_up/0.png",

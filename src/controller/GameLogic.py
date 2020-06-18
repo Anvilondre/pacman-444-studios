@@ -2,23 +2,20 @@ import copy
 import random
 import sys
 import time
-from itertools import cycle
 
 import pygame
-from pygame.constants import K_F1, K_SPACE, K_f
+from pygame.constants import K_F1, K_f
 from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_1, K_2, QUIT
 
 from src.controller.Abilities import SpeedAbility, TransformAbility, IterativeTimer
 from src.controller.GhostsAI import PathFinder
 from src.data import Constants
 from src.data.Constants import SECTOR_SIZE, DESIRED_AI_TICK_TIME, DESIRED_PHYSICS_TICK_TIME, DESIRED_RENDER_TICK_TIME, \
-    GLOBAL_TICK_RATE, forms, pacman_mana
+    GLOBAL_TICK_RATE, forms
 from src.data.Levels import Level5
 from src.debug.TickTimeDebugger import TickTimeDebugger, Modes
 from src.model.Creatures import PacMan, Ghost
-from src.view import Widgets
 from src.view.Renderer import Renderer, RenderModes
-from src.view.Widgets import Sprite
 
 
 def calculate_L1(point1, point2):
@@ -219,9 +216,6 @@ class Controller:
                         self.set_cooldown_timer()
                     elif self.transform_ability.is_active:
                         self.transform_ability.changeForm()
-                # DEBUG:
-                # elif event.key == K_f:
-                #    self.is_playing = False
 
     def set_cooldown_timer(self):
         self.ability_is_ready = False
@@ -399,7 +393,6 @@ class Controller:
             if ghost_coord == ghost_init_coord:
                 ghost.form = random.choice(forms)
                 ghost.is_alive = True
-                # ghost.is_chasing = True
 
         if ghost.is_alive and self.pacman.is_alive:
             path = self.path_finder.get_path(ghost_coord, pacman_coord, used_sectors, used_val)
@@ -467,9 +460,6 @@ class Controller:
                 self.ghosts[i].previous_target_coord = target
                 path = self.resolve_ghost_direction(self.ghosts[i], target, used_sectors, 4)  # Hardcore heuristics
 
-                if path is None:
-                    print(get_sector_coord(self.ghosts[i].x + SECTOR_SIZE / 2, self.ghosts[i].y + SECTOR_SIZE / 2),
-                          target)
                 if hardcore and path is not None:
                     used_sectors.extend(path)
             end_time = time.time()

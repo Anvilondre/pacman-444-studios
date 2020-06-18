@@ -86,8 +86,6 @@ class TransformAbility(Ability):
 
     def changeForm(self):
 
-        # TODO: Unhardcode it
-
         if self.is_active:
             if self.pacman.form == 'Red':
                 self.pacman.form = 'Green'
